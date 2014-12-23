@@ -12,7 +12,6 @@
 // along with this program.  If not, see <http:// www.gnu.org/licenses/>.
 package origamieditor3d.origami;
 
-import origamieditor3d.Export;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.ArrayList;
@@ -229,6 +228,13 @@ public class OrigamiScriptTerminal {
             @Override
             public void execute(String... args) throws Exception {
                 REFLECT();
+            }
+        });
+        
+        Commands.put("cut", new Command() {
+            @Override
+            public void execute(String... args) throws Exception {
+                CUT();
             }
         });
 
@@ -750,6 +756,17 @@ public class OrigamiScriptTerminal {
         }
     }
 
+    private void CUT() throws Exception {
+
+        switch (version) {
+
+            default:
+                CUT1();
+                break;
+
+        }
+    }
+    
     private void UNDO() throws Exception {
 
         switch (version) {
@@ -825,6 +842,26 @@ public class OrigamiScriptTerminal {
                     .trackPolygon();
 
             TerminalOrigami.reflectionFold(ppoint, pnormal, mag);
+        } else {
+            throw OrigamiException.H010;
+        }
+
+        paramReset();
+    }
+    
+    private void CUT1() throws Exception {
+
+        if (ppoint != null && pnormal != null && tracker == null) {
+
+            TerminalOrigami.mutilation(ppoint, pnormal);
+        } else if (ppoint != null && pnormal != null && tracker != null) {
+
+            TerminalOrigami.crease(ppoint, pnormal);
+
+            int mag = new OrigamiTracker(TerminalOrigami, tracker)
+                    .trackPolygon();
+
+            TerminalOrigami.mutilation(ppoint, pnormal, mag);
         } else {
             throw OrigamiException.H010;
         }
@@ -997,7 +1034,7 @@ public class OrigamiScriptTerminal {
 
     private void DIAGNOSTICS1() throws Exception {
 
-        if (this.access != Access.DEV) {
+        if (this.access == Access.DEV) {
 
             System.out.println("TerminalOrigami.vertices_size == "
                     + Integer.toString(TerminalOrigami.vertices_size()));
@@ -1240,7 +1277,7 @@ public class OrigamiScriptTerminal {
             }
         } catch (Exception exc) {
 
-            undo(1);
+            history.subList(history.size() - 1, history.size()).clear();
             throw exc;
         }
     }
@@ -1274,7 +1311,10 @@ public class OrigamiScriptTerminal {
         if (history.size() >= steps) {
 
             history.subList(history.size() - steps, history.size()).clear();
+            Access tmp = this.access;
+            this.access = Access.DEV;
             execute();
+            this.access = tmp;
         }
     }
 }

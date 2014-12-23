@@ -868,11 +868,76 @@ public class Origami {
 
         shrink(polygonIndex);
     }
+    
+    protected void internalMutilation(double[] ppoint, double[] pnormal) {
+        
+        shrink();
+
+        cutpolygon_nodes = new ArrayList<>(Arrays.asList(new int[][]{}));
+        cutpolygon_pairs = new ArrayList<>(Arrays.asList(new int[][]{}));
+        last_cut_polygons = new ArrayList<>();
+        int pnum = polygons_size;
+        for (int i = 0; i < pnum; i++) {
+            if (isNonDegenerate(i)) {
+                cutPolygon(ppoint, pnormal, i);
+            }
+        }
+        
+        double konst = scalar_product(ppoint, pnormal);
+        for (int i=0; i<polygons_size; i++) {
+            for (int vert : polygons.get(i)) {
+                if (scalar_product(vertices.get(vert), pnormal) > konst && !point_on_plane(ppoint, pnormal, vertices.get(vert))) {
+                    
+                    polygons.set(i, new ArrayList<Integer>());
+                    break;
+                }
+            }
+        }
+    }
+    
+    protected void internalMutilation(double[] ppoint, double[] pnormal, int polygonIndex) {
+        
+        ArrayList<Integer> selection = polygonSelect(ppoint, pnormal, polygonIndex);
+        double konst = scalar_product(ppoint, pnormal);
+        for (int i : selection) {
+            ArrayList<Integer> poly = polygons.get(i);
+            for (int vert : poly) {
+                if (scalar_product(vertices.get(vert), pnormal) > konst) {
+
+                    polygons.set(i, new ArrayList<Integer>());
+                    break;
+                }
+            }
+        }
+        
+        for (int i = 0; i < cutpolygon_pairs.size(); i++) {
+
+            if (!(selection.contains(cutpolygon_pairs.get(i)[0]) || selection.contains(cutpolygon_pairs.get(i)[1]))) {
+                polygons.set(cutpolygon_pairs.get(i)[0], last_cut_polygons.get(i));
+            }
+        }
+
+        for (int[] pair : cutpolygon_pairs) {
+
+            if (!(selection.contains(pair[0]) || selection.contains(pair[1]))) {
+                polygons.set(pair[1], new ArrayList<Integer>());
+            }
+        }
+
+        cutpolygon_pairs = new ArrayList<>(Arrays.asList(new int[][]{}));
+        last_cut_polygons = new ArrayList<>();
+
+        shrink(polygonIndex);
+    }
 
     public void reflectionFold(double[] ppoint, double[] pnormal) {
 
         //naplózás
         history.subList(history_pointer, history.size()).clear();
+        double[] p1 = planarPointRound(ppoint, pnormal);
+        double[] n1 = normalvectorRound(ppoint, pnormal);
+        ppoint = p1;
+        pnormal = n1;
         history.add(new double[]{
             1,
             ppoint[0],
@@ -891,6 +956,10 @@ public class Origami {
 
         //naplózás
         history.subList(history_pointer, history.size()).clear();
+        double[] p1 = planarPointRound(ppoint, pnormal);
+        double[] n1 = normalvectorRound(ppoint, pnormal);
+        ppoint = p1;
+        pnormal = n1;
         history.add(new double[]{
             2,
             ppoint[0],
@@ -910,6 +979,10 @@ public class Origami {
 
         //naplózás
         history.subList(history_pointer, history.size()).clear();
+        double[] p1 = planarPointRound(ppoint, pnormal);
+        double[] n1 = normalvectorRound(ppoint, pnormal);
+        ppoint = p1;
+        pnormal = n1;
         history.add(new double[]{
             3,
             ppoint[0],
@@ -929,6 +1002,10 @@ public class Origami {
 
         //naplózás
         history.subList(history_pointer, history.size()).clear();
+        double[] p1 = planarPointRound(ppoint, pnormal);
+        double[] n1 = normalvectorRound(ppoint, pnormal);
+        ppoint = p1;
+        pnormal = n1;
         history.add(new double[]{
             4,
             ppoint[0],
@@ -949,6 +1026,10 @@ public class Origami {
 
         //naplózás
         history.subList(history_pointer, history.size()).clear();
+        double[] p1 = planarPointRound(ppoint, pnormal);
+        double[] n1 = normalvectorRound(ppoint, pnormal);
+        ppoint = p1;
+        pnormal = n1;
         history.add(new double[]{
             5,
             ppoint[0],
@@ -961,6 +1042,51 @@ public class Origami {
         history_pointer++;
         //"hajtás"
         internalRotationFold(ppoint, pnormal, 0);
+    }
+    
+    public void mutilation(double[] ppoint, double[] pnormal) {
+
+        //logging
+        history.subList(history_pointer, history.size()).clear();
+        double[] p1 = planarPointRound(ppoint, pnormal);
+        double[] n1 = normalvectorRound(ppoint, pnormal);
+        ppoint = p1;
+        pnormal = n1;
+        history.add(new double[]{
+            6,
+            ppoint[0],
+            ppoint[1],
+            ppoint[2],
+            pnormal[0],
+            pnormal[1],
+            pnormal[2]
+        });
+        history_pointer++;
+        //"hajtás"
+        internalMutilation(ppoint, pnormal);
+    }
+    
+    public void mutilation(double[] ppoint, double[] pnormal, int polygonIndex) {
+
+        //logging
+        history.subList(history_pointer, history.size()).clear();
+        double[] p1 = planarPointRound(ppoint, pnormal);
+        double[] n1 = normalvectorRound(ppoint, pnormal);
+        ppoint = p1;
+        pnormal = n1;
+        history.add(new double[]{
+            7,
+            ppoint[0],
+            ppoint[1],
+            ppoint[2],
+            pnormal[0],
+            pnormal[1],
+            pnormal[2],
+            (double) polygonIndex
+        });
+        history_pointer++;
+        //"hajtás"
+        internalMutilation(ppoint, pnormal, polygonIndex);
     }
 
     /**
@@ -1114,6 +1240,10 @@ public class Origami {
                 internalRotationFold(new double[]{parancs[1], parancs[2], parancs[3]}, new double[]{parancs[4], parancs[5], parancs[6]}, (int) (parancs[7]), (int) (parancs[8]));
             } else if (parancs[0] == 5) {
                 internalRotationFold(new double[]{parancs[1], parancs[2], parancs[3]}, new double[]{parancs[4], parancs[5], parancs[6]}, 0);
+            } else if (parancs[0] == 6) {
+                internalMutilation(new double[]{parancs[1], parancs[2], parancs[3]}, new double[]{parancs[4], parancs[5], parancs[6]});
+            } else if (parancs[0] == 7) {
+                internalMutilation(new double[]{parancs[1], parancs[2], parancs[3]}, new double[]{parancs[4], parancs[5], parancs[6]}, (int) (parancs[7]));
             }
         }
     }
@@ -1145,6 +1275,10 @@ public class Origami {
                     internalRotationFold(new double[]{parancs[1], parancs[2], parancs[3]}, new double[]{parancs[4], parancs[5], parancs[6]}, (int) (parancs[7]), (int) (parancs[8]));
                 } else if (parancs[0] == 5) {
                     internalRotationFold(new double[]{parancs[1], parancs[2], parancs[3]}, new double[]{parancs[4], parancs[5], parancs[6]}, 0);
+                } else if (parancs[0] == 6) {
+                    internalMutilation(new double[]{parancs[1], parancs[2], parancs[3]}, new double[]{parancs[4], parancs[5], parancs[6]});
+                } else if (parancs[0] == 7) {
+                    internalMutilation(new double[]{parancs[1], parancs[2], parancs[3]}, new double[]{parancs[4], parancs[5], parancs[6]}, (int) (parancs[7]));
                 }
             }
         } else {
@@ -1229,7 +1363,7 @@ public class Origami {
      * @param polygonIndex A helyben hagyni kívánt sokszög 0 alapú indexe.
      * @since 2013-09-04
      */
-    private void shrink(int polygonIndex) {
+    protected void shrink(int polygonIndex) {
 
         ArrayList<Integer> tmp = polygons.get(polygonIndex);
         removePolygon(polygonIndex);
@@ -1255,7 +1389,7 @@ public class Origami {
      *
      * @since 2013-09-04
      */
-    private void shrink() {
+    protected void shrink() {
 
         for (int i = 0; i < polygons_size; i++) {
             if (polygons.get(i) == new ArrayList<Integer>()
@@ -1398,7 +1532,110 @@ public class Origami {
         }
         return felso - also;
     }
+    
+    final static private double[][] Origins = new double[][]{
+        new double[]{0, 0, 0},
+        new double[]{400, 0, 0},
+        new double[]{0, 400, 0},
+        new double[]{0, 0, 400}
+    };
+    
+    /**
+     * A paraméterként megadott sík egyenletének együtthatóit olymódon kerekíti
+     * {@link float}-ra, hogy a {@linkplain Fajlkezelo#Ment(String)} eljárásban
+     * használt tömörítés ne legyen veszteséges, majd visszaadja az így kapott
+     * sík egy pontját.
+     *
+     * @param sikpont	A sík egy tetszôleges pontjának térbeli derékszögû
+     * koordinátáit tartalmazó tömb.
+     * @param siknv	A sík normálvektorának térbeli derékszögû koordinátáit
+     * tartalmazó tömb.
+     * @return	A kerekítéssel kapott sík egy pontjának térbeli derékszögû
+     * koordinátáit tartalmazó tömb.
+     * @see Fajlkezelo#Ment(String)
+     */
+    static protected double[] planarPointRound(double[] sikpont, double[] siknv) {
+        double max_tavolsag = -1;
+        int hasznalt_origo = 0;
+        double[] sikpontnv = new double[]{0, 0, 0};
+        double konst = sikpont[0] * siknv[0] + sikpont[1] * siknv[1] + sikpont[2] * siknv[2];
+        for (int ii = 0; ii < Origins.length; ii++) {
+            double[] iranyvek = siknv;
+            double X = Origins[ii][0];
+            double Y = Origins[ii][1];
+            double Z = Origins[ii][2];
+            double U = iranyvek[0];
+            double V = iranyvek[1];
+            double W = iranyvek[2];
+            double A = siknv[0];
+            double B = siknv[1];
+            double C = siknv[2];
+            double t = -(A * X + B * Y + C * Z - konst) / (A * U + B * V + C * W);
+            double[] talppont = new double[]{X + t * U, Y + t * V, Z + t * W};
+            if (Origami.vector_length(Origami.vector(talppont, Origins[ii])) > max_tavolsag) {
+                sikpontnv = Origami.vector(talppont, Origins[ii]);
+                max_tavolsag = Origami.vector_length(sikpontnv);
+                hasznalt_origo = ii;
+            }
+        }
+        int Xe = (int) sikpontnv[0];
+        int Ye = (int) sikpontnv[1];
+        int Ze = (int) sikpontnv[2];
+        int Xt = (int) Math.round((Math.abs(sikpontnv[0] - Xe)) * 256 * 256);
+        int Yt = (int) Math.round((Math.abs(sikpontnv[1] - Ye)) * 256 * 256);
+        int Zt = (int) Math.round((Math.abs(sikpontnv[2] - Ze)) * 256 * 256);
+        return new double[]{(double) Xe + Math.signum(Xe) * Xt / 256 / 256 + Origins[hasznalt_origo][0], (double) Ye + Math.signum(Ye) * Yt / 256 / 256 + Origins[hasznalt_origo][1], (double) Ze + Math.signum(Ze) * Zt / 256 / 256 + Origins[hasznalt_origo][2]};
+    }
 
+    /**
+     * A paraméterként megadott sík egyenletének együtthatóit olymódon kerekíti
+     * {@link float}-ra, hogy a {@linkplain Fajlkezelo#Ment(String)} eljárásban
+     * használt tömörítés ne legyen veszteséges, majd visszaadja az így kapott
+     * sík normálvektorát.
+     *
+     * @param sikpont	A sík egy tetszôleges pontjának térbeli derékszögû
+     * koordinátáit tartalmazó tömb.
+     * @param siknv	A sík normálvektorának térbeli derékszögû koordinátáit
+     * tartalmazó tömb.
+     * @return	A kerekítéssel kapott sík normálvektorának térbeli derékszögû
+     * koordinátáit tartalmazó tömb.
+     * @see Fajlkezelo#Ment(String)
+     */
+    static protected double[] normalvectorRound(double[] sikpont, double[] siknv) {
+        double max_tavolsag = -1;
+        double[] sikpontnv = new double[]{0, 0, 0};
+        double konst = sikpont[0] * siknv[0] + sikpont[1] * siknv[1] + sikpont[2] * siknv[2];
+        for (double[] origo : Origins) {
+            double[] iranyvek = siknv;
+            double X = origo[0];
+            double Y = origo[1];
+            double Z = origo[2];
+            double U = iranyvek[0];
+            double V = iranyvek[1];
+            double W = iranyvek[2];
+            double A = siknv[0];
+            double B = siknv[1];
+            double C = siknv[2];
+            double t = -(A * X + B * Y + C * Z - konst) / (A * U + B * V + C * W);
+            double[] talppont = new double[]{X + t * U, Y + t * V, Z + t * W};
+            if (Origami.vector_length(Origami.vector(talppont, origo)) > max_tavolsag) {
+                sikpontnv = Origami.vector(talppont, origo);
+                max_tavolsag = Origami.vector_length(sikpontnv);
+            }
+        }
+        double elojel = 1;
+        if (Origami.scalar_product(siknv, sikpontnv) < 0) {
+            elojel = -1;
+        }
+        int Xe = (int) sikpontnv[0];
+        int Ye = (int) sikpontnv[1];
+        int Ze = (int) sikpontnv[2];
+        int Xt = (int) Math.round((Math.abs(sikpontnv[0] - Xe)) * 256 * 256);
+        int Yt = (int) Math.round((Math.abs(sikpontnv[1] - Ye)) * 256 * 256);
+        int Zt = (int) Math.round((Math.abs(sikpontnv[2] - Ze)) * 256 * 256);
+        return new double[]{elojel * ((double) Xe + Math.signum(Xe) * Xt / 256 / 256), elojel * ((double) Ye + Math.signum(Ye) * Yt / 256 / 256), elojel * ((double) Ze + Math.signum(Ze) * Zt / 256 / 256)};
+    }
+    
     @Override
     @SuppressWarnings("unchecked")
     public Origami clone() {

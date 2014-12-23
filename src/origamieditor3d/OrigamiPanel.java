@@ -65,6 +65,7 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
     private boolean previewOn;
     private DisplayMode displaymode;
     private double[][] beacons;
+    private Integer protractor_angle;
 
     public enum DisplayMode {
 
@@ -183,6 +184,14 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
     public void resetBeacons() {
         beacons = null;
     }
+    
+    public void displayProtractor(int angle) {
+        protractor_angle = angle;
+    }
+    
+    public void hideProtractor() {
+        protractor_angle = null;
+    }
 
     @Override
     public void reset() {
@@ -195,6 +204,7 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
         liner_triangle[2] = null;
         trackerOn = false;
         alignment_point = null;
+        protractor_angle = null;
     }
 
     public void colorFront(int rgb) {
@@ -265,6 +275,7 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
             g2.drawOval(alignment_point[0] - alignment_radius, alignment_point[1] - alignment_radius, alignment_radius * 2, alignment_radius * 2);
             g2.setStroke(new java.awt.BasicStroke(1));
         }
+        /*
         if (beacons != null) {
             g.setColor(Color.red);
             for (int i = 0; i < beacons.length; i++) {
@@ -272,7 +283,7 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
                 int y = (int) (PanelCamera.projection(beacons[i])[1]) + PanelCamera.yshift;
                 g.fillOval(x - alignment_radius, y - alignment_radius, alignment_radius * 2, alignment_radius * 2);
             }
-        }
+        }*/
 
         g.setColor(Color.red);
         if (linerOn) {
@@ -341,6 +352,58 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
             int y = (int) (PanelCamera.projection(liner_triangle[2])[1]) + PanelCamera.yshift;
             g.drawLine(x - 3, y + 3, x + 3, y - 3);
             g.drawLine(x - 3, y - 3, x + 3, y + 3);
+        }
+        if (protractor_angle != null) {
+            drawProtractor(g, protractor_angle);
+        }
+    }
+    
+    private void drawProtractor(Graphics g, int angle) {
+        
+        angle -= 90;
+        while (angle < 0) {
+            angle += 360;
+        }
+        
+        int width = getWidth();
+        int height = getHeight();
+        int diam = Math.min(width, height)/2;
+        g.setColor(new Color(255, 255, 255, 170));
+        g.fillRect(0, 0, width, height);
+        
+        g.setColor(Color.red);
+        g.drawLine(
+                (int)(width/2 + Math.cos(angle*Math.PI/180)*diam/2),
+                (int)(height/2 + Math.sin(angle*Math.PI/180)*diam/2),
+                (int)(width/2),
+                (int)(height/2)
+        );
+        
+        g.setColor(Color.black);
+        g.drawOval((width-diam)/2, (height-diam)/2, diam, diam);
+        
+        for (int i=0; i<360; i+=5) {
+            
+            int notch = i % 180 == 0 ? diam/6 : i % 90 == 0 ? diam/8 : i % 45 == 0 ? diam/10 : diam/14;
+            g.drawLine(
+                    (int)(width/2 + Math.cos(i*Math.PI/180)*diam/2),
+                    (int)(height/2 + Math.sin(i*Math.PI/180)*diam/2),
+                    (int)(width/2 + Math.cos(i*Math.PI/180)*(diam/2-notch)),
+                    (int)(height/2 + Math.sin(i*Math.PI/180)*(diam/2-notch))
+            );
+            
+        }
+        g.setFont(g.getFont().deriveFont(12.0f));
+        g.drawString("0°", width/2-5, (height-diam)/2-5);
+        g.drawString("90°", (width+diam)/2+5, height/2+5);
+        g.drawString("180°", width/2-10, (height+diam)/2+15);
+        g.drawString("-90°", (width-diam)/2-30, height/2+5);
+
+        if (angle % 90 != 0) {
+            g.drawString(
+                    (angle < 90 ? angle + 90 : angle - 270) + "°", 
+                    (int)(width/2 + Math.cos(angle*Math.PI/180)*diam/2 + (angle > 90 && angle < 270 ? -30 : 10)),
+                    (int)(height/2 + Math.sin(angle*Math.PI/180)*diam/2) + (angle < 180 ? 15 : -5));
         }
     }
 

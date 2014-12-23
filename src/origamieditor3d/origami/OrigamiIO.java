@@ -162,7 +162,7 @@ public class OrigamiIO {
                 }
 
                 int parancsazon = 0;
-                int mag = 0;
+                int mag = 65535;
 
                 switch ((int) origami.history.get(i)[0]) {
 
@@ -206,6 +206,15 @@ public class OrigamiIO {
 
                     case 5:
                         parancsazon = 7;
+                        break;
+                        
+                    case 6:
+                        parancsazon = 0;
+                        break;
+                        
+                    case 7:
+                        parancsazon = 0;
+                        mag = (int) origami.history.get(i)[7];
                         break;
                 }
 
@@ -378,7 +387,7 @@ public class OrigamiIO {
                 }
 
                 int parancsazon = 0;
-                int mag = 0;
+                int mag = 65535;
 
                 switch ((int) origami.history.get(i)[0]) {
 
@@ -422,6 +431,15 @@ public class OrigamiIO {
 
                     case 5:
                         parancsazon = 7;
+                        break;
+                        
+                    case 6:
+                        parancsazon = 0;
+                        break;
+                        
+                    case 7:
+                        parancsazon = 0;
+                        mag = (int) origami.history.get(i)[7];
                         break;
                 }
 
@@ -599,50 +617,57 @@ public class OrigamiIO {
                         double[] parancs;
                         if ((parancsfejlec >>> 24) % 8 == 1) {
 
-                            //horpasztás
+                            //ref. fold
                             parancs = new double[7];
                             parancs[0] = 1;
                         } else if ((parancsfejlec >>> 24) % 8 == 2) {
 
-                            //poz. irányú hajtás
+                            //positive rot. fold
                             parancs = new double[8];
                             parancs[0] = 2;
                             parancs[7] = (parancsfejlec >>> 16) % 256;
                         } else if ((parancsfejlec >>> 24) % 8 == 3) {
 
-                            //neg. irányú hajtás
+                            //negative rot. fold
                             parancs = new double[8];
                             parancs[0] = 2;
                             parancs[7] = -(parancsfejlec >>> 16) % 256;
                         } else if ((parancsfejlec >>> 24) % 8 == 4) {
 
-                            //részleges horpasztás
+                            //partial ref. fold
                             parancs = new double[8];
                             parancs[0] = 3;
                             parancs[7] = (double) (parancsfejlec % 65536);
                         } else if ((parancsfejlec >>> 24) % 8 == 5) {
 
-                            //poz. irányú részleges hajtás
+                            //positive partial rot. fold
                             parancs = new double[9];
                             parancs[0] = 4;
                             parancs[7] = (parancsfejlec >>> 16) % 256;
                             parancs[8] = (double) (parancsfejlec % 65536);
                         } else if ((parancsfejlec >>> 24) % 8 == 6) {
 
-                            //neg. irányú részleges hajtás
+                            //negative partial rot. fold
                             parancs = new double[9];
                             parancs[0] = 4;
                             parancs[7] = (double)-(parancsfejlec >>> 16) % 256;
                             parancs[8] = (double) (parancsfejlec % 65536);
                         } else if ((parancsfejlec >>> 24) % 8 == 7) {
 
-                            //nullhajtás
+                            //crease
                             parancs = new double[7];
                             parancs[0] = 5;
+                        } else if (parancsfejlec % 65536 == 65535) {
+
+                            //cut
+                            parancs = new double[7];
+                            parancs[0] = 6;
                         } else {
 
-                            str.close();
-                            throw OrigamiException.H003;
+                            //partial cut
+                            parancs = new double[8];
+                            parancs[0] = 7;
+                            parancs[7] = (double) (parancsfejlec % 65536);
                         }
 
                         parancs[1] = sikpont[0];
@@ -801,50 +826,57 @@ public class OrigamiIO {
                         double[] parancs;
                         if ((parancsfejlec >>> 24) % 8 == 1) {
 
-                            //horpasztás
+                            //ref. fold
                             parancs = new double[7];
                             parancs[0] = 1;
                         } else if ((parancsfejlec >>> 24) % 8 == 2) {
 
-                            //poz. irányú hajtás
+                            //positive rot. fold
                             parancs = new double[8];
                             parancs[0] = 2;
                             parancs[7] = (parancsfejlec >>> 16) % 256;
                         } else if ((parancsfejlec >>> 24) % 8 == 3) {
 
-                            //neg. irányú hajtás
+                            //negative rot. fold
                             parancs = new double[8];
                             parancs[0] = 2;
                             parancs[7] = -(parancsfejlec >>> 16) % 256;
                         } else if ((parancsfejlec >>> 24) % 8 == 4) {
 
-                            //részleges horpasztás
+                            //partial ref. fold
                             parancs = new double[8];
                             parancs[0] = 3;
                             parancs[7] = (double) (parancsfejlec % 65536);
                         } else if ((parancsfejlec >>> 24) % 8 == 5) {
 
-                            //poz. irányú részleges hajtás
+                            //positive partial rot. fold
                             parancs = new double[9];
                             parancs[0] = 4;
                             parancs[7] = (parancsfejlec >>> 16) % 256;
                             parancs[8] = (double) (parancsfejlec % 65536);
                         } else if ((parancsfejlec >>> 24) % 8 == 6) {
 
-                            //neg. irányú részleges hajtás
+                            //negative partial rot. fold
                             parancs = new double[9];
                             parancs[0] = 4;
                             parancs[7] = (double)-(parancsfejlec >>> 16) % 256;
                             parancs[8] = (double) (parancsfejlec % 65536);
                         } else if ((parancsfejlec >>> 24) % 8 == 7) {
 
-                            //nullhajtás
+                            //crease
                             parancs = new double[7];
                             parancs[0] = 5;
+                        } else if (parancsfejlec % 65536 == 65535) {
+
+                            //cut
+                            parancs = new double[7];
+                            parancs[0] = 6;
                         } else {
 
-                            str.close();
-                            throw OrigamiException.H003;
+                            //partial cut
+                            parancs = new double[8];
+                            parancs[0] = 7;
+                            parancs[7] = (double) (parancsfejlec % 65536);
                         }
 
                         parancs[1] = sikpont[0];
@@ -890,7 +922,7 @@ public class OrigamiIO {
      * koordinátáit tartalmazó tömb.
      * @see Fajlkezelo#Ment(String)
      */
-    public static double[] planarPointRound(double[] sikpont, double[] siknv) {
+    static public double[] planarPointRound(double[] sikpont, double[] siknv) {
         double max_tavolsag = -1;
         int hasznalt_origo = 0;
         double[] sikpontnv = new double[]{0, 0, 0};
@@ -937,7 +969,7 @@ public class OrigamiIO {
      * koordinátáit tartalmazó tömb.
      * @see Fajlkezelo#Ment(String)
      */
-    public static double[] normalvectorRound(double[] sikpont, double[] siknv) {
+    static public double[] normalvectorRound(double[] sikpont, double[] siknv) {
         double max_tavolsag = -1;
         double[] sikpontnv = new double[]{0, 0, 0};
         double konst = sikpont[0] * siknv[0] + sikpont[1] * siknv[1] + sikpont[2] * siknv[2];
