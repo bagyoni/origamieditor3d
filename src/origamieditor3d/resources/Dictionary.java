@@ -14,7 +14,11 @@ package origamieditor3d.resources;
 
 /**
  *
+<<<<<<< HEAD
+ * @author Attila Bágyoni <bagyoni.attila@gmail.com>
+=======
  * @author Attila Bágyoni
+>>>>>>> 2dd98c2d6cb687c9171f9a7061abaa3291f9755d
  */
 public class Dictionary {
     

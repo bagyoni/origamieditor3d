@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<title>OrigamiScript Version 1 – Documentation</title>
+</head>
+
+<body style="font-size:16px">
+
+<center><h1>OrigamiScript Version 1 – Documentation</h1>
+<p><em>Copyright (C) 2014 <a href="https://sourceforge.net/u/ba-sz-at/profile/">Attila Bagyoni</a></em></p> </center>
+<h1>Introduction</h1>
+<p>OrigamiScript is an open script language and an open-source scripting engine written as part of <a href="http://origamieditor3d.sourceforge.net">Origami Editor 3D</a>. Its main purpose is simulating the mechanism of 3-dimensional paper folding in rigid origami.</p>
+<p>While Origami Editor 3D's GUI makes use of OrigamiScript's most functions efficiently, special paper types or, in certain cases, precise numeric inputs are not supported by it. As a countermeasure, editing origami in Origami Editor 3D can be done via the editor interface and the OrigamiScript Terminal in parallel.</p>
+<p>Origami Editor 3D can also open text files written in OrigamiScript as origami models; these files have the advantage of being easily convertible to newer file versions, much more so than ORI files.</p>
+<p>This documentation explains the syntax and functions of OrigamiScript Version 1 and provides examples to cover every aspect of it.</p>
+<hr>
+
+<h1><a name="Syntax">Syntax</a></h1>
+<p>Every OrigamiScript session has an own origami model it works on. In OrigamiScript, an origami is defined as a mapping from the 2-dimensional Euclidean space ('paper space') to the 3-dimensional Euclidean space ('origami space') for which there exists a finite cover of the domain consisting of polyhedrons with disjoint interiors such that the mapping's restriction to each of these polyhedrons is an isometry.</p>
+<p>An origami model can be initialized, modified and outputted by using <a href="#Commands">commands</a>. Usually, a command takes one or more <a href="#Parameters">parameters</a> specified before itself. A parameter is always written as a keyword followed by a vector or several vectors. A vector is a collection of strings or numbers separated by space characters and enclosed by square brackets: <font style="background-color: lightgray"><code>[</code></font> at the beginning and <font style="background-color: lightgray"><code>]</code></font> at the end. When a vector contains only one component, the brackets can be omitted.</p>
+<p>The curved bracket <font style="background-color: lightgray"><code>{</code></font> can be used for starting a comment, and <font style="background-color: lightgray"><code>}</code></font> for escaping it. Strings between these brackets will not be parsed or executed.</p>
+<hr>
+
+<h1><a name="Parameters">Parameters</a></h1>
+
+<h2><a name="version">version</a></h2>
+<p>Sets the OrigamiScript version used in the script. Has no use as of yet; currently, only <font style="background-color: lightgray"><code>version 1</code></font> is available.</p>
+<p>If not specified, the interpreter's own version will be used by default.</p>
+<p>Not disposable.</p>
+<h3>Syntax:</h3>
+<p><font style="background-color: lightgray"><code>version version_number</code></font></p>
+<p><em>where</em></p>
+<dl>
+<dt><i>version_number:</i></dt>
+<dd>the OrigamiScript version the interpreter will use</dd>
+</dl>
+<h3>Used in:</h3>
+<p>Every <a href="#Commands">command</a> in this documentation</p>
+<hr>
+
+<h2><a name="paper">paper</a></h2>
+<p>Creates a new paper of a preset shape or a rectangle with the specified dimensions.</p>
+<p>Deletes every previously given <a href="#corner">corner</a> parameter from memory.</p>
+<p>Disposable.</p>
+<h3>Syntax:</h3>
+<p><font style="background-color: lightgray"><code>paper [left bottom right top]</code></font></p>
+<p><em>where</em></p>
+<dl>
+<dt><i>left:</i></dt>
+<dd>the leftmost coordinate of the rectangle in the <a href="#Syntax">paper space</a></dd>
+<dt><i>bottom:</i></dt>
+<dd>the bottommost coordinate of the rectangle in the paper space</dd>
+<dt><i>right:</i></dt>
+<dd>the rightmost coordinate of the rectangle in the paper space</dd>
+<dt><i>top:</i></dt>
+<dd>the topmost coordinate of the rectangle in the paper space</dd>
+</dl>
+<p>This syntax acts as a shorthand for <font style="background-color: lightgray"><code>corner [left bottom] corner [right bottom] corner [left top] corner [right top]</code></font>.</p>
+<p><font style="background-color: lightgray"><code>paper paper_type</code></font></p>
+<p><em>where</em></p>
+<dl>
+<dt><i>paper_type:</i></dt>
+<dd><font style="background-color: lightgray"><code>square</code></font> for a paper with corners <font style="background-color: lightgray"><code>[0 0]</code></font>, <font style="background-color: lightgray"><code>[0 400]</code></font>, <font style="background-color: lightgray"><code>[400 0]</code></font> and <font style="background-color: lightgray"><code>[400 400]</code></font></dd>
+<dd><font style="background-color: lightgray"><code>a4</code></font> for a paper with corners <font style="background-color: lightgray"><code>[0 0]</code></font>, <font style="background-color: lightgray"><code>[0 300]</code></font>, <font style="background-color: lightgray"><code>[424.3 0]</code></font> and <font style="background-color: lightgray"><code>[424.3 300]</code></font></dd>
+<dd><font style="background-color: lightgray"><code>hexagon</code></font> for a paper with corners <font style="background-color: lightgray"><code>[300 346.41]</code></font>, <font style="background-color: lightgray"><code>[400 173.205]</code></font>, <font style="background-color: lightgray"><code>[300 0]</code></font>, <font style="background-color: lightgray"><code>[100 0]</code></font>, <font style="background-color: lightgray"><code>[0 173.205]</code></font> and <font style="background-color: lightgray"><code>[100 346.41]</code></font></dd>
+<dd><font style="background-color: lightgray"><code>usd</code></font> for a paper with corners <font style="background-color: lightgray"><code>[0 0]</code></font>, <font style="background-color: lightgray"><code>[0 170]</code></font>, <font style="background-color: lightgray"><code>[400 0]</code></font> and <font style="background-color: lightgray"><code>[400 170]</code></font></dd>
+<dd><font style="background-color: lightgray"><code>huf</code></font> for a paper with corners <font style="background-color: lightgray"><code>[0 0]</code></font>, <font style="background-color: lightgray"><code>[0 181.82]</code></font>, <font style="background-color: lightgray"><code>[400 0]</code></font> and <font style="background-color: lightgray"><code>[400 181.82]</code></font></dd>
+</dl>
+<h3>Used in:</h3>
+<ul>
+<li><a href="#new">new</a></li>
+</ul>
+<hr>
+
+<h2><a name="corner">corner</a></h2>
+<p>Adds a new corner to the paper.</p>
+<p>Still works without a <a href="#paper">paper</a> parameter being specified beforehand.</p>
+<p>Disposable.</p>
+<h3>Syntax:</h3>
+<p><font style="background-color: lightgray"><code>corner [x y]</code></font></p>
+<p><em>where</em></p>
+<dl>
+<dt><i>x:</i></dt>
+<dd>the x-coordinate of the new corner in the <a href="#Syntax">paper space</a></dd>
+<dt><i>y:</i></dt>
+<dd>the y-coordinate of the new corner in the paper space</dd>
+</dl>
+<h3>Used in:</h3>
+<ul>
+<li><a href="#new">new</a></li>
+</ul>
+<hr>
+
+<h2><a name="plane">plane</a></h2>
+<p>Creates a new plane with the specified position and direction.</p>
+<p>Disposable.</p>
+<h3>Syntax:</h3>
+<p><font style="background-color: lightgray"><code>plane [x y] [normal_x normal_y normal_z]</code></font></p>
+<p><em>where</em></p>
+<dl>
+<dt><i>x:</i></dt>
+<dd>the x-coordinate of a point the plane will have to go through, given in the <a href="#Syntax">paper space</a></dd>
+<dt><i>y:</i></dt>
+<dd>the y-coordinate of the same point in the paper space</dd>
+<dt><i>normal_x:</i></dt>
+<dd>the x-coordinate of the plane's normal vector in the <a href="#Syntax">origami space</a></dd>
+<dt><i>normal_y:</i></dt>
+<dd>the y-coordinate of the plane's normal vector in the origami space</dd>
+<dt><i>normal_z:</i></dt>
+<dd>the z-coordinate of the plane's normal vector in the origami space</dd>
+</dl>
+<p><font style="background-color: lightgray"><code>plane [x y z] [normal_x normal_y normal_z]</code></font></p>
+<p><em>where</em></p>
+<dl>
+<dt><i>x:</i></dt>
+<dd>the x-coordinate of a point the plane will have to go through, given in the <a href="#Syntax">origami space</a></dd>
+<dt><i>y:</i></dt>
+<dd>the y-coordinate of the same point in the origami space</dd>
+<dt><i>z:</i></dt>
+<dd>the z-coordinate of the same point in the origami space</dd>
+<dt><i>normal_x:</i></dt>
+<dd>the x-coordinate of the plane's normal vector in the origami space</dd>
+<dt><i>normal_y:</i></dt>
+<dd>the y-coordinate of the plane's normal vector in the origami space</dd>
+<dt><i>normal_z:</i></dt>
+<dd>the z-coordinate of the plane's normal vector in the origami space</dd>
+</dl>
+<h3>Used in:</h3>
+<ul>
+<li><a href="#reflect">reflect</a></li>
+<li><a href="#rotate">rotate</a></li>
+<li><a href="#cut">cut</a></li>
+</ul>
+<hr>
+
+<h2><a name="planepoint">planepoint</a></h2>
+<p>Changes the plane's position so that it goes through the specified point without its normal vector being changed.</p>
+<p>Disposable.</p>
+<h3>Syntax:</h3>
+<p><font style="background-color: lightgray"><code>planepoint [x y]</code></font></p>
+<p><em>where</em></p>
+<dl>
+<dt><i>x:</i></dt>
+<dd>the x-coordinate of the new point the plane has to go through, given in the <a href="#Syntax">paper space</a></dd>
+<dt><i>y:</i></dt>
+<dd>the y-coordinate of the same point in the paper space</dd>
+</dl>
+<p><font style="background-color: lightgray"><code>planepoint [x y z]</code></font></p>
+<p><em>where</em></p>
+<dl>
+<dt><i>x:</i></dt>
+<dd>the x-coordinate of the new point the plane has to go through, given in the <a href="#Syntax">origami space</a></dd>
+<dt><i>y:</i></dt>
+<dd>the y-coordinate of the same point in the origami space</dd>
+<dt><i>z:</i></dt>
+<dd>the z-coordinate of the same point in the origami space</dd>
+</dl>
+<h3>Used in:</h3>
+<ul>
+<li><a href="#reflect">reflect</a></li>
+<li><a href="#rotate">rotate</a></li>
+<li><a href="#cut">cut</a></li>
+</ul>
+<hr>
+
+<h2><a name="planenormal">planenormal</a></h2>
+<p>Changes the plane's normal vector.</p>
+<p>Disposable.</p>
+<h3>Syntax:</h3>
+<p><font style="background-color: lightgray"><code>planenormal [x y z]</code></font></p>
+<p><em>where</em></p>
+<dl>
+<dt><i>normal_x:</i></dt>
+<dd>the x-coordinate of the plane's new normal vector in the <a href="#Syntax">origami space</a></dd>
+<dt><i>normal_y:</i></dt>
+<dd>the y-coordinate of the plane's new normal vector in the origami space</dd>
+<dt><i>normal_z:</i></dt>
+<dd>the z-coordinate of the plane's new normal vector in the origami space</dd>
+</dl>
+<h3>Used in:</h3>
+<ul>
+<li><a href="#reflect">reflect</a></li>
+<li><a href="#rotate">rotate</a></li>
+<li><a href="#cut">cut</a></li>
+</ul>
+<hr>
+
+<h2><a name="planethrough">planethrough</a></h2>
+<p>Creates a new plane that goes through the specified 3 points.</p>
+<p>Disposable.</p>
+<h3>Syntax:</h3>
+<p><font style="background-color: lightgray"><code>planethrough [x1 y1] [x2 y2] [x3 y3]</code></font></p>
+<p><em>where</em></p>
+<dl>
+<dt><i>x1:</i></dt>
+<dd>the x-coordinate of the first point the plane will have to go through, given in the <a href="#Syntax">paper space</a></dd>
+<dt><i>y1:</i></dt>
+<dd>the y-coordinate of the first point the plane will have to go through, given in the paper space</dd>
+<dt><i>x2:</i></dt>
+<dd>the x-coordinate of the second point the plane will have to go through, given in the paper space</dd>
+<dt><i>y2:</i></dt>
+<dd>the z-coordinate of the second point the plane will have to go through, given in the paper space</dd>
+<dt><i>x3:</i></dt>
+<dd>the x-coordinate of the third point the plane will have to go through, given in the paper space</dd>
+<dt><i>y3:</i></dt>
+<dd>the y-coordinate of the third point the plane will have to go through, given in the paper space</dd>
+</dl>
+<p><font style="background-color: lightgray"><code>planethrough [x1 y1 z1] [x2 y2 z2] [x3 y3 z3]</code></font></p>
+<p><em>where</em></p>
+<dl>
+<dt><i>x1:</i></dt>
+<dd>the x-coordinate of the first point the plane will have to go through, given in the <a href="#Syntax">origami space</a></dd>
+<dt><i>y1:</i></dt>
+<dd>the y-coordinate of the first point the plane will have to go through, given in the origami space</dd>
+<dt><i>z1:</i></dt>
+<dd>the z-coordinate of the first point the plane will have to go through, given in the origami space</dd>
+<dt><i>x2:</i></dt>
+<dd>the x-coordinate of the second point the plane will have to go through, given in the origami space</dd>
+<dt><i>y2:</i></dt>
+<dd>the y-coordinate of the second point the plane will have to go through, given in the origami space</dd>
+<dt><i>z2:</i></dt>
+<dd>the z-coordinate of the second point the plane will have to go through, given in the origami space</dd>
+<dt><i>x3:</i></dt>
+<dd>the x-coordinate of the third point the plane will have to go through, given in the origami space</dd>
+<dt><i>y3:</i></dt>
+<dd>the y-coordinate of the third point the plane will have to go through, given in the origami space</dd>
+<dt><i>z3:</i></dt>
+<dd>the z-coordinate of the third point the plane will have to go through, given in the origami space</dd>
+</dl>
+<h3>Notes:</h3>
+<p>Origami space and paper space formats can be mixed, i. e. <font style="background-color: lightgray"><code>planethrough [x1 y1 z1] [x2 y2] [x3 y3 z3]</code></font> is also a correct syntax.</p>
+<h3>Used in:</h3>
+<ul>
+<li><a href="#reflect">reflect</a></li>
+<li><a href="#rotate">rotate</a></li>
+<li><a href="#cut">cut</a></li>
+</ul>
+<h3>Exceptions:</h3>
+<ul>
+<li><a href="#H008">H008</a></li>
+</ul>
+<hr>
+
+<h2><a name="angle-bisector">angle-bisector</a></h2>
+<p>Creates a new plane perpendicular to the specified triangle, that bisects the triangle's inner angle at the 2nd vertex.</p>
+<p>Disposable.</p>
+<h3>Syntax:</h3>
+<p><font style="background-color: lightgray"><code>angle-bisector [x1 y1] [x2 y2] [x3 y3]</code></font></p>
+<p><em>where</em></p>
+<dl>
+<dt><i>x1:</i></dt>
+<dd>the x-coordinate of the triangle's first vertex in the <a href="#Syntax">paper space</a></dd>
+<dt><i>y1:</i></dt>
+<dd>the y-coordinate of the triangle's first vertex in the paper space</dd>
+<dt><i>x2:</i></dt>
+<dd>the x-coordinate of the triangle's second vertex in the paper space</dd>
+<dt><i>y2:</i></dt>
+<dd>the y-coordinate of the triangle's second vertex in the paper space</dd>
+<dt><i>x3:</i></dt>
+<dd>the x-coordinate of the triangle's third vertex in the paper space</dd>
+<dt><i>y3:</i></dt>
+<dd>the y-coordinate of the triangle's third vertex in the paper space</dd>
+</dl>
+<p><font style="background-color: lightgray"><code>angle-bisector [x1 y1 z1] [x2 y2 z2] [x3 y3 z3]</code></font></p>
+<p><em>where</em></p>
+<dl>
+<dt><i>x1:</i></dt>
+<dd>the x-coordinate of the triangle's first vertex in the <a href="#Syntax">origami space</a></dd>
+<dt><i>y1:</i></dt>
+<dd>the y-coordinate of the triangle's first vertex in the origami space</dd>
+<dt><i>z1:</i></dt>
+<dd>the z-coordinate of the triangle's first vertex in the origami space</dd>
+<dt><i>x2:</i></dt>
+<dd>the x-coordinate of the triangle's second vertex in the origami space</dd>
+<dt><i>y2:</i></dt>
+<dd>the y-coordinate of the triangle's second vertex in the origami space</dd>
+<dt><i>z2:</i></dt>
+<dd>the z-coordinate of the triangle's second vertex in the origami space</dd>
+<dt><i>x3:</i></dt>
+<dd>the x-coordinate of the triangle's third vertex in the origami space</dd>
+<dt><i>y3:</i></dt>
+<dd>the y-coordinate of the triangle's third vertex in the origami space</dd>
+<dt><i>z3:</i></dt>
+<dd>the z-coordinate of the triangle's third vertex in the origami space</dd>
+</dl>
+<h3>Notes:</h3>
+<p>Similarly to the <a href="#planethrough">planethrough</a> parameter, origami space and paper space formats can be mixed: <font style="background-color: lightgray"><code>angle-bisector [x1 y1] [x2 y2 z2] [x3 y3]</code></font> is also a correct syntax.</p>
+<h3>Used in:</h3>
+<ul>
+<li><a href="#reflect">reflect</a></li>
+<li><a href="#rotate">rotate</a></li>
+<li><a href="#cut">cut</a></li>
+</ul>
+<h3>Exceptions:</h3>
+<ul>
+<li><a href="#H012">H012</a></li>
+</ul>
+<hr>
+
+<h2><a name="target">target</a></h2>
+<p>Selects a new target point.</p>
+<p>Disposable.</p>
+<h3>Syntax:</h3>
+<p><font style="background-color: lightgray"><code>target [x y]</code></font></p>
+<p><em>where</em></p>
+<dl>
+<dt><i>x:</i></dt>
+<dd>the x-coordinate of the target point in the <a href="#Syntax">paper space</a></dd>
+<dt><i>y:</i></dt>
+<dd>the y-coordinate of the target point in the paper space</dd>
+</dl>
+<h3>Notes:</h3>
+<p>While executing a folding command with the target point on the <a href="#plane">plane</a> throws no exceptions and has no known bugs, it should be avoided because the result will not be predictable, beating the whole concept of this parameter.</p>
+<h3>Used in:</h3>
+<ul>
+<li><a href="#reflect">reflect</a></li>
+<li><a href="#rotate">rotate</a></li>
+<li><a href="#cut">cut</a></li>
+</ul>
+<hr>
+
+<h2><a name="angle">angle</a></h2>
+<p>Creates a new rotation angle equal to the specified integer in degrees (&deg;).</p>
+<p>Disposable.</p>
+<h3>Syntax:</h3>
+<p><font style="background-color: lightgray"><code>angle phi</code></font></p>
+<p><em>where</em></p>
+<dl>
+<dt><i>phi:</i></dt>
+<dd>the angle in degrees as a signed integer number</dd>
+</dl>
+<h3>Used in:</h3>
+<ul>
+<li><a href="#rotate">rotate</a></li>
+</ul>
+<hr>
+
+<h2><a name="filename">filename</a></h2>
+<p>Creates a new file path based on the specified string.</p>
+<p>Not disposable.</p>
+<h3>Syntax:</h3>
+<p><font style="background-color: lightgray"><code>filename [name]</code></font></p>
+<p><em>where</em></p>
+<dl>
+<dt><i>name:</i></dt>
+<dd>the full path of the file given in the operating system's default format</dd>
+</dl>
+<h3>Notes:</h3>
+<p>All duplicate white space characters will be removed by the parser. This is not an issue for UNIX-like operating systems and Mac OS X but can be a problem in Windows.</p>
+<h3>Used in:</h3>
+<ul>
+<li><a href="#open">open</a></li>
+<li><a href="#load">load</a></li>
+<li><a href="#export-ori">export-ori</a></li>
+<li><a href="#export-ctm">export-ctm</a></li>
+<li><a href="#export-autopdf">export-autopdf</a></li>
+</ul>
+<hr>
+
+<h2><a name="title">title</a></h2>
+<p>Sets the title for the PDF file generated by the <a href="#export-autopdf">export-autopdf</a> command. The actual title will be the concatenation of this value and the string " Folding Instructions" without the quotation marks.</p>
+<p>Disposable.</p>
+<h3>Syntax:</h3>
+<p><font style="background-color: lightgray"><code>title [name]</code></font></p>
+<p><em>where</em></p>
+<dl>
+<dt><i>name:</i></dt>
+<dd>the name of the origami as intended to appear in the title of the PDF instructions</dd>
+</dl>
+<h3>Notes:</h3>
+<p>All duplicate white space characters will be removed by the parser.</p>
+<h3>Used in:</h3>
+<ul>
+<li><a href="#export-autopdf">export-autopdf</a></li>
+</ul>
+<hr>
+
+<h1><a name="Commands">Commands</a></h1>
+<h2><a name="new">new</a></h2>
+<p>Sets the origami model to the convex hull of all the currently loaded <a href="#corner">corner</a> parameters, including the ones implicitly given in the last <a href="#paper">paper</a> parameter. An <font style="background-color: lightgray"><code>[x y]</code></font> corner in the <a href="#Syntax">paper space</a> will be mapped to the <font style="background-color: lightgray"><code>[x y 0]</code></font> point in the <a href="#Syntax">origami space</a>.</p>
+<p>This command deletes all disposable parameters from memory.</p>
+<h3>Examples:</h3>
+<p><font style="background-color: lightgray"><code>{Makes a square piece of paper} <br> paper square new</code></font></p>
+<p><font style="background-color: lightgray"><code>{Makes a house-shaped piece of paper} <br> paper [0 0 400 400] corner [200 -200] new</code></font></p>
+<p><font style="background-color: lightgray"><code>{Makes an octagonal piece of paper} <br> corner [0 100] <br> corner [100 0] <br> corner [300 400] <br> corner [400 300] <br> corner [300 0] <br> corner [400 100] <br> corner [0 300] <br> corner [100 400] <br> new</code></font></p>
+<p><font style="background-color: lightgray"><code>{Makes a square piece of paper, then overwrites it with a hexagonal one} <br> paper square new <br> paper hexagon new</code></font></p>
+<h3>Used parameters:</h3>
+<ul>
+<li><a href="#paper">paper</a></li>
+<li><a href="#corner">corner</a></li>
+</ul>
+<h3>Exceptions:</h3>
+<ul>
+<li><a href="#H001">H001</a></li>
+</ul>
+<hr>
+
+<h2><a name="reflect">reflect</a></h2>
+<p>Modifies the origami model by creasing it along the specified <a href="#plane">plane</a>, then reflecting certain parts of the paper over it.</p>
+<p>If a <a href="#target">target</a> has been created, the points reflected over the <a href="#plane">plane</a> will be the ones that can be reached from the <a href="#target">target</a> point by moving on the paper continuously without passing through the <a href="#plane">plane</a>.</p>
+<p>Otherwise, the command will reflect every point that is on the same side of the <a href="#plane">plane</a> as where its normal vector is pointing to.</p>
+<p>Finally, it removes any unnecessary creases created in the process.</p>
+<p>This command deletes all disposable parameters from memory.</p>
+<h3>Examples:</h3>
+<p><font style="background-color: lightgray"><code>
+paper [0 0 400 400] new<br>
+plane [200 0 0] [1 0 1]<br>
+reflect {We reflected the right half over a plane 45&deg; apart from the paper space; this is equivalent to a 90&deg; rotation}<br>
+planethrough [0 200 0] [200 250 0] [400 200] {We select the points we want to include in the new folding line}<br>
+reflect {And we have a reverse fold}<br>
+planethrough [0 250] [200 300] [400 250] {This time we give every point in paper space format}<br>
+target [50 350] {We select the lower half of the paper}<br>
+reflect {And the reverse fold becomes a crimp fold}<br>
+</code></font></p>
+<h3>Used parameters:</h3>
+<ul>
+<li><a href="#plane">plane</a></li>
+<li><a href="#planepoint">planepoint</a></li>
+<li><a href="#planenormal">planenormal</a></li>
+<li><a href="#planethrough">planethrough</a></li>
+<li><a href="#angle-bisector">angle-bisector</a></li>
+<li><a href="#target">target</a></li>
+</ul>
+<hr>
+
+<h2><a name="rotate">rotate</a></h2>
+<p>Modifies the origami model by creasing it along the specified <a href="#plane">plane</a>, selecting certain parts of the paper, and, if the plane intersects these parts in a straight line, rotating them around the line by the specified <a href="#angle">angle</a>. Nothing will be done if the intersection is not a non-degenerate line segment.</p>
+<p>If a <a href="#target">target</a> has been created, the points to be rotated will be the ones that can be reached from the <a href="#target">target</a> point by moving on the paper continuously without passing through the <a href="#plane">plane</a>.</p>
+<p>Otherwise, the command will rotate every point that is on the same side of the <a href="#plane">plane</a> as where its normal vector is pointing to.</p>
+<p>Finally, it removes any unnecessary creases created in the process.</p>
+<p>This command deletes all disposable parameters from memory.</p>
+<h3>Notes:</h3>
+<p>Since there is no distinct "clockwise" or "counter-clockwise" direction in a 3-dimensional space, the rotation's direction is decided in an unpredictable manner. Typically, the desired direction is to be determined by trial and error. This behaviour may be changed in future releases.</p>
+<h3>Examples:</h3>
+<p><font style="background-color: lightgray"><code>
+paper [0 0 400 400] new<br>
+plane [200 0] [1 0 0]<br>
+angle 150<br>
+rotate {Rotates the right half of the paper by 150&deg;}<br>
+plane [100 0] [1 0 0]<br>
+angle 30<br>
+rotate {Nothing will be done because the intersection points are not collinear}<br>
+{However, when selecting a target point, one can choose a specific flap to rotate:}<br>
+plane [100 0] [1 0 0]<br>
+angle 30<br>
+target [50 200]<br>
+rotate
+</code></font></p>
+<h3>Used parameters:</h3>
+<ul>
+<li><a href="#plane">plane</a></li>
+<li><a href="#planepoint">planepoint</a></li>
+<li><a href="#planenormal">planenormal</a></li>
+<li><a href="#planethrough">planethrough</a></li>
+<li><a href="#angle-bisector">angle-bisector</a></li>
+<li><a href="#target">target</a></li>
+<li><a href="#angle">angle</a></li>
+</ul>
+<hr>
+
+<h2><a name="cut">cut</a></h2>
+<p>Modifies the origami model by creasing it along the specified <a href="#plane">plane</a>, then deleting certain polygons from the model.</p>
+<p>If a <a href="#target">target</a> has been created, the polygons to be deleted will be the ones that can be reached from the <a href="#target">target</a> point by moving on the paper continuously without passing through the <a href="#plane">plane</a>.</p>
+<p>Otherwise, the command will delete every polygon that is on the same side of the <a href="#plane">plane</a> as where its normal vector is pointing to.</p>
+<p>Finally, it removes any unnecessary creases created in the process.</p>
+<p>This command deletes all disposable parameters from memory.</p>
+<h3>Notes:</h3>
+<p>The command does not remove any vertices from the model, only the polygons. This can cause the Editor interface snapping the liner to points seemingly not there.</p>
+<h3>Examples:</h3>
+<p>See the <a href="#Kirigami">kirigami</a> snippet.</p>
+<h3>Used parameters:</h3>
+<ul>
+<li><a href="#plane">plane</a></li>
+<li><a href="#planepoint">planepoint</a></li>
+<li><a href="#planenormal">planenormal</a></li>
+<li><a href="#planethrough">planethrough</a></li>
+<li><a href="#angle-bisector">angle-bisector</a></li>
+<li><a href="#target">target</a></li>
+</ul>
+<hr>
+
+<h2><a name="undo">undo</a></h2>
+<p>Cancels the last <a href="#reflect">reflect</a>, <a href="#rotate">rotate</a> or <a href="#cut">cut</a> operation called in session. Can be applied repeatedly.</p>
+<p>This command deletes all disposable parameters from memory.</p>
+<hr>
+
+<h2><a name="redo">redo</a></h2>
+<p>Cancels the last <a href="#undo">undo</a> operation called in session. Can be applied repeatedly.</p>
+<p>This command deletes all disposable parameters from memory.</p>
+<hr>
+
+<h2><a name="compile">compile</a></h2>
+<p>Executes the text file specified in the <a href="#filename">filename</a> parameter in a new OrigamiScript session. This has no effect on the session that called it.</p>
+<p>This command deletes all disposable parameters from memory.</p>
+<h3>Used parameters:</h3>
+<ul>
+<li><a href="#filename">filename</a></li>
+</ul>
+<h3>Exceptions:</h3>
+<ul>
+<li><a href="#H005">H005</a></li>
+<li><a href="#H011">H011</a></li>
+</ul>
+<hr>
+
+<h2><a name="open">open</a></h2>
+<p>Loads the ORI file specified in the <a href="#filename">filename</a> parameter in a new OrigamiScript session. The new session overwrites the one that called it.</p>
+<h3>Used parameters:</h3>
+<ul>
+<li><a href="#filename">filename</a></li>
+</ul>
+<h3>Exceptions:</h3>
+<ul>
+<li><a href="#H003">H003</a></li>
+<li><a href="#H004">H004</a></li>
+<li><a href="#H005">H005</a></li>
+<li><a href="#H011">H011</a></li>
+</ul>
+<hr>
+
+<h2><a name="load">load</a></h2>
+<p>Executes the text file specified in the <a href="#filename">filename</a> parameter in a new OrigamiScript session. The new session overwrites the one that called it.</p>
+<p>This command deletes all disposable parameters from memory.</p>
+<h3>Used parameters:</h3>
+<ul>
+<li><a href="#filename">filename</a></li>
+</ul>
+<h3>Exceptions:</h3>
+<ul>
+<li><a href="#H005">H005</a></li>
+<li><a href="#H011">H011</a></li>
+</ul>
+<hr>
+
+<h2><a name="export-ori">export-ori</a></h2>
+<p>Exports the origami created in the current session as an ORI file, into the file specified in the <a href="#filename">filename</a> parameter.</p>
+<p>An ORI file is a highly but losslessly compressed file capable of storing <a href="#reflect">reflect</a>, <a href="#rotate">rotate</a> and <a href="#cut">cut</a> commands with all their parameters. This makes it an effective way to store origami models created in OrigamiScript.</p>
+<p>This command deletes all disposable parameters from memory.</p>
+<h3>Used parameters:</h3>
+<ul>
+<li><a href="#filename">filename</a></li>
+</ul>
+<h3>Exceptions:</h3>
+<ul>
+<li><a href="#H005">H005</a></li>
+<li><a href="#H011">H011</a></li>
+</ul>
+<hr>
+
+<h2><a name="export-ctm">export-ctm</a></h2>
+<p>Exports the origami created in the current session as an OpenCTM file, into the file specified in the <a href="#filename">filename</a> parameter.</p>
+<p>OpenCTM is an open 3D file format for triangle meshes. You can download the latest OpenCTM viewer and converter <a href="http://openctm.sourceforge.net/?page=download">here</a>.</p>
+<h3>Used parameters:</h3>
+<ul>
+<li><a href="#filename">filename</a></li>
+</ul>
+<h3>Exceptions:</h3>
+<ul>
+<li><a href="#H005">H005</a></li>
+<li><a href="#H011">H011</a></li>
+</ul>
+<hr>
+
+<h2><a name="export-autopdf">export-autopdf</a></h2>
+<p>Exports the origami created in the current session as a PDF 1.3 file, into the file specified in the <a href="#filename">filename</a> parameter.</p>
+<p>The exported document contains the auto-generated folding diagram of the model displaying up to 6 steps per page, with a pseudo-English explanation for each step. The title of the document will be the value of the <a href="#title">title</a> parameter with the string " Folding Instructions" written after it.</p>
+<h3>Used parameters:</h3>
+<ul>
+<li><a href="#filename">filename</a></li>
+<li><a href="#title">title</a></li>
+</ul>
+<h3>Exceptions:</h3>
+<ul>
+<li><a href="#H005">H005</a></li>
+<li><a href="#H011">H011</a></li>
+</ul>
+<hr>
+
+<h2><a name="root">root</a></h2>
+<p>Grants the calling session root privileges after prompting the user for approval. This will prevent all the commands listed in this documentation from throwing <a href="#H011">H011</a>.</p>
+<p>If you are prompted to enter root while <a href="#compile">compiling</a> or <a href="#load">loading</a> a file, please do not accept it before making sure it does not contain malicious code.</p>
+<hr>
+
+<h1>Exceptions</h1>
+<h2><a name="H001">H001</a></h2>
+<p>Thrown when the <a href="#new">new</a> command is called on the corner list of a non-convex polygon, i. e. some of the corners defined by the <a href="#corner">corner</a> and the <a href="#paper">paper</a> parameters are located in the interior of the others' convex hull.</p>
+<h3>Examples:</h3>
+<p><font style="background-color: lightgray"><code>paper [0 0 100 100] corner [50 50] new</code></font></p>
+<hr>
+
+<h2><a name="H002">H002</a></h2>
+<p>Thrown when the <a href="#export-ori">export-ori</a>, <a href="#export-ctm">export-ctm</a> or <a href="#export-autopdf">export-autopdf</a> command fails to write to the file specified in the <a href="#filename">filename</a> parameter.</p>
+<hr>
+
+<h2><a name="H003">H003</a></h2>
+<p>Thrown when the <a href="#open">open</a> command recognizes the file specified in the <a href="#filename">filename</a> parameter as an ORI file, but fails to process it.</p>
+<hr>
+
+<h2><a name="H004">H004</a></h2>
+<p>Thrown when the <a href="#open">open</a> command fails to recognize the file specified in the <a href="#filename">filename</a> parameter as an ORI file.</p>
+<hr>
+
+<h2><a name="H005">H005</a></h2>
+<p>Thrown when the <a href="#open">open</a>, <a href="#load">load</a> or <a href="#compile">compile</a> command fails to read the the file specified in the <a href="#filename">filename</a> parameter.</p>
+<h3>Examples:</h3>
+<p><font style="background-color: lightgray"><code>{Assuming that the x.ori file does NOT exist in the program's directory,} <br> filename x.ori open<br> {causes an H005.} </code></font></p>
+<hr>
+
+<h2><a name="H006">H006</a></h2>
+<p>Thrown when a keyword is identified as an OrigamiScript keyword, but not available for the currently set <a href="#version">version</a>.</p>
+<hr>
+
+<h2><a name="H007">H007</a></h2>
+<p>Thrown when a <a href="#Parameters">parameter</a> is used with an incorrect number of <a href="#Syntax">vectors</a> or vectors with an incorrect number of components.</p>
+<h3>Examples:</h3>
+<p><font style="background-color: lightgray"><code>{Incorrect number of vectors}</code></font><br>
+<font style="background-color: lightgray"><code>version 1 plane [1 2 3] [4 5 6] [7 8 9]</code></font></p>
+<p><font style="background-color: lightgray"><code>{Incorrect number of components}</code></font><br>
+<font style="background-color: lightgray"><code>version 1 paper [0 0 0 100 100]</code></font></p>
+<hr>
+
+<h2><a name="H008">H008</a></h2>
+<p>Thrown when the <a href="#planethrough">planethrough</a> parameter is used on three collinear points, and therefore a unique plane going through all of them cannot be constructed.</p>
+<h3>Examples:</h3>
+<p><font style="background-color: lightgray"><code>planethrough [1 2 3] [4 5 6] [7 8 9]</code></font></p>
+<hr>
+
+<h2><a name="H009">H009</a></h2>
+<p>Thrown when the <a href="#paper">paper</a> parameter is used with a single-component <a href="#Syntax">vector</a> that can not be recognized as a paper type identifier in the currently set <a href="#version">version</a>.</p>
+<h3>Examples:</h3>
+<p><font style="background-color: lightgray"><code>paper funky {This will never be implemented.}</code></font></p>
+<hr>
+
+<h2><a name="H010">H010</a></h2>
+<p>Thrown when a <a href="#Commands">command</a> is used without the necessary <a href="#Parameters">parameters</a> being specified beforehand.</p>
+<h3>Examples:</h3>
+<p><font style="background-color: lightgray"><code>version 1 new paper square {The 'paper' parameter is supposed to be written before the 'new' command}</code></font></p>
+<hr>
+
+<h2><a name="H011">H011</a></h2>
+<p>Thrown when a keyword is identified as an OrigamiScript keyword, but the user does not have permission to use it.</p>
+<h3>Examples:</h3>
+<p>Calling the <a href="#compile">compile</a> command on an OrigamiScript file that itself also uses the <a href="#compile">compile</a> command will cause H011. This is for safety reasons.</p>
+<hr>
+
+<h2><a name="H012">H012</a></h2>
+<p>Thrown when the <a href="#angle-bisector">angle-bisector</a> parameter is used on a zero angle, and therefore a unique plane bisecting it cannot be constructed.</p>
+<h3>Examples:</h3>
+<p><font style="background-color: lightgray"><code>angle-bisector [0 0] [100 100] [0 0]</code></font></p>
+<hr>
+
+<h1>Snippets</h1>
+<h3>Boat</h3>
+<p>
+<font style="background-color: lightgray"><code>
+version 1<br>
+{Take an A4 sheet of paper:}<br>
+paper a4<br>
+new<br>
+{Fold it back at the top and the bottom so that it becomes a square:}<br>
+plane [62.15 0] [-1 0 0] angle 180 rotate<br>
+plane [362.15 0] [1 0 0] angle 180 rotate<br>
+{Fold it in half:}<br>
+plane [212.15 150] [0 1 0] angle 180 rotate<br>
+{Fold the upper corners down:}<br>
+plane [212.15 150] [1 1 0] angle 180 rotate<br>
+plane [212.15 150] [-1 1 0] angle -180 rotate<br>
+{Open it to make it 3D:}<br>
+plane [212.15 150] [1 0 0] angle 45 rotate<br>
+planethrough [62.15 0] [212.15 150] [362.15 0] target [212 75] reflect<br>
+{Arrange the flaps:}<br>
+planethrough [62.15 0] [212.15 150] [362.15 0] target [322 110] reflect<br>
+planethrough [62.15 0] [212.15 150] [362.15 0] target [10 290] reflect<br>
+planethrough [62.15 0] [212.15 150] [362.15 0] target [410 10] reflect<br>
+{Make the sail with a sink fold:}<br>
+plane [212.15 60] [-14.64466 -100 35.355] reflect<br>
+{Finished.}
+</code></font>
+</p>
+<hr>
+
+<h3><a name="Kirigami">Kirigami</a></h3>
+<p>
+<font style="background-color: lightgray"><code>
+{A nice and simple paper flower}<br>
+version 1<br>
+paper square new<br>
+{Fold in half twice:}<br>
+plane [200 200] [1 0 0] reflect<br>
+plane [200 200] [0 1 0] reflect<br>
+{Cut some paper:}<br>
+angle-bisector [200 0] [100 0] [200 100] cut<br>
+angle-bisector [0 200] [0 100] [100 200] cut<br>
+plane [130 200] [1 1 0] cut<br>
+{Unfold:}<br>
+target [100 100] plane [200 200] [1 0 0] reflect<br>
+target [100 100] plane [200 200] [0 1 0] reflect
+</code></font>
+</p>
+<hr>
+
+<h3>A deterrent example</h3>
+<p>
+<font style="background-color: lightgray"><code>
+{At times, it is much harder to fold something in OrigamiScript than it is in real life.}<br>
+version 1<br>
+paper square<br>
+new<br>
+plane [200 0] [1 0 0] reflect<br>
+plane [200 200] [1 1 0] angle 60 rotate<br>
+plane [200 200] [0 1 0] angle 60 rotate<br>
+plane [200 200] [-1 1 0] angle 60 rotate<br>
+planethrough [200 0] [200 200] [200 400] target [100 50] reflect<br>
+planethrough [0 0] [200 200] [400 0] target [100 50] reflect<br>
+planethrough [0 400] [200 200] [400 400] target [100 350] reflect<br>
+{This was the minimal code required to fold this particular 'rocket'}
+</code></font>
+</p>
+<hr>
+
+<h1>License notice</h1>
+<p>Permission is granted to copy, distribute and/or modify this
+document under the terms of the <a href="http://www.gnu.org/copyleft/fdl.html">GNU Free Documentation License</a>,
+Version 1.3 or any later version published by the Free Software
+Foundation; with no Invariant Sections, no Front-Cover Texts and
+no Back-Cover Texts.</p>
+</body>
+</html>

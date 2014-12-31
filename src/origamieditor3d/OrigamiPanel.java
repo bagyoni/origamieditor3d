@@ -219,8 +219,13 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
         return displaymode;
     }
 
+<<<<<<< HEAD
+    public void setTexture(java.awt.image.BufferedImage tex) throws Exception {
+        PanelCamera.setTexture(tex);
+=======
     public void setTexture(java.awt.image.BufferedImage tex) {
         PanelCamera.texture = tex;
+>>>>>>> 2dd98c2d6cb687c9171f9a7061abaa3291f9755d
     }
 
     public boolean validateClickOnBeacon(int x, int y) {

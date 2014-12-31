@@ -325,6 +325,17 @@
             <Property name="text" type="java.lang.String" value="Help"/>
           </Properties>
           <SubComponents>
+<<<<<<< HEAD
+            <MenuItem class="javax.swing.JMenuItem" name="jMenuItem1">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="The OrigamiScript documentation"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jMenuItem1ActionPerformed"/>
+              </Events>
+            </MenuItem>
+=======
+>>>>>>> 2dd98c2d6cb687c9171f9a7061abaa3291f9755d
             <MenuItem class="javax.swing.JMenuItem" name="ui_help_about">
               <Properties>
                 <Property name="text" type="java.lang.String" value="About"/>

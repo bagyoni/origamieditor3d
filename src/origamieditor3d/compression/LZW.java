@@ -70,10 +70,17 @@ public class LZW {
         fos.close();
     }
 
+<<<<<<< HEAD
+    static public java.io.ByteArrayInputStream extract(java.io.ByteArrayInputStream input) throws Exception {
+
+        java.io.InputStream fis = input;
+        java.util.ArrayList<Byte> fosb = new java.util.ArrayList<>();
+=======
     static public void extract(java.io.File input, java.io.File output) throws Exception {
 
         java.io.FileInputStream fis = new java.io.FileInputStream(input);
         java.io.FileOutputStream fos = new java.io.FileOutputStream(output);
+>>>>>>> 2dd98c2d6cb687c9171f9a7061abaa3291f9755d
         java.util.HashMap<Integer, String> szotar = new java.util.HashMap<>();
         java.util.ArrayList<Integer> normalatlan = new java.util.ArrayList<>();
         for (int i = 0; i < 256; i++) {
@@ -87,8 +94,12 @@ public class LZW {
             magn2 = rb;
             fajlveg++;
         }
+<<<<<<< HEAD
+        fis.reset();
+=======
         fis.close();
         fis = new java.io.FileInputStream(input);
+>>>>>>> 2dd98c2d6cb687c9171f9a7061abaa3291f9755d
         for (int i = 0; i < fajlveg - 1; i += magn2) {
             String normalt = "";
             for (int ii = i; ii < i + magn2; ii++) {
@@ -101,7 +112,11 @@ public class LZW {
             }
         }
         String szo = (char) (int) normalatlan.remove(0) + "";
+<<<<<<< HEAD
+        fosb.add((byte)szo.charAt(0));
+=======
         fos.write(szo.charAt(0));
+>>>>>>> 2dd98c2d6cb687c9171f9a7061abaa3291f9755d
         for (int b : normalatlan) {
 
             String szo1;
@@ -113,13 +128,25 @@ public class LZW {
                 break;
             }
             for (int i = 0; i < szo1.length(); i++) {
+<<<<<<< HEAD
+                fosb.add((byte)szo1.charAt(i));
+=======
                 fos.write(szo1.charAt(i));
+>>>>>>> 2dd98c2d6cb687c9171f9a7061abaa3291f9755d
             }
             szotar.put(szotar.size(), szo + szo1.charAt(0));
             szo = szo1;
         }
         fis.close();
+<<<<<<< HEAD
+        byte[] fos = new byte[fosb.size()];
+        for (int i=0; i<fosb.size(); i++) {
+            fos[i] = fosb.get(i);
+        }
+        return new java.io.ByteArrayInputStream(fos);
+=======
         fos.close();
+>>>>>>> 2dd98c2d6cb687c9171f9a7061abaa3291f9755d
     }
 
     static public String BinToString(int bin, int digits) {

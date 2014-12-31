@@ -812,7 +812,14 @@ public class Camera {
         orientation = (byte) ((orientation + 1) % 3);
     }
 
+<<<<<<< HEAD
+    public void setTexture(java.awt.image.BufferedImage texture) throws Exception {
+        if (texture.getColorModel().hasAlpha()) {
+            throw OrigamiException.H013;
+        }
+=======
     public void setTexture(java.awt.image.BufferedImage texture) {
+>>>>>>> 2dd98c2d6cb687c9171f9a7061abaa3291f9755d
         this.texture = texture;
     }
 
