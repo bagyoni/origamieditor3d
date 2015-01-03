@@ -522,7 +522,6 @@ rotate
 
 <h2><a name="load">load</a></h2>
 <p>Executes the text file specified in the <a href="#filename">filename</a> parameter in a new OrigamiScript session. The new session overwrites the one that called it.</p>
-<p>This command deletes all disposable parameters from memory.</p>
 <h3>Used parameters:</h3>
 <ul>
 <li><a href="#filename">filename</a></li>
@@ -552,6 +551,7 @@ rotate
 <h2><a name="export-ctm">export-ctm</a></h2>
 <p>Exports the origami created in the current session as an OpenCTM file, into the file specified in the <a href="#filename">filename</a> parameter.</p>
 <p>OpenCTM is an open 3D file format for triangle meshes. You can download the latest OpenCTM viewer and converter <a href="http://openctm.sourceforge.net/?page=download">here</a>.</p>
+<p>This command deletes all disposable parameters from memory.</p>
 <h3>Used parameters:</h3>
 <ul>
 <li><a href="#filename">filename</a></li>
@@ -566,6 +566,7 @@ rotate
 <h2><a name="export-autopdf">export-autopdf</a></h2>
 <p>Exports the origami created in the current session as a PDF 1.3 file, into the file specified in the <a href="#filename">filename</a> parameter.</p>
 <p>The exported document contains the auto-generated folding diagram of the model displaying up to 6 steps per page, with a pseudo-English explanation for each step. The title of the document will be the value of the <a href="#title">title</a> parameter with the string " Folding Instructions" written after it.</p>
+<p>This command deletes all disposable parameters from memory.</p>
 <h3>Used parameters:</h3>
 <ul>
 <li><a href="#filename">filename</a></li>

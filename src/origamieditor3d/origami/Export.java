@@ -1,5 +1,5 @@
 // This file is part of Origami Editor 3D.
-// Copyright (C) 2013 Bágyoni Attila <bagyoni.attila@gmail.com>
+// Copyright (C) 2013, 2014, 2015 Bágyoni Attila <bagyoni.attila@gmail.com>
 // Origami Editor 3D is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
@@ -718,6 +718,18 @@ public class Export {
                             kep = kamera.drawFaces(x, y, origami) + kamera.drawEdges(x, y, origami) + kamera.pfdLiner(x, y, sikpont, siknv);
                             break;
 
+                        case 6:
+                            sikpont = new double[]{origami.history().get(i)[1], origami.history().get(i)[2], origami.history().get(i)[3]};
+                            siknv = new double[]{origami.history().get(i)[4], origami.history().get(i)[5], origami.history().get(i)[6]};
+                            kep = kamera.drawFaces(x, y, origami) + kamera.drawEdges(x, y, origami) + kamera.pfdLiner(x, y, sikpont, siknv);
+                            break;
+                            
+                        case 7:
+                            sikpont = new double[]{origami.history().get(i)[1], origami.history().get(i)[2], origami.history().get(i)[3]};
+                            siknv = new double[]{origami.history().get(i)[4], origami.history().get(i)[5], origami.history().get(i)[6]};
+                            kep = kamera.drawSelection(x, y, sikpont, siknv, (int) origami.history().get(i)[7], origami) + kamera.drawEdges(x, y, origami) + kamera.pfdLiner(x, y, sikpont, siknv);
+                            break;
+                            
                         default:
                             kep = kamera.drawFaces(x, y, origami) + kamera.drawEdges(x, y, origami);
                             break;
@@ -1055,7 +1067,41 @@ public class Export {
                             sorszam++;
                             break;
 
+                        case 6:
+                            siknv = new double[]{origami.history().get(i)[4],
+                                origami.history().get(i)[5],
+                                origami.history().get(i)[6]};
+                            utasitas = "(" + Integer.toString(sorszam) + ". ";
+                            switch (kamera.pdfLinerDir(siknv)) {
+
+                                case Camera.PDF_NORTH:
+                                    utasitas += Cookbook.PDF_CUT_NORTH;
+                                    break;
+                                case Camera.PDF_EAST:
+                                    utasitas += Cookbook.PDF_CUT_EAST;
+                                    break;
+                                case Camera.PDF_SOUTH:
+                                    utasitas += Cookbook.PDF_CUT_SOUTH;
+                                    break;
+                                case Camera.PDF_WEST:
+                                    utasitas += Cookbook.PDF_CUT_WEST;
+                                    break;
+                                default:
+                                    break;
+                            }
+                            sorszam++;
+                            break;
+                            
+                        case 7:
+                            utasitas = "(" + Integer.toString(sorszam) + ". ";
+                            utasitas += Cookbook.PDF_CUT_TARGET;
+                            sorszam++;
+                            break;
+                            
                         default:
+                            utasitas = "(" + Integer.toString(sorszam) + ". ";
+                            utasitas += "???) ' ";
+                            sorszam++;
                             break;
                     }
 

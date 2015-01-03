@@ -1,5 +1,5 @@
 // This file is part of Origami Editor 3D.
-// Copyright (C) 2013 Bágyoni Attila <bagyoni.attila@gmail.com>
+// Copyright (C) 2013, 2014, 2015 Bágyoni Attila <bagyoni.attila@gmail.com>
 // Origami Editor 3D is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
@@ -14,11 +14,7 @@ package origamieditor3d.resources;
 
 /**
  *
-<<<<<<< HEAD
  * @author Attila Bágyoni <bagyoni.attila@gmail.com>
-=======
- * @author bsza
->>>>>>> 2dd98c2d6cb687c9171f9a7061abaa3291f9755d
  */
 public class BaseFolds {
     

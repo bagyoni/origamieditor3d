@@ -1,5 +1,5 @@
 // This file is part of Origami Editor 3D.
-// Copyright (C) 2013 Bágyoni Attila <bagyoni.attila@gmail.com>
+// Copyright (C) 2013, 2014, 2015 Bágyoni Attila <bagyoni.attila@gmail.com>
 // Origami Editor 3D is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
@@ -45,7 +45,7 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
         paper_front_color = 0xFFFFFF;
         neusisOn = false;
         previewOn = false;
-        displaymode = DisplayMode.SIMA;
+        displaymode = DisplayMode.GRADIENT;
         beacons = null;
     }
     private Origami PanelOrigami;
@@ -69,7 +69,7 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
 
     public enum DisplayMode {
 
-        SIMA, UV, SEMMI
+        SIMA, UV, SEMMI, GRADIENT
     }
 
     @Override
@@ -219,13 +219,8 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
         return displaymode;
     }
 
-<<<<<<< HEAD
     public void setTexture(java.awt.image.BufferedImage tex) throws Exception {
         PanelCamera.setTexture(tex);
-=======
-    public void setTexture(java.awt.image.BufferedImage tex) {
-        PanelCamera.texture = tex;
->>>>>>> 2dd98c2d6cb687c9171f9a7061abaa3291f9755d
     }
 
     public boolean validateClickOnBeacon(int x, int y) {
@@ -260,6 +255,12 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
 
                 case UV:
                     PanelCamera.drawTexture(g, this.getWidth(), this.getHeight());
+                    PanelCamera.drawEdges(g, Color.black, PanelOrigami);
+                    break;
+                    
+                case GRADIENT:
+                    PanelCamera.drawGradient(g, paper_front_color, PanelOrigami);
+                    PanelCamera.drawEdges(g, Color.black, PanelOrigami);
                     break;
 
                 case SIMA:
@@ -276,8 +277,8 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
 
             java.awt.Graphics2D g2 = (java.awt.Graphics2D) g;
             g2.setColor(Color.DARK_GRAY);
-            g2.setStroke(new java.awt.BasicStroke(3));
-            g2.drawOval(alignment_point[0] - alignment_radius, alignment_point[1] - alignment_radius, alignment_radius * 2, alignment_radius * 2);
+            g2.setStroke(new java.awt.BasicStroke(2));
+            g2.drawRect(alignment_point[0] - 3, alignment_point[1] - 3, 6, 6);
             g2.setStroke(new java.awt.BasicStroke(1));
         }
         /*

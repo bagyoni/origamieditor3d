@@ -1,5 +1,5 @@
 // This file is part of Origami Editor 3D.
-// Copyright (C) 2013 Bágyoni Attila <bagyoni.attila@gmail.com>
+// Copyright (C) 2013, 2014, 2015 Bágyoni Attila <bagyoni.attila@gmail.com>
 // Origami Editor 3D is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
@@ -27,8 +27,8 @@ import java.awt.Polygon;
  */
 public class Camera {
 
-    final static public int paper_back_color = 15720379;
-    final static public int paper_front_color = 3388901;
+    final static public int paper_back_color = 0xF7D6A6;
+    final static public int paper_front_color = 0x0033CC;
     final static public int maximal_zoom = 4;
 
     public Camera(int x, int y, double zoom) {
@@ -194,37 +194,48 @@ public class Camera {
         axis_y[2] = kepZ / Origami.vector_length(new double[]{kepX, kepY, kepZ}) * zoom;
     }
 
-    public java.util.List<int[]> alignmentPoints(Origami origami) {
+    public java.util.List<int[]> alignmentPoints(Origami origami, int... denoms) {
 
-        java.util.List<int[]> vissza = new ArrayList<>();
+        java.util.List<int[]> nsectors = new ArrayList<>();
         for (int i = 0; i < origami.vertices_size(); i++) {
 
-            vissza.add(new int[]{(int) projection(origami.vertices().get(i))[0],
+            nsectors.add(new int[]{(int) projection(origami.vertices().get(i))[0],
                 (int) projection(origami.vertices().get(i))[1]});
         }
+        for (int n : denoms) {
+            for (int i = 0; i < origami.polygons_size(); i++) {
+                if (origami.isNonDegenerate(i)) {
+                    for (int ii = 0; ii < origami.polygons().get(i).size() - 1; ii++) {
 
-        for (int i = 0; i < origami.polygons_size(); i++) {
+                        double[] p1 = origami.vertices().get(origami.polygons().get(i).get(ii));
+                        double[] p2 = origami.vertices().get(origami.polygons().get(i).get(ii + 1));
+                        for (int j = 1; j < n; j++) {
 
-            if (origami.isNonDegenerate(i)) {
+                            double[] nsect = new double[]{
+                                (p1[0] * j + p2[0] * (n - j)) / n,
+                                (p1[1] * j + p2[1] * (n - j)) / n,
+                                (p1[2] * j + p2[2] * (n - j)) / n
+                            };
+                            nsectors.add(new int[]{(int) projection(nsect)[0], (int) projection(nsect)[1]});
+                        }
+                    }
 
-                for (int ii = 0; ii < origami.polygons().get(i).size() - 1; ii++) {
+                    double[] last1 = origami.vertices().get(origami.polygons().get(i).get(origami.polygons().get(i).size() - 1));
+                    double[] last2 = origami.vertices().get(origami.polygons().get(i).get(0));
+                    for (int j = 1; j < n; j++) {
 
-                    double[] pont1 = origami.vertices().get(origami.polygons().get(i).get(ii));
-                    double[] pont2 = origami.vertices().get(origami.polygons().get(i).get(ii + 1));
-                    double[] felezo = Origami.midpoint(pont1, pont2);
-
-                    vissza.add(new int[]{(int) projection(felezo)[0], (int) projection(felezo)[1]});
+                        double[] nsect = new double[]{
+                            (last1[0] * j + last2[0] * (n - j)) / n,
+                            (last1[1] * j + last2[1] * (n - j)) / n,
+                            (last1[2] * j + last2[2] * (n - j)) / n
+                        };
+                        nsectors.add(new int[]{(int) projection(nsect)[0], (int) projection(nsect)[1]});
+                    }
                 }
-
-                double[] Upont1 = origami.vertices().get(origami.polygons().get(i).get(origami.polygons().get(i).size() - 1));
-                double[] Upont2 = origami.vertices().get(origami.polygons().get(i).get(0));
-                double[] Ufelezo = Origami.midpoint(Upont1, Upont2);
-
-                vissza.add(new int[]{(int) projection(Ufelezo)[0], (int) projection(Ufelezo)[1]});
             }
         }
 
-        return vissza;
+        return nsectors;
     }
 
     public java.util.List<int[]> alignmentPoints2d(Origami origami) {
@@ -447,6 +458,99 @@ public class Camera {
         return false;
     }
 
+    public void drawGradient(Graphics canvas, int rgb, Origami origami) {
+
+        for (int i = 0; i < origami.polygons_size(); i++) {
+
+            if (isDrawable(i, origami)) {
+
+                double[] normalvek = Origami.vector_product(Origami.vector(origami.vertices().get(origami.polygons().get(i).get(0)),
+                        origami.vertices().get(origami.polygons().get(i).get(1))),
+                        Origami.vector(origami.vertices().get(origami.polygons().get(i).get(0)),
+                                origami.vertices().get(origami.polygons().get(i).get(2))));
+
+                double nvhossz = Origami.vector_length(normalvek);
+                if (nvhossz != 0) {
+                    normalvek[0] = normalvek[0] / nvhossz;
+                    normalvek[1] = normalvek[1] / nvhossz;
+                    normalvek[2] = normalvek[2] / nvhossz;
+                }
+
+                double alfa = 1 - Math.abs(Origami.scalar_product(camera_dir, normalvek));
+                int szin = Origami.scalar_product(camera_dir, normalvek) > 0 ? (rgb & 0xFFFFFF) : paper_back_color;
+
+                Polygon ut = new Polygon();
+
+                double[] close = null, far = null;
+
+                for (int ii = 0; ii < origami.polygons().get(i).size(); ii++) {
+
+                    ut.addPoint((short) (projection(origami.vertices().get(origami.polygons().get(i).get(ii)))[0]) + xshift,
+                            (short) (projection(origami.vertices().get(origami.polygons().get(i).get(ii)))[1]) + yshift);
+
+                    double sc = Origami.scalar_product(origami.vertices().get(origami.polygons().get(i).get(ii)), camera_dir);
+                    if (close == null ? true : sc > Origami.scalar_product(close, camera_dir)) {
+                        close = origami.vertices().get(origami.polygons().get(i).get(ii));
+                    }
+                    if (far == null ? true : sc < Origami.scalar_product(far, camera_dir)) {
+                        far = origami.vertices().get(origami.polygons().get(i).get(ii));
+                    }
+                }
+
+                double konst = far[0] * normalvek[0] + far[1] * normalvek[1] + far[2] * normalvek[2];
+
+                double X = camera_dir[0];
+                double Y = camera_dir[1];
+                double Z = camera_dir[2];
+                double U = normalvek[0];
+                double V = normalvek[1];
+                double W = normalvek[2];
+                double A = normalvek[0];
+                double B = normalvek[1];
+                double C = normalvek[2];
+                double t = -(A * X + B * Y + C * Z - konst) / (A * U + B * V + C * W);
+
+                double[] grad_dir = {X + t * U, Y + t * V, Z + t * W};
+                double lambda = (Origami.scalar_product(close, camera_dir) - Origami.scalar_product(far, camera_dir)) / Origami.scalar_product(grad_dir, camera_dir);
+
+                close = new double[]{
+                    far[0] + grad_dir[0] * lambda,
+                    far[1] + grad_dir[1] * lambda,
+                    far[2] + grad_dir[2] * lambda,};
+
+                double dclose = Origami.scalar_product(Origami.vector(close, camera_pos), camera_dir) / Math.max(origami.circumscribedSquareSize() * Math.sqrt(2) / 2, 1);
+                double dfar = Origami.scalar_product(Origami.vector(far, camera_pos), camera_dir) / Math.max(origami.circumscribedSquareSize() * Math.sqrt(2) / 2, 1);
+                float[] hsb = Color.RGBtoHSB((szin >>> 16) % 0x100, (szin >>> 8) % 0x100, szin % 0x100, null);
+
+                int rgb1 = Color.HSBtoRGB(hsb[0], (float) (.5 - dclose * .5), 1) & 0xFFFFFF;
+                int rgb2 = Color.HSBtoRGB(hsb[0], (float) (.5 - dfar * .5), hsb[2]) & 0xFFFFFF;
+
+                Color c1, c2;
+                try {
+                    c1 = new Color((rgb1 >>> 16) % 0x100, (rgb1 >>> 8) % 0x100, rgb1 % 0x100, (int) (alfa * 64) + 100);
+                } catch (Exception exc) {
+                    c1 = new Color((rgb1 >>> 16) % 0x100, (rgb1 >>> 8) % 0x100, rgb1 % 0x100, 188);
+                }
+                try {
+                    c2 = new Color((rgb2 >>> 16) % 0x100, (rgb2 >>> 8) % 0x100, rgb2 % 0x100, (int) (alfa * 64) + 100);
+                } catch (Exception exc) {
+                    c2 = new Color((rgb2 >>> 16) % 0x100, (rgb2 >>> 8) % 0x100, rgb2 % 0x100, 188);
+                }
+                java.awt.GradientPaint gp = new java.awt.GradientPaint(
+                        (float) projection(close)[0] + xshift,
+                        (float) projection(close)[1] + yshift,
+                        c1,
+                        (float) projection(far)[0] + xshift,
+                        (float) projection(far)[1] + yshift,
+                        c2
+                );
+                ((java.awt.Graphics2D) canvas).setPaint((gp));
+
+                canvas.fillPolygon(ut);
+            }
+        }
+    }
+
     public void drawFaces(Graphics canvas, int rgb, Origami origami) {
 
         for (int i = 0; i < origami.polygons_size(); i++) {
@@ -456,7 +560,7 @@ public class Camera {
                 double[] normalvek = Origami.vector_product(Origami.vector(origami.vertices().get(origami.polygons().get(i).get(0)),
                         origami.vertices().get(origami.polygons().get(i).get(1))),
                         Origami.vector(origami.vertices().get(origami.polygons().get(i).get(0)),
-                        origami.vertices().get(origami.polygons().get(i).get(2))));
+                                origami.vertices().get(origami.polygons().get(i).get(2))));
 
                 double nvhossz = Origami.vector_length(normalvek);
                 if (nvhossz != 0) {
@@ -812,14 +916,10 @@ public class Camera {
         orientation = (byte) ((orientation + 1) % 3);
     }
 
-<<<<<<< HEAD
     public void setTexture(java.awt.image.BufferedImage texture) throws Exception {
         if (texture.getColorModel().hasAlpha()) {
             throw OrigamiException.H013;
         }
-=======
-    public void setTexture(java.awt.image.BufferedImage texture) {
->>>>>>> 2dd98c2d6cb687c9171f9a7061abaa3291f9755d
         this.texture = texture;
     }
 

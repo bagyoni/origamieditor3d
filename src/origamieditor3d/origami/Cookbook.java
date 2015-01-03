@@ -1,5 +1,5 @@
 // This file is part of Origami Editor 3D.
-// Copyright (C) 2013 Bágyoni Attila <bagyoni.attila@gmail.com>
+// Copyright (C) 2013, 2014, 2015 Bágyoni Attila <bagyoni.attila@gmail.com>
 // Origami Editor 3D is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
@@ -22,8 +22,8 @@ public class Cookbook {
     static public String PDF_TITLE = " Folding Instructions)";
     static public String PDF_DISCLAIMER = "(Disclaimer:) ' "
             + "(This is an auto-generated document made by Origami Editor 3D,) ' "
-            + "(a free, open-source WYSIWYG editor software dedicated to entirely) ' "
-            + "(model paper folding.) '"
+            + "(a free, open-source WYSIWYG tool dedicated to model paper) ' "
+            + "(folding in a 3-dimensional space.) ' "
             + "(You are free to use, modify and redistribute this document.) ' "
             + "(Download Origami Editor 3D at <origamieditor3d.sourceforge.net>.) '";
     static public String PDF_STEPS = "(Number of steps: ";
@@ -60,6 +60,21 @@ public class Cookbook {
     static public String PDF_TURN = "Turn the whole figure around the) ' "
             + "(vertical axis by ";
     static public String PDF_TURN_ANGLE = " degrees) ' (\\(See the next picture\\).) '";
+    static public String PDF_CUT_SOUTH = "Cut the whole model along) '"
+            + "(the dashed line.) ' "
+            + "(Keep the upper half.) ' ";
+    static public String PDF_CUT_NORTH = "Cut the whole model along) '"
+            + "(the dashed line.) ' "
+            + "(Keep the lower half.) ' ";
+    static public String PDF_CUT_EAST = "Cut the whole model along) '"
+            + "(the dashed line.) ' "
+            + "(Keep the left half.) ' ";
+    static public String PDF_CUT_WEST = "Cut the whole model along) '"
+            + "(the dashed line.) ' "
+            + "(Keep the right half.) ' ";
+    static public String PDF_CUT_TARGET = "Cut the gray part along) '"
+            + "(the dashed line.) ' ";
+    
     static public String PDF_CREASE = "Crease along the dashed line to) ' "
             + "(create the gray part as seen in) ' "
             + "(Step ";

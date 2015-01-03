@@ -1,5 +1,5 @@
 // This file is part of Origami Editor 3D.
-// Copyright (C) 2013 Bágyoni Attila <bagyoni.attila@gmail.com>
+// Copyright (C) 2013, 2014, 2015 Bágyoni Attila <bagyoni.attila@gmail.com>
 // Origami Editor 3D is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
@@ -13,10 +13,6 @@
 package origamieditor3d.origami;
 
 import java.io.File;
-<<<<<<< HEAD
-=======
-import java.io.FileInputStream;
->>>>>>> 2dd98c2d6cb687c9171f9a7061abaa3291f9755d
 import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -493,25 +489,13 @@ public class OrigamiIO {
         }
     }
 
-<<<<<<< HEAD
     static public Origami read_gen2(java.io.ByteArrayInputStream ori) throws Exception {
-=======
-    static public Origami read_gen2(String filename) throws Exception {
->>>>>>> 2dd98c2d6cb687c9171f9a7061abaa3291f9755d
 
         try {
 
             OrigamiGen2 origami;
-<<<<<<< HEAD
             ori.reset();
             java.io.InputStream str = origamieditor3d.compression.LZW.extract(ori);
-=======
-
-            File ori = new File(filename);
-            origamieditor3d.compression.LZW.extract(ori, new File(filename+"~"));
-            File ori1 = new File(filename+"~");
-            FileInputStream str = new FileInputStream(ori1);
->>>>>>> 2dd98c2d6cb687c9171f9a7061abaa3291f9755d
 
             int fejlec1 = str.read();
             fejlec1 *= 256;
@@ -534,11 +518,7 @@ public class OrigamiIO {
                 if (fejlec2 != 0x0363) {
 
                     str.close();
-<<<<<<< HEAD
                     return read_gen1(ori);
-=======
-                    return read_gen1(filename);
->>>>>>> 2dd98c2d6cb687c9171f9a7061abaa3291f9755d
                 } else {
 
                     int papir = str.read();
@@ -705,10 +685,6 @@ public class OrigamiIO {
                     }
                     origami.redoAll();
                     str.close();
-<<<<<<< HEAD
-=======
-                    ori1.delete();
->>>>>>> 2dd98c2d6cb687c9171f9a7061abaa3291f9755d
                     return origami;
                 }
             }
@@ -718,27 +694,14 @@ public class OrigamiIO {
         }
     }
     
-<<<<<<< HEAD
     static public Origami read_gen1(java.io.ByteArrayInputStream ori) throws Exception {
-=======
-    static public Origami read_gen1(String filename) throws Exception {
->>>>>>> 2dd98c2d6cb687c9171f9a7061abaa3291f9755d
 
         try {
 
             Origami origami;
-<<<<<<< HEAD
             ori.reset();
             java.io.InputStream str = origamieditor3d.compression.LZW.extract(ori);
             
-=======
-
-            File ori = new File(filename);
-            origamieditor3d.compression.LZW.extract(ori, new File(filename+"~"));
-            File ori1 = new File(filename+"~");
-            FileInputStream str = new FileInputStream(ori1);
-
->>>>>>> 2dd98c2d6cb687c9171f9a7061abaa3291f9755d
             int fejlec1 = str.read();
             fejlec1 *= 256;
             fejlec1 += str.read();
@@ -927,10 +890,6 @@ public class OrigamiIO {
                     }
                     origami.redoAll();
                     str.close();
-<<<<<<< HEAD
-=======
-                    ori1.delete();
->>>>>>> 2dd98c2d6cb687c9171f9a7061abaa3291f9755d
                     return origami;
                 }
             }

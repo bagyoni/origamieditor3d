@@ -1,5 +1,5 @@
 // This file is part of Origami Editor 3D.
-// Copyright (C) 2013 Bágyoni Attila <bagyoni.attila@gmail.com>
+// Copyright (C) 2013, 2014, 2015 Bágyoni Attila <bagyoni.attila@gmail.com>
 // Origami Editor 3D is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
@@ -36,8 +36,5 @@ public class OrigamiException extends Exception {
     final static public OrigamiException H010 = new OrigamiException(Dictionary.getString("h010"));
     final static public OrigamiException H011 = new OrigamiException(Dictionary.getString("h011"));
     final static public OrigamiException H012 = new OrigamiException(Dictionary.getString("h012"));
-<<<<<<< HEAD
     final static public OrigamiException H013 = new OrigamiException(Dictionary.getString("h013"));
-=======
->>>>>>> 2dd98c2d6cb687c9171f9a7061abaa3291f9755d
 }

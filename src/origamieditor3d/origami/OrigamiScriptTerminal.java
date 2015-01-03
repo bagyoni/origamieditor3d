@@ -1,5 +1,5 @@
 // This file is part of Origami Editor 3D.
-// Copyright (C) 2013 Bágyoni Attila <bagyoni.attila@gmail.com>
+// Copyright (C) 2013, 2014, 2015 Bágyoni Attila <bagyoni.attila@gmail.com>
 // Origami Editor 3D is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
@@ -17,10 +17,7 @@ import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-<<<<<<< HEAD
 import origamieditor3d.resources.Dictionary;
-=======
->>>>>>> 2dd98c2d6cb687c9171f9a7061abaa3291f9755d
 
 /**
  *
@@ -102,11 +99,7 @@ public class OrigamiScriptTerminal {
         this.TerminalCamera = new Camera(0, 0, 1);
     }
 
-<<<<<<< HEAD
     public void historyReset() {
-=======
-    private void historyReset() {
->>>>>>> 2dd98c2d6cb687c9171f9a7061abaa3291f9755d
         this.history.clear();
     }
 
@@ -308,7 +301,6 @@ public class OrigamiScriptTerminal {
                 EXPORT_ORI();
             }
         });
-<<<<<<< HEAD
         
         Commands.put("root", new Command() {
             @Override
@@ -323,8 +315,6 @@ public class OrigamiScriptTerminal {
                 DEBUG();
             }
         });
-=======
->>>>>>> 2dd98c2d6cb687c9171f9a7061abaa3291f9755d
     }
 
     /*
@@ -953,23 +943,12 @@ public class OrigamiScriptTerminal {
 
     private void filename1(String... args) throws Exception {
 
-<<<<<<< HEAD
-=======
-        if (this.access == Access.ROOT || this.access == Access.DEV) {
-
->>>>>>> 2dd98c2d6cb687c9171f9a7061abaa3291f9755d
             if (args.length == 1) {
 
                 filename = args[0];
             } else {
                 throw OrigamiException.H007;
             }
-<<<<<<< HEAD
-=======
-        } else {
-            throw OrigamiException.H011;
-        }
->>>>>>> 2dd98c2d6cb687c9171f9a7061abaa3291f9755d
     }
 
     private void title1(String... args) throws Exception {
@@ -1062,7 +1041,6 @@ public class OrigamiScriptTerminal {
 
         }
     }
-<<<<<<< HEAD
     
     private void ROOT() throws Exception {
 
@@ -1085,8 +1063,6 @@ public class OrigamiScriptTerminal {
 
         }
     }
-=======
->>>>>>> 2dd98c2d6cb687c9171f9a7061abaa3291f9755d
 
     private void DIAGNOSTICS1() throws Exception {
 
@@ -1136,7 +1112,6 @@ public class OrigamiScriptTerminal {
                 try (BufferedReader br = new BufferedReader(new FileReader(
                         filename))) {
 
-<<<<<<< HEAD
                     String bytes = "", line;
                     while ((line = br.readLine()) != null) {
                         bytes += line + " ";
@@ -1145,16 +1120,6 @@ public class OrigamiScriptTerminal {
                     OrigamiScriptTerminal sandbox = new OrigamiScriptTerminal(
                             OrigamiScriptTerminal.Access.USER, filename);
                     sandbox.execute(bytes);
-=======
-                    String bajtok = "", sor;
-                    while ((sor = br.readLine()) != null) {
-                        bajtok += sor + " ";
-                    }
-
-                    OrigamiScriptTerminal homokozo = new OrigamiScriptTerminal(
-                            OrigamiScriptTerminal.Access.USER, filename);
-                    homokozo.execute(bajtok);
->>>>>>> 2dd98c2d6cb687c9171f9a7061abaa3291f9755d
                 }
             } else {
                 throw OrigamiException.H010;
@@ -1202,7 +1167,6 @@ public class OrigamiScriptTerminal {
             history.add("version 1 filename [" + filename + "] open");
             if (filename != null) {
 
-<<<<<<< HEAD
                 java.util.ArrayList<Byte> bytesb = new java.util.ArrayList<>();
                 java.io.FileInputStream fis = new java.io.FileInputStream(new java.io.File(filename));
                 int nxb;
@@ -1214,9 +1178,6 @@ public class OrigamiScriptTerminal {
                     bytes[i] = bytesb.get(i);
                 }
                 this.TerminalOrigami = OrigamiIO.read_gen2(new java.io.ByteArrayInputStream(bytes));
-=======
-                this.TerminalOrigami = OrigamiIO.read_gen2(filename);
->>>>>>> 2dd98c2d6cb687c9171f9a7061abaa3291f9755d
             } else {
                 throw OrigamiException.H010;
             }
@@ -1229,12 +1190,9 @@ public class OrigamiScriptTerminal {
 
         if (filename != null) {
 
-<<<<<<< HEAD
             if (new java.io.File(filename).exists() && access != Access.ROOT && access != Access.DEV) {
                 throw OrigamiException.H011;
             }
-=======
->>>>>>> 2dd98c2d6cb687c9171f9a7061abaa3291f9755d
             Export.exportCTM(TerminalOrigami, filename);
         } else {
             throw OrigamiException.H010;
@@ -1247,12 +1205,9 @@ public class OrigamiScriptTerminal {
 
         if (filename != null && title != null) {
 
-<<<<<<< HEAD
             if (new java.io.File(filename).exists() && access != Access.ROOT && access != Access.DEV) {
                 throw OrigamiException.H011;
             }
-=======
->>>>>>> 2dd98c2d6cb687c9171f9a7061abaa3291f9755d
             Export.exportPDF(TerminalOrigami, filename, title);
         } else {
             throw OrigamiException.H010;
@@ -1265,12 +1220,9 @@ public class OrigamiScriptTerminal {
 
         if (filename != null) {
 
-<<<<<<< HEAD
             if (new java.io.File(filename).exists() && access != Access.ROOT && access != Access.DEV) {
                 throw OrigamiException.H011;
             }
-=======
->>>>>>> 2dd98c2d6cb687c9171f9a7061abaa3291f9755d
             OrigamiIO.write_gen2(TerminalOrigami, filename);
         } else {
             throw OrigamiException.H010;
@@ -1278,7 +1230,6 @@ public class OrigamiScriptTerminal {
 
         paramReset();
     }
-<<<<<<< HEAD
     
     private void ROOT1() throws Exception {
         
@@ -1297,8 +1248,6 @@ public class OrigamiScriptTerminal {
         }
        access = Access.DEV;
     }
-=======
->>>>>>> 2dd98c2d6cb687c9171f9a7061abaa3291f9755d
 
     static public String obfuscate(String code) {
 
