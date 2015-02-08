@@ -1,5 +1,5 @@
 // This file is part of Origami Editor 3D.
-// Copyright (C) 2013, 2014, 2015 Bágyoni Attila <bagyoni.attila@gmail.com>
+// Copyright (C) 2013, 2014, 2015 Bágyoni Attila <ba-sz-at@users.sourceforge.net>
 // Origami Editor 3D is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
@@ -17,22 +17,24 @@ import java.util.Arrays;
 import java.util.HashMap;
 
 /**
- * Represents a three-dimensional rigid origami model consisting
- * of convex polygonal faces. Provides methods to manipulate the
- * model by intersecting it with a given plane, and then
- * transforming one or more connected parts of the paper that are
- * bound by this plane, by reflection or rotation.
+ * Represents a three-dimensional rigid origami model consisting of convex
+ * polygonal faces. Provides methods to manipulate the model by various types of
+ * transformations.
  *
- * @author Attila Bágyoni <bagyoni.attila@gmail.com>
+ * @author Attila Bágyoni (ba-sz-at@users.sourceforge.net)
  * @since 2013-01-14
  */
 public class Origami {
 
     /**
-     * Létrehozza az {@linkplain Origami} osztály egy új példányát üres
-     * {@link #history} listával és a paraméterként megadott papírmérettel.
+     * Creates a new origami model.
+     * <br>
+     * The new model will be initialized with an empty
+     * {@link #history() histroy}, a {@link #papertype() papertype} of the
+     * specified {@link PaperType}, and will be {@link #reset() reset}
+     * immediately afterwards.
      *
-     * @param papertype	Az új objektum {@link #papertype()}-e.
+     * @param papertype	The {@link #papertype() papertype} of the new instance.
      */
     public Origami(PaperType papertype) {
 
@@ -47,10 +49,19 @@ public class Origami {
     }
 
     /**
-     * Létrehozza az {@linkplain Origami} osztály egy új példányát a
-     * paraméterként megadott {@link #history} listával és papírmérettel.
+     * Creates a new origami model.
+     * <br>
+     * The new model will be initialized with a {@link #history() history} that
+     * is the specified {@link ArrayList}, a {@link #papertype() papertype} of
+     * the specified {@link PaperType}, and will be {@link #reset() reset}
+     * immediately afterwards.
+     * <br>
+     * The {@link #execute() execute()} method will not be called in this
+     * constructor; you will have to call it explicitly to fold the model based
+     * on its {@link #history() history}.
      *
-     * @param papir	Az új példány {@link #papertype()}-e.
+     * @param papertype	The {@link #papertype() papertype} of the new instance.
+     * @param history	The {@link #history() history} of the new instance.
      */
     public Origami(PaperType papertype, ArrayList<double[]> history) {
 
@@ -65,12 +76,18 @@ public class Origami {
     }
 
     /**
-     * Létrehozza az {@linkplain Origami} osztály egy új példányát üres
-     * {@link #history} listával, a paraméterként megadott lista
-     * {@link #ccwWindingOrder(java.util.ArrayList)}-ának megfelelő
-     * {@link #corners()} listával és {@link PaperType.Custom} értékű
-     * {@link #papir()} mezővel.
-     *
+     * Creates a new origami model.
+     * <br>
+     * The new model will be initialized with an empty
+     * {@link #history() history}, a {@link #papertype() papertype} of
+     * {@link PaperType#Custom}, a {@link #corners() corners} list that is the
+     * {@link #ccwWindingOrder(ArrayList) ccwWindingOrder} of the specified
+     * {@link ArrayList}, and will be {@link #reset() reset} immediately
+     * afterwards.
+     * 
+     * @param corners The {@link #corners() corners} list of the new instance
+     * in an arbitrary order.
+     * @throws Exception if {@code !isConvex(ccwWindingOrder(corners))}
      */
     public Origami(ArrayList<double[]> corners) throws Exception {
 
@@ -89,12 +106,23 @@ public class Origami {
     }
 
     /**
-     * Létrehozza az {@linkplain Origami} osztály egy új példányát a
-     * paraméterként megadott {@link #history} listával, a paraméterként
-     * megadott lista {@link #ccwWindingOrder(java.util.ArrayList)}-ának
-     * megfelelő {@link #corners()} listával és {@link PaperType.Custom} értékű
-     * {@link #papir()} mezővel.
-     *
+     * Creates a new origami model.
+     * <br>
+     * The new model will be initialized with a {@link #history() history} that
+     * is the specified {@link ArrayList}, a {@link #papertype() papertype} of
+     * {@link PaperType#Custom}, a {@link #corners() corners} list that is the
+     * {@link #ccwWindingOrder(ArrayList) ccwWindingOrder} of the specified
+     * {@link ArrayList}, and will be {@link #reset() reset} immediately
+     * afterwards.
+     * <br>
+     * The {@link #execute() execute()} method will not be called in this
+     * constructor; you will have to call it explicitly to fold the model based
+     * on its {@link #history() history}.
+     * 
+     * @param corners The {@link #corners() corners} list of the new instance.
+     * @param history The {@link #history() history} of the new instance.
+     * 
+     * @throws Exception if {@code !isConvex(ccwWindingOrder(corners))}
      */
     public Origami(ArrayList<double[]> corners, ArrayList<double[]> history) throws Exception {
 
@@ -115,8 +143,17 @@ public class Origami {
     protected ArrayList<double[]> vertices = new ArrayList<>(Arrays.asList(new double[][]{}));
 
     /**
-     * @return Az origami modell csúcsait reprezentáló lista. Minden eleme egy,
-     * az origami egy csúcsának térbeli derékszögû koordinátáiból álló tömb.
+     * Returns a list of all the vertices in this origami, regardless of whether
+     * they are used in any of the {@link #polygons() polygons} or not.
+     * The elements in this list are {@code double[]}s, each one representing
+     * the coordinates of a vertex in the origami space, i. e. the 3-dimensional
+     * space where this origami is edited.
+     * <br>
+     * In this list, every vertex has a corresponding preimage in the
+     * {@link #vertices2d() vertices2d} list that has the same index.
+     * 
+     * @return An {@link ArrayList} representing the vertices of this origami in
+     * the origami space.
      */
     public ArrayList<double[]> vertices() {
         return vertices;
@@ -125,8 +162,12 @@ public class Origami {
     protected int vertices_size = 0;
 
     /**
-     * @return A {@link #vertices} lista elemszáma. Kívülrôl érkezô hívás esetén
-     * mindig egyenlô {@link #vertices}{@code .size()}-zal.
+     * Returns the number of vertices in this origami, which is expected to be
+     * the {@link ArrayList#size() size} of the {@link #vertices() vertices}
+     * and the {@link #vertices2d() vertices2d} list of this origami at the same
+     * time.
+     * 
+     * @return The number of vertices in this origami.
      */
     public int vertices_size() {
         return vertices_size;
@@ -135,12 +176,16 @@ public class Origami {
     protected ArrayList<ArrayList<Integer>> polygons = new ArrayList<>();
 
     /**
-     * @return Az origami modell lapjait reprezentáló lista. Minden eleme egy,
-     * az {@linkplain Origami} egy lapját alkotó csúcsok {@link vertices()}-beli
-     * indexeit pozitív vagy negatív körüljárás szerint felsoroló lista.
-     * <p> Az {@linkplain Origami} osztály által nyújtott eljárások garantálják,
-     * hogy minden lap egy konvex sokszög (akárcsak a valódi origamiban), amit
-     * bizonyos privát eljárások ki is használnak.
+     * Returns a list of all the polygons in this origami.
+     * Each element in this list is an {@link ArrayList} that stores the
+     * vertices of one of this origami's polygons in the form of indices
+     * pointing into both the {@link #vertices() vertices} and the
+     * {@link #vertices2d() vertices2d} list. In each polygon, the vertices are
+     * arranged in a counter-clockwise winding order.
+     * <br>
+     * The polygons themselves do not have any particular order.
+     * 
+     * @return As described in the above.
      */
     public ArrayList<ArrayList<Integer>> polygons() {
         return polygons;
@@ -148,30 +193,84 @@ public class Origami {
 
     protected int polygons_size = 0;
 
+    /**
+     * Returns the number of polygons in this origami.
+     * 
+     * @return The number of polygons in this origami.
+     */
     public int polygons_size() {
         return polygons_size;
     }
 
     protected ArrayList<double[]> history = new ArrayList<>(Arrays.asList(new double[][]{}));
 
+    /**
+     * Returns an {@link ArrayList} containing information about some of the
+     * methods previously called on this origami. <b>This member is intended for
+     * private use</b>, although it may be replaced by a more straightforward
+     * and human-readable format in later versions.
+     * 
+     * @return As described in the above.
+     */
     public ArrayList<double[]> history() {
         return history;
     }
 
     protected int history_pointer;
+    
     public int history_pointer() {
     	return history_pointer;
     }
 
     /**
-     * A(z) {@linkplain Origami#reset()} metódusban elérhetô papírméretek
-     * megkülönböztetésére szolgál.
-     * <p> Lehetséges értékei: {@link #A4}, {@link #Square}, {@link #Hexagon}, {@link #Dollar},
-     * {@link #Forint}.
+     * Enumerates the preset paper types of the {@link Origami} class.
      */
     public enum PaperType {
 
-        A4('A'), Square('N'), Hexagon('H'), Dollar('D'), Forint('F'), Custom('E');
+        /**
+         * An Origami of this {@link #papertype() papertype} will have a single
+         * polygon with vertices {0, 0, 0}, (424.3, 0, 0} {424.3, 300, 0} and 
+         * {300, 0, 0} when {@link #reset() reset}.
+         */
+        A4('A'),
+        
+        /**
+         * An Origami of this {@link #papertype() papertype} will have a single
+         * polygon with vertices {0, 0, 0}, (400, 0, 0} {400, 400, 0} and
+         * {0, 400, 0} when {@link #reset() reset}.
+         */
+        Square('N'),
+        
+        /**
+         * An Origami of this {@link #papertype() papertype} will have a single
+         * polygon with vertices {300, 346.41, 0}, {400, 173.205, 0},
+         * {300, 0, 0}, {100, 0, 0}, {0, 173.205, 0} and {100, 346.41, 0} when
+         * {@link #reset() reset}.
+         */
+        Hexagon('H'),
+        
+        /**
+         * An Origami of this {@link #papertype() papertype} will have a single
+         * polygon with vertices {0, 0, 0}, {400, 0, 0}, {400, 170, 0} and
+         * {0, 170, 0} when {@link #reset() reset}.
+         */
+        Dollar('D'),
+        
+        /**
+         * An Origami of this {@link #papertype() papertype} will have a single
+         * polygon with vertices {0, 0, 0}, {400, 0, 0}, {400, 181.82, 0} and
+         * {0, 181.82, 0} when {@link #reset() reset}.
+         */
+        Forint('F'),
+        
+        /**
+         * An Origami of this {@link #papertype() papertype} will have a single
+         * polygon with the vertices obtained from the
+         * {@link #ccwWindingOrder(ArrayList) ccwWindingOrder} of its
+         * {@link #corners() corners} when {@link #reset() reset}.
+         */
+        Custom('E');
+        
         final private char ID;
         final static private HashMap<Character, PaperType> allid = new HashMap<>();
 
@@ -189,10 +288,9 @@ public class Origami {
         }
 
         /**
-         * Visszaadja a papírméretet egyértelműen azonosító karaktert.
+         * Returns the assigned {@code char} value of this PaperType.
          *
-         * @return	A papírmérethez rendelt karakter (általában a papírméret
-         * nevének elsô karaktere).
+         * @return The {@code char} value of this PaperType.
          */
         public char toChar() {
 
@@ -200,22 +298,17 @@ public class Origami {
         }
 
         /**
-         * Visszaadja a paraméterként megadott karakter által reprezentált
-         * papírméretet.
+         * Returns the PaperType the specified {@code char} value is assigned
+         * to.
          *
-         * @param c	A papírmérethez rendelt karakter (általában a papírméret
-         * nevének elsô karaktere).
-         * @return	A paraméter által reprezentált enum konstans.
+         * @param c The {@code char} value of the desired PaperType.
+         * @return The desired PaperType.
          */
         static public PaperType forChar(char c) {
 
             return allid.get(c);
         }
 
-        /**
-         * Visszaadja this enum konstans közérthetô leírását felhasználói
-         * olvasásra.
-         */
         @Override
         public String toString() throws NullPointerException {
 
@@ -243,36 +336,103 @@ public class Origami {
             }
         }
     }
-    private PaperType papertype = PaperType.Square;
+    
+    protected PaperType papertype = PaperType.Square;
 
+    /**
+     * Returns the paper type of this origami. The {@link #reset() reset} method
+     * will initialize the {@link #vertices() vertices} and
+     * {@link #polygons() polygons} of this origami depending partly on this
+     * value.
+     * 
+     * @return As described in the above.
+     * @see PaperType
+     */
     public PaperType papertype() {
         return papertype;
     }
+    
     protected ArrayList<double[]> corners = new ArrayList<>(Arrays.asList(new double[][]{}));
 
+    /**
+     * Returns a copy of the original {@link #vertices() vertices} list of this
+     * origami, as it was initialized after the last {@link #reset() reset}
+     * call. If {@code (papertype() == PaperType.Custom)}, the {@link #reset()
+     * reset} method will initialize the {@link #vertices() vertices} and the
+     * {@link #vertices2d() vertices2d} lists as copies of this list.
+     * 
+     * @return As described in the above.
+     */
     public ArrayList<double[]> corners() {
         return corners;
     }
+    
     protected ArrayList<double[]> vertices2d = new ArrayList<>(Arrays.asList(new double[][]{}));
 
-    public ArrayList<double[]> vertices_2d() {
+    /**
+     * Returns a list of all the vertices in this origami, regardless of whether
+     * they are used in any of the {@link #polygons() polygons} or not.
+     * The elements in this list are {@code double[]}s, each one representing
+     * the coordinates of a vertex in the paper space, i. e. the 2-dimensional
+     * space where the vertices of this origami would be if it were unfolded.
+     * <br>
+     * In this list, every vertex has a corresponding image in the
+     * {@link #vertices() vertices} list that has the same index.
+     * 
+     * @return An {@link ArrayList} representing the vertices of this origami in
+     * the paper space.
+     */
+    public ArrayList<double[]> vertices2d() {
         return vertices2d;
     }
 
-    protected void addVertex(double[] point) {
+    /**
+     * Adds a new vertex to the end of the {@link #vertices() vertices} list of
+     * this origami.
+     * 
+     * @param point The 3-dimensional coordinates of the new vertex in the
+     * origami space as {@code double}s.
+     */
+    protected void addVertex(double... point) {
         vertices.add(point);
         vertices_size++;
     }
 
-    protected void add2dVertex(double[] point) {
+    /**
+     * Adds a new vertex to the end of the {@link #vertices2d() vertices2d} list
+     * of this origami.
+     * 
+     * @param point The 2-dimensional coordinates of the new vertex in the paper
+     * space as {@code double}s.
+     */
+    protected void add2dVertex(double... point) {
         vertices2d.add(point);
     }
 
+    /**
+     * Adds a new polygon to the end of the {@link #polygons() polygons} list
+     * of this origami.
+     * <br>
+     * When adding a new polygon, {@code isConvex(polygon)} is expected (but not
+     * checked) to be {@code true}.
+     * 
+     * @param polygon An {@link ArrayList} that contains zero-based indices 
+     * pointing into the {@link #vertices() vertices} and the {@link 
+     * #vertices2d() vertices2d} list of this origami in a counter-clockwise
+     * winding order.
+     */
     protected void addPolygon(ArrayList<Integer> polygon) {
         polygons.add(polygon);
         polygons_size++;
     }
 
+    /**
+     * Removes the polygon from this origami's {@link #polygons() polygons} at
+     * the specified index.
+     * 
+     * @param polygonIndex The zero-base index at which the polygon to remove is
+     * located in the {@link #polygons() polygons} list.
+     */
     protected void removePolygon(int polygonIndex) {
         polygons.remove(polygonIndex);
         polygons_size--;
@@ -375,6 +535,15 @@ public class Origami {
         return 0;
     }
 
+    /**
+     * Checks if the polygon at the specified index in the {@link #polygons()
+     * polygons} list is at least one-dimensional, i. e. it has two vertices
+     * with a positive distance between them.
+     * 
+     * @param polygonIndex The zero-base index at which the polygon to check is
+     * located in the {@link #polygons() polygons} list.
+     * @return {@code false} iff the specified polygon is zero-dimensional.
+     */
     public boolean isNonDegenerate(int polygonIndex) {
 
         if (polygons.get(polygonIndex).size() > 1) {
@@ -410,6 +579,26 @@ public class Origami {
     protected ArrayList<int[]> cutpolygon_pairs = new ArrayList<>(Arrays.asList(new int[][]{}));
     protected ArrayList<ArrayList<Integer>> last_cut_polygons = new ArrayList<>();
 
+    /**
+     * Removes the specified polygon from the {@link #polygons() polygons}
+     * list, and adds one or two new polygons into it. One of new polygons is
+     * obtained by intersecting the old polygon with the specified closed 
+     * half-space, and the other one by intersecting it with the closure of that
+     * half-space's complement. If one of these polygons is empty, only the
+     * other one will be added.
+     * <br>
+     * If two new polygons have been generated, their common vertices will point
+     * to the same object in the {@link #vertices() vertices} list, thus
+     * becoming 'inseparable'.
+     * 
+     * @param ppoint An array containing the coordinates of a boundary point of
+     * the half-space.
+     * @param pnormal An array containing the coordinates of the normalvector of
+     * the plane bounding the half-space.
+     * @param polygonIndex The zero-base index at which the polygon to split is
+     * located in the {@link #polygons() polygons} list.
+     * @return {@code true} iff the polygon has been divided in two.
+     */
     protected boolean cutPolygon(double[] ppoint, double[] pnormal, int polygonIndex) {
 
         if (isNonDegenerate(polygonIndex)) {
@@ -593,7 +782,19 @@ public class Origami {
         return vissza;
     }
 
-    //HAJT, HORPASZT
+    /**
+     * Performs a {@link #cutPolygon(double[], double[], int) cutPolygon} with
+     * the specified plane on every polygon's index in this origami's {@link
+     * #polygons() polygons}, and reflects some of the {@link #vertices()
+     * vertices} over the plane. Every vertex that is on the same side of the
+     * plane as where the specified normal vector is pointing to will be
+     * reflected over the plane.
+     * 
+     * @param ppoint An array containing the 3-dimensional coordinates of a
+     * point the plane goes through as {@code double}s.
+     * @param pnormal An array containing the 3-dimensional coordinates the
+     * plane's normalvector as {@code double}s.
+     */
     protected void internalReflectionFold(double[] ppoint, double[] pnormal) {
 
         shrink();
@@ -633,6 +834,27 @@ public class Origami {
         }
     }
 
+    /**
+     * Performs a {@link #cutPolygon(double[], double[], int) cutPolygon} with
+     * the specified plane on every polygon's index in this origami's {@link
+     * #polygons() polygons}, and if the intersection of the plane and the
+     * origami is a non-degenerate line, rotates some of the {@link #vertices()
+     * vertices} around that line by the specified angle. Otherwise, it calls
+     * {@link #undo(int) undo}{@code (1)} to reset this origami to its last
+     * valid state, but only if the specified angle is not zero.
+     * <br>
+     * In the first case, every vertex that is on the same side of the plane as
+     * where the specified normal vector is pointing to will be rotated around
+     * the line. As there is no well-defined 'clockwise' direction in a
+     * 3-dimensional space, the rotation's direction will be decided on a whim.
+     * 
+     * @param ppoint An array containing the 3-dimensional coordinates of a
+     * point the plane goes through as {@code double}s.
+     * @param pnormal An array containing the 3-dimensional coordinates the
+     * plane's normalvector as {@code double}s.
+     * @param phi The angle of the rotation.
+     * @return 0 if the rotation has been performed; 1 if it has not.
+     */
     protected int internalRotationFold(double[] ppoint, double[] pnormal, int phi) {
 
         shrink();
@@ -717,6 +939,23 @@ public class Origami {
         }
     }
 
+    /**
+     * Performs a {@link #cutPolygon(double[], double[], int) cutPolygon} with
+     * the specified plane on every polygon's index in this origami's {@link
+     * #polygons() polygons}, and reflects some of the {@link #vertices()
+     * vertices} over the plane. The elements of the {@link #polygons()
+     * polygons} list whose zero-based indices appear in the
+     * {@link Origami#polygonSelect(double[], double[], int) polygonSelect} of
+     * the specified plane and polygon index will have all their vertices
+     * reflected over the plane.
+     * 
+     * @param ppoint An array containing the 3-dimensional coordinates of a
+     * point the plane goes through as {@code double}s.
+     * @param pnormal An array containing the 3-dimensional coordinates the
+     * plane's normalvector as {@code double}s.
+     * @param polygonIndex The index of the polygon to include in
+     * {@link Origami#polygonSelect(double[], double[], int) polygonSelect}.
+     */
     protected void internalReflectionFold(double[] ppoint, double[] pnormal, int polygonIndex) {
 
         ArrayList<Integer> kijeloles = polygonSelect(ppoint, pnormal, polygonIndex);
@@ -858,7 +1097,6 @@ public class Origami {
         for (int[] par : cutpolygon_pairs) {
 
             if (!(kijeloles.contains(par[0]) || kijeloles.contains(par[1]))) {
-
                 polygons.set(par[1], new ArrayList<Integer>());
             }
         }
@@ -1090,8 +1328,12 @@ public class Origami {
     }
 
     /**
-     * {@link #papertype()} értékétôl függôen újrainicializálja this origami
-     * {@link #corners()}, {@link #vertices()} és {@link #polygons()} listáit.
+     * Initializes the {@link #corners() corners}, {@link #vertices() vertices},
+     * {@link #vertices2d() vertices2d} and {@link #polygons() polygons} lists
+     * of this origami depending on the value of its {@link #papertype()
+     * papertype}. The {@link #corners() corners}, {@link #vertices() vertices},
+     * and {@link #vertices2d() vertices2d} lists will always have the same
+     * initial vertices in the same order.
      */
     @SuppressWarnings("unchecked")
     public final void reset() {
@@ -1100,10 +1342,10 @@ public class Origami {
 
             vertices_size = 0;
             vertices.clear();
-            addVertex(new double[]{0, 0, 0});
-            addVertex(new double[]{424.3, 0, 0});
-            addVertex(new double[]{424.3, 300, 0});
-            addVertex(new double[]{0, 300, 0});
+            addVertex(0, 0, 0);
+            addVertex(424.3, 0, 0);
+            addVertex(424.3, 300, 0);
+            addVertex(0, 300, 0);
             vertices2d = (ArrayList<double[]>) vertices.clone();
             polygons_size = 0;
             polygons.clear();
@@ -1120,10 +1362,10 @@ public class Origami {
 
             vertices_size = 0;
             vertices.clear();
-            addVertex(new double[]{0, 0, 0});
-            addVertex(new double[]{400, 0, 0});
-            addVertex(new double[]{400, 400, 0});
-            addVertex(new double[]{0, 400, 0});
+            addVertex(0, 0, 0);
+            addVertex(400, 0, 0);
+            addVertex(400, 400, 0);
+            addVertex(0, 400, 0);
             vertices2d = (ArrayList<double[]>) vertices.clone();
             polygons_size = 0;
             polygons.clear();
@@ -1140,12 +1382,12 @@ public class Origami {
 
             vertices_size = 0;
             vertices.clear();
-            addVertex(new double[]{300, 346.41, 0});
-            addVertex(new double[]{400, 173.205, 0});
-            addVertex(new double[]{300, 0, 0});
-            addVertex(new double[]{100, 0, 0});
-            addVertex(new double[]{0, 173.205, 0});
-            addVertex(new double[]{100, 346.41, 0});
+            addVertex(300, 346.41, 0);
+            addVertex(400, 173.205, 0);
+            addVertex(300, 0, 0);
+            addVertex(100, 0, 0);
+            addVertex(0, 173.205, 0);
+            addVertex(100, 346.41, 0);
             vertices2d = (ArrayList<double[]>) vertices.clone();
             polygons_size = 0;
             polygons.clear();
@@ -1164,10 +1406,10 @@ public class Origami {
 
             vertices_size = 0;
             vertices.clear();
-            addVertex(new double[]{0, 0, 0});
-            addVertex(new double[]{400, 0, 0});
-            addVertex(new double[]{400, 170, 0});
-            addVertex(new double[]{0, 170, 0});
+            addVertex(0, 0, 0);
+            addVertex(400, 0, 0);
+            addVertex(400, 170, 0);
+            addVertex(0, 170, 0);
             vertices2d = (ArrayList<double[]>) vertices.clone();
             polygons_size = 0;
             polygons.clear();
@@ -1184,10 +1426,10 @@ public class Origami {
 
             vertices_size = 0;
             vertices.clear();
-            addVertex(new double[]{0, 0, 0});
-            addVertex(new double[]{400, 0, 0});
-            addVertex(new double[]{400, 181.82, 0});
-            addVertex(new double[]{0, 181.82, 0});
+            addVertex(0, 0, 0);
+            addVertex(400, 0, 0);
+            addVertex(400, 181.82, 0);
+            addVertex(0, 181.82, 0);
             vertices2d = (ArrayList<double[]>) vertices.clone();
             polygons_size = 0;
             polygons.clear();
@@ -1205,7 +1447,7 @@ public class Origami {
             vertices_size = 0;
             vertices.clear();
             for (double[] pont : corners) {
-                addVertex(new double[]{pont[0], pont[1], 0});
+                addVertex(pont[0], pont[1], 0);
             }
             vertices2d = (ArrayList<double[]>) vertices.clone();
 
@@ -1257,11 +1499,11 @@ public class Origami {
      * indexe. Negatív érték esetén csak a mûveletek nemnegatív indexû része
      * lesz elvégezve.
      * @param steps A végrehajtandó mûveletek száma.
-     * @throws Exception if (index+db > history.size())
+     * @throws Exception if (index+db &gt; history.size())
      */
     public void execute(int index, int steps) throws Exception {
+        
         if (index + steps <= history.size()) {
-
             for (int i = index; i < index + steps && i >= 0; i++) {
                 double[] parancs = history.get(i);
 
@@ -1297,6 +1539,7 @@ public class Origami {
     public void undo() {
 
         if (history_pointer > 0) {
+            
             history_pointer--;
             while (0 < history_pointer ? history.get(history_pointer - 1)[0] == 5d : false) {
                 history_pointer--;
@@ -1317,6 +1560,7 @@ public class Origami {
     public void undo(int steps) {
 
         if (history_pointer >= steps) {
+            
             history_pointer -= steps;
             reset();
             execute();
@@ -1339,6 +1583,7 @@ public class Origami {
     public void redo(int steps) {
     	
     	if (history_pointer + steps <= history.size()) {
+            
             history_pointer += steps;
             reset();
             execute();
@@ -1356,11 +1601,12 @@ public class Origami {
     }
 
     /**
-     * {@link #polygons()} üres listái helyére a felettük lévô nemüreseket
-     * csúsztatja le this origamiban, miközben a paraméternek megfelelô indexû
-     * sokszöget a helyén hagyja.
-     *
-     * @param polygonIndex A helyben hagyni kívánt sokszög 0 alapú indexe.
+     * Pushes the empty polygons of this origami as close to the end of the
+     * {@link #polygons() polygons} list as possible without moving the polygon
+     * at the specified index.
+     * 
+     * @param polygonIndex The zero-based index at which the polygon in the
+     * {@link #polygons() polygons} list should not be moved.
      * @since 2013-09-04
      */
     protected void shrink(int polygonIndex) {
@@ -1385,7 +1631,8 @@ public class Origami {
     }
 
     /**
-     * Eltávolítja {@link #polygons()} összes üres sokszögét this origamiban.
+     * Removes every empty list from the {@link #polygons() polygons} of this
+     * origami.
      *
      * @since 2013-09-04
      */
@@ -1402,12 +1649,13 @@ public class Origami {
     }
 
     /**
-     * A bemeneti listában megadott pontokat a súlypontjukból nézve pozitív
-     * körüljárás szerint rendezi. NEM ellenőrzi, hogy a vertices konvex sokszöget
-     * határoznak-e meg.
+     * Arranges the planar points in the specified list in a counter-clockwise
+     * winding order as viewed from their center.
      *
-     * @param polygon
-     * @return
+     * @param polygon An {@link ArrayList} whose each element is an array
+     * containing the 2-dimensional coordinates of a point.
+     * @return An {@link ArrayList} containing the same elements as {@code
+     * polygon}, but in a counter-clockwise winding order.
      * @since 2013-10-11
      */
     static private ArrayList<double[]> ccwWindingOrder(ArrayList<double[]> polygon) {
@@ -1458,9 +1706,12 @@ public class Origami {
     }
 
     /**
-     *
-     * @param polygon
-     * @return
+     * Returns {@code true} iff the planar points in the specified list are the
+     * vertices of a convex polygon listed in a counter-clockwise winding order.
+     * 
+     * @param polygon An {@link ArrayList} whose each element is an array
+     * containing the 2-dimensional coordinates of a point.
+     * @return As described in the above.
      * @since 2013-10-12
      */
     static private boolean isConvex(ArrayList<double[]> polygon) {
@@ -1492,13 +1743,22 @@ public class Origami {
     }
 
     /**
-     *
-     * @return @since 2013-10-31
+     * Returns the size of the smallest orthogonal square all the {@link
+     * #corners() corners} of this origami can fit in.
+     * 
+     * @return As described in the above.
+     * @since 2013-10-31
      */
     public double circumscribedSquareSize() {
         return Math.max(paperWidth(), paperHeight());
     }
 
+    /**
+     * Returns the difference of the largest and the smallest first coordinate
+     * occuring within the {@link #corners() corners} list.
+     * 
+     * @return As described in the above.
+     */
     public double paperWidth() {
 
         Double jobb = null, bal = null;
@@ -1516,6 +1776,12 @@ public class Origami {
         return jobb - bal;
     }
 
+    /**
+     * Returns the difference of the largest and the smallest second coordinate
+     * occuring within the {@link #corners() corners} list.
+     * 
+     * @return As described in the above.
+     */
     public double paperHeight() {
 
         Double also = null, felso = null;
@@ -1541,35 +1807,35 @@ public class Origami {
     };
     
     /**
-     * A paraméterként megadott sík egyenletének együtthatóit olymódon kerekíti
-     * {@link float}-ra, hogy a {@linkplain Fajlkezelo#Ment(String)} eljárásban
-     * használt tömörítés ne legyen veszteséges, majd visszaadja az így kapott
-     * sík egy pontját.
+     * Compresses the equation of the specified plane. After this compression,
+     * the plane's equation will fit in 12 bytes and be ready to be stored in
+     * ORI format without further loss of precision.
      *
-     * @param sikpont	A sík egy tetszôleges pontjának térbeli derékszögû
-     * koordinátáit tartalmazó tömb.
-     * @param siknv	A sík normálvektorának térbeli derékszögû koordinátáit
-     * tartalmazó tömb.
-     * @return	A kerekítéssel kapott sík egy pontjának térbeli derékszögû
-     * koordinátáit tartalmazó tömb.
-     * @see Fajlkezelo#Ment(String)
+     * @param ppoint An array containing the 3-dimensional coordinates of a
+     * point the plane goes through as {@code double}s.
+     * @param pnormal An array containing the 3-dimensional coordinates the
+     * plane's normalvector as {@code double}s.
+     * @return An array containing the 3-dimensional coordinates of a point the
+     * compressed plane goes through.
+     * @see OrigamiIO#write_gen2(Origami, String)
      */
-    static protected double[] planarPointRound(double[] sikpont, double[] siknv) {
+    static protected double[] planarPointRound(double[] ppoint, double[] pnormal) {
+        
         double max_tavolsag = -1;
         int hasznalt_origo = 0;
         double[] sikpontnv = new double[]{0, 0, 0};
-        double konst = sikpont[0] * siknv[0] + sikpont[1] * siknv[1] + sikpont[2] * siknv[2];
+        double konst = ppoint[0] * pnormal[0] + ppoint[1] * pnormal[1] + ppoint[2] * pnormal[2];
         for (int ii = 0; ii < Origins.length; ii++) {
-            double[] iranyvek = siknv;
+            double[] iranyvek = pnormal;
             double X = Origins[ii][0];
             double Y = Origins[ii][1];
             double Z = Origins[ii][2];
             double U = iranyvek[0];
             double V = iranyvek[1];
             double W = iranyvek[2];
-            double A = siknv[0];
-            double B = siknv[1];
-            double C = siknv[2];
+            double A = pnormal[0];
+            double B = pnormal[1];
+            double C = pnormal[2];
             double t = -(A * X + B * Y + C * Z - konst) / (A * U + B * V + C * W);
             double[] talppont = new double[]{X + t * U, Y + t * V, Z + t * W};
             if (Origami.vector_length(Origami.vector(talppont, Origins[ii])) > max_tavolsag) {
@@ -1588,34 +1854,34 @@ public class Origami {
     }
 
     /**
-     * A paraméterként megadott sík egyenletének együtthatóit olymódon kerekíti
-     * {@link float}-ra, hogy a {@linkplain Fajlkezelo#Ment(String)} eljárásban
-     * használt tömörítés ne legyen veszteséges, majd visszaadja az így kapott
-     * sík normálvektorát.
+     * Compresses the equation of the specified plane. After this compression,
+     * the plane's equation will fit in 12 bytes and be ready to be stored in
+     * ORI format without further loss of precision.
      *
-     * @param sikpont	A sík egy tetszôleges pontjának térbeli derékszögû
-     * koordinátáit tartalmazó tömb.
-     * @param siknv	A sík normálvektorának térbeli derékszögû koordinátáit
-     * tartalmazó tömb.
-     * @return	A kerekítéssel kapott sík normálvektorának térbeli derékszögû
-     * koordinátáit tartalmazó tömb.
-     * @see Fajlkezelo#Ment(String)
+     * @param ppoint An array containing the 3-dimensional coordinates of a
+     * point the plane goes through as {@code double}s.
+     * @param pnormal An array containing the 3-dimensional coordinates the
+     * plane's normalvector as {@code double}s.
+     * @return An array containing the 3-dimensional coordinates of the
+     * compressed plane's normalvector.
+     * @see OrigamiIO#write_gen2(Origami, String)
      */
-    static protected double[] normalvectorRound(double[] sikpont, double[] siknv) {
+    static protected double[] normalvectorRound(double[] ppoint, double[] pnormal) {
+        
         double max_tavolsag = -1;
         double[] sikpontnv = new double[]{0, 0, 0};
-        double konst = sikpont[0] * siknv[0] + sikpont[1] * siknv[1] + sikpont[2] * siknv[2];
+        double konst = ppoint[0] * pnormal[0] + ppoint[1] * pnormal[1] + ppoint[2] * pnormal[2];
         for (double[] origo : Origins) {
-            double[] iranyvek = siknv;
+            double[] iranyvek = pnormal;
             double X = origo[0];
             double Y = origo[1];
             double Z = origo[2];
             double U = iranyvek[0];
             double V = iranyvek[1];
             double W = iranyvek[2];
-            double A = siknv[0];
-            double B = siknv[1];
-            double C = siknv[2];
+            double A = pnormal[0];
+            double B = pnormal[1];
+            double C = pnormal[2];
             double t = -(A * X + B * Y + C * Z - konst) / (A * U + B * V + C * W);
             double[] talppont = new double[]{X + t * U, Y + t * V, Z + t * W};
             if (Origami.vector_length(Origami.vector(talppont, origo)) > max_tavolsag) {
@@ -1624,7 +1890,7 @@ public class Origami {
             }
         }
         double elojel = 1;
-        if (Origami.scalar_product(siknv, sikpontnv) < 0) {
+        if (Origami.scalar_product(pnormal, sikpontnv) < 0) {
             elojel = -1;
         }
         int Xe = (int) sikpontnv[0];
@@ -1643,6 +1909,7 @@ public class Origami {
         Origami copy = new Origami(papertype);
         copy.corners = (ArrayList<double[]>) corners.clone();
         copy.history = (ArrayList<double[]>) history.clone();
+        copy.history_pointer = history_pointer;
         copy.vertices_size = vertices_size;
         copy.vertices = (ArrayList<double[]>) vertices.clone();
         copy.vertices2d = (ArrayList<double[]>) vertices2d.clone();

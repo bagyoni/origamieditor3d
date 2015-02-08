@@ -1,5 +1,5 @@
 // This file is part of Origami Editor 3D.
-// Copyright (C) 2013, 2014, 2015 Bágyoni Attila <bagyoni.attila@gmail.com>
+// Copyright (C) 2013, 2014, 2015 Bágyoni Attila <ba-sz-at@users.sourceforge.net>
 // Origami Editor 3D is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
@@ -20,7 +20,7 @@ import java.awt.Graphics;
 import javax.swing.JPanel;
 
 /**
- * @author @author Attila Bágyoni <bagyoni.attila@gmail.com>
+ * @author Attila Bágyoni (ba-sz-at@users.sourceforge.net)
  */
 public class OrigamiPanel extends JPanel implements BasicEditing {
 
@@ -207,8 +207,12 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
         protractor_angle = null;
     }
 
-    public void colorFront(int rgb) {
+    public void setFrontColor(int rgb) {
         paper_front_color = rgb;
+    }
+    
+    public int getFrontColor() {
+        return paper_front_color;
     }
 
     public void setDisplaymode(DisplayMode value) {

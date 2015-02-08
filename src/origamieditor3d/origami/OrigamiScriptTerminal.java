@@ -1,5 +1,5 @@
 // This file is part of Origami Editor 3D.
-// Copyright (C) 2013, 2014, 2015 Bágyoni Attila <bagyoni.attila@gmail.com>
+// Copyright (C) 2013, 2014, 2015 Bágyoni Attila <ba-sz-at@users.sourceforge.net>
 // Origami Editor 3D is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
@@ -20,41 +20,45 @@ import java.util.HashMap;
 import origamieditor3d.resources.Dictionary;
 
 /**
- *
- * @author Attila Bágyoni <bagyoni.attila@gmail.com>
+ * Represents an OrigamiScript engine. To learn more about OrigamiScript, see
+ * http://origamieditor3d.sourceforge.net/osdoc_en.html
+ * @author Attila Bágyoni (ba-sz-at@users.sourceforge.net)
  * @since 2013-09-29
  */
 public class OrigamiScriptTerminal {
 
-    public OrigamiScriptTerminal(Access szint) {
+    public OrigamiScriptTerminal(Access access) {
 
-        this.access = szint;
-        this.version = maxVersion;
-        this.TerminalCamera = new Camera(0, 0, 1);
-        this.corners = new ArrayList<>();
-        this.papertype = Origami.PaperType.Custom;
-        this.history = new ArrayList<>();
-        this.filename = null;
-        this.ppoint = null;
-        this.pnormal = null;
-        this.tracker = null;
-        this.phi = null;
-        this.title = null;
+        this.access = access;
+        version = maxVersion;
+        TerminalCamera = new Camera(0, 0, 1);
+        corners = new ArrayList<>();
+        papertype = Origami.PaperType.Custom;
+        paper_color = 0x0000FF;
+        history = new ArrayList<>();
+        filename = null;
+        ppoint = null;
+        pnormal = null;
+        tracker = null;
+        phi = null;
+        title = null;
+        
+        prompt = false;
     }
 
-    public OrigamiScriptTerminal(Access szint, String fajlnev) {
+    public OrigamiScriptTerminal(Access access, String filename) {
 
-        this(szint);
-        this.filename = fajlnev;
-        this.TerminalCamera = new Camera(0, 0, 1);
+        this(access);
+        this.filename = filename;
+        TerminalCamera = new Camera(0, 0, 1);
     }
 
     final private Integer maxVersion = 1;
     private Access access;
-	//
+    //
     // betöltött terminál mezők
     private Integer version = 1;
-	//
+    //
     // eltárolt terminál mezők
     private ArrayList<String> history;
 
@@ -64,7 +68,7 @@ public class OrigamiScriptTerminal {
     }
 
     private String filename;
-	//
+    //
     // betöltött szerkesztési mezők
     private double[] ppoint;
     private double[] pnormal;
@@ -72,35 +76,37 @@ public class OrigamiScriptTerminal {
     private Integer phi;
     private ArrayList<double[]> corners;
     private Origami.PaperType papertype;
+    private int paper_color;
     private String title;
-	//
+    //
     // eltárolt szerkesztési mezők
     public Origami TerminalOrigami;
     public Camera TerminalCamera;
 
     private void paramReset() {
 
-        this.ppoint = null;
-        this.pnormal = null;
-        this.tracker = null;
-        this.phi = null;
-        this.title = null;
-        this.corners = new ArrayList<>(Arrays.asList(new double[][]{}));
-        this.papertype = Origami.PaperType.Custom;
+        ppoint = null;
+        pnormal = null;
+        tracker = null;
+        phi = null;
+        title = null;
+        corners = new ArrayList<>(Arrays.asList(new double[][]{}));
+        papertype = Origami.PaperType.Custom;
+        paper_color = 0x0000FF;
     }
 
     private void totalReset() {
 
         paramReset();
-        this.version = maxVersion;
-        this.history.clear();
+        version = maxVersion;
+        history.clear();
 
-        this.TerminalOrigami.undo(this.TerminalOrigami.history.size());
-        this.TerminalCamera = new Camera(0, 0, 1);
+        TerminalOrigami.undo(TerminalOrigami.history.size());
+        TerminalCamera = new Camera(0, 0, 1);
     }
 
     public void historyReset() {
-        this.history.clear();
+        history.clear();
     }
 
     public Integer maxVersion() {
@@ -208,6 +214,20 @@ public class OrigamiScriptTerminal {
                 title(args);
             }
         });
+        
+        Params.put("camera", new Command() {
+            @Override
+            public void execute(String... args) throws Exception {
+                camera(args);
+            }
+        });
+        
+        Params.put("color", new Command() {
+            @Override
+            public void execute(String... args) throws Exception {
+                color(args);
+            }
+        });
     }
 
     {
@@ -231,7 +251,7 @@ public class OrigamiScriptTerminal {
                 REFLECT();
             }
         });
-        
+
         Commands.put("cut", new Command() {
             @Override
             public void execute(String... args) throws Exception {
@@ -294,6 +314,20 @@ public class OrigamiScriptTerminal {
                 EXPORT_AUTOPDF();
             }
         });
+        
+        Commands.put("export-gif", new Command() {
+            @Override
+            public void execute(String... args) throws Exception {
+                EXPORT_GIF();
+            }
+        });
+        
+        Commands.put("export-revolving-gif", new Command() {
+            @Override
+            public void execute(String... args) throws Exception {
+                EXPORT_REVOLVING_GIF();
+            }
+        });
 
         Commands.put("export-ori", new Command() {
             @Override
@@ -301,14 +335,14 @@ public class OrigamiScriptTerminal {
                 EXPORT_ORI();
             }
         });
-        
+
         Commands.put("root", new Command() {
             @Override
             public void execute(String... args) throws Exception {
                 ROOT();
             }
         });
-        
+
         Commands.put("debug", new Command() {
             @Override
             public void execute(String... args) throws Exception {
@@ -781,7 +815,7 @@ public class OrigamiScriptTerminal {
 
         }
     }
-    
+
     private void UNDO() throws Exception {
 
         switch (version) {
@@ -863,7 +897,7 @@ public class OrigamiScriptTerminal {
 
         paramReset();
     }
-    
+
     private void CUT1() throws Exception {
 
         if (ppoint != null && pnormal != null && tracker == null) {
@@ -940,15 +974,37 @@ public class OrigamiScriptTerminal {
 
         }
     }
+    
+    private void camera(String... args) throws Exception {
+
+        switch (version) {
+
+            default:
+                camera1(args);
+                break;
+
+        }
+    }
+    
+    private void color(String... args) throws Exception {
+
+        switch (version) {
+
+            default:
+                color1(args);
+                break;
+
+        }
+    }
 
     private void filename1(String... args) throws Exception {
 
-            if (args.length == 1) {
+        if (args.length == 1) {
 
-                filename = args[0];
-            } else {
-                throw OrigamiException.H007;
-            }
+            filename = args[0];
+        } else {
+            throw OrigamiException.H007;
+        }
     }
 
     private void title1(String... args) throws Exception {
@@ -956,6 +1012,64 @@ public class OrigamiScriptTerminal {
         if (args.length == 1) {
 
             title = args[0];
+        } else {
+            throw OrigamiException.H007;
+        }
+    }
+    
+    private void camera1(String... args) throws Exception {
+
+        if (args.length == 3) {
+
+            String[] Dir = args[0].split(" ");
+            String[] Xaxis = args[1].split(" ");
+            String[] Yaxis = args[2].split(" ");
+            
+            double[] dir, xaxis, yaxis;
+            if (Dir.length == 3) {
+                dir = new double[]{Double.parseDouble(Dir[0]),
+                    Double.parseDouble(Dir[1]), Double.parseDouble(Dir[2])};
+            } else {
+                throw OrigamiException.H007;
+            }
+            if (Xaxis.length == 3) {
+                xaxis = new double[]{Double.parseDouble(Xaxis[0]),
+                    Double.parseDouble(Xaxis[1]), Double.parseDouble(Xaxis[2])};
+            } else {
+                throw OrigamiException.H007;
+            }
+            if (Yaxis.length == 3) {
+                yaxis = new double[]{Double.parseDouble(Yaxis[0]),
+                    Double.parseDouble(Yaxis[1]), Double.parseDouble(Yaxis[2])};
+            } else {
+                throw OrigamiException.H007;
+            }
+            
+            TerminalCamera.camera_dir = dir;
+            TerminalCamera.axis_x = xaxis;
+            TerminalCamera.axis_y = yaxis;
+            
+        } else {
+            throw OrigamiException.H007;
+        }
+    }
+    
+    private void color1(String... args) throws Exception {
+        
+        if (args.length == 1) {
+            
+            String[] Col = args[0].split(" ");
+            
+            if (Col.length == 1) {
+                paper_color = Integer.parseInt(Col[0]) & 0xFFFFFF;
+            } else if (Col.length == 3) {
+                
+                paper_color = ((Integer.parseInt(Col[0]) & 0xFF) << 16)
+                        + ((Integer.parseInt(Col[1]) & 0xFF) << 8)
+                        + (Integer.parseInt(Col[2]) & 0xFF);
+            } else {
+                throw OrigamiException.H007;
+            }
         } else {
             throw OrigamiException.H007;
         }
@@ -1030,6 +1144,28 @@ public class OrigamiScriptTerminal {
 
         }
     }
+    
+    private void EXPORT_GIF() throws Exception {
+        
+        switch (version) {
+
+            default:
+                EXPORT_GIF1();
+                break;
+
+        }
+    }
+    
+    private void EXPORT_REVOLVING_GIF() throws Exception {
+        
+        switch (version) {
+
+            default:
+                EXPORT_REVOLVING_GIF1();
+                break;
+
+        }
+    }
 
     private void EXPORT_ORI() throws Exception {
 
@@ -1041,7 +1177,7 @@ public class OrigamiScriptTerminal {
 
         }
     }
-    
+
     private void ROOT() throws Exception {
 
         switch (version) {
@@ -1052,7 +1188,7 @@ public class OrigamiScriptTerminal {
 
         }
     }
-    
+
     private void DEBUG() throws Exception {
 
         switch (version) {
@@ -1075,7 +1211,7 @@ public class OrigamiScriptTerminal {
             for (int i = 0; i < TerminalOrigami.vertices_size(); i++) {
 
                 System.out.print("planar vertex " + i + ": ");
-                for (double comp : TerminalOrigami.vertices_2d().get(i)) {
+                for (double comp : TerminalOrigami.vertices2d().get(i)) {
 
                     System.out.print(comp);
                     System.out.print(" ");
@@ -1171,10 +1307,10 @@ public class OrigamiScriptTerminal {
                 java.io.FileInputStream fis = new java.io.FileInputStream(new java.io.File(filename));
                 int nxb;
                 while ((nxb = fis.read()) != -1) {
-                    bytesb.add((byte)nxb);
+                    bytesb.add((byte) nxb);
                 }
                 byte[] bytes = new byte[bytesb.size()];
-                for (int i=0; i<bytesb.size(); i++) {
+                for (int i = 0; i < bytesb.size(); i++) {
                     bytes[i] = bytesb.get(i);
                 }
                 this.TerminalOrigami = OrigamiIO.read_gen2(new java.io.ByteArrayInputStream(bytes));
@@ -1215,6 +1351,36 @@ public class OrigamiScriptTerminal {
 
         paramReset();
     }
+    
+    private void EXPORT_GIF1() throws Exception {
+        
+        if (filename != null) {
+
+            if (new java.io.File(filename).exists() && access != Access.ROOT && access != Access.DEV) {
+                throw OrigamiException.H011;
+            }
+            Export.exportGIF(TerminalOrigami, TerminalCamera, paper_color, 250, 250, filename);
+        } else {
+            throw OrigamiException.H010;
+        }
+
+        paramReset();
+    }
+    
+    private void EXPORT_REVOLVING_GIF1() throws Exception {
+        
+        if (filename != null) {
+
+            if (new java.io.File(filename).exists() && access != Access.ROOT && access != Access.DEV) {
+                throw OrigamiException.H011;
+            }
+            Export.exportRevolvingGIF(TerminalOrigami, TerminalCamera, paper_color, 250, 250, filename);
+        } else {
+            throw OrigamiException.H010;
+        }
+
+        paramReset();
+    }
 
     private void EXPORT_ORI1() throws Exception {
 
@@ -1230,23 +1396,29 @@ public class OrigamiScriptTerminal {
 
         paramReset();
     }
-    
+
     private void ROOT1() throws Exception {
-        
+
         Object[] options = {Dictionary.getString("yes"), Dictionary.getString("no")};
+        prompt = true;
         if (javax.swing.JOptionPane.showOptionDialog(null, Dictionary.getString("enter-root"), Dictionary.getString("question"), javax.swing.JOptionPane.YES_NO_OPTION, javax.swing.JOptionPane.QUESTION_MESSAGE, null, options, options[1]) != javax.swing.JOptionPane.YES_OPTION) {
+            prompt = false;
             return;
         }
-       this.access = Access.ROOT;
+        prompt = false;
+        this.access = Access.ROOT;
     }
-    
+
     private void DEBUG1() throws Exception {
-        
+
         Object[] options = {Dictionary.getString("yes"), Dictionary.getString("no")};
+        prompt = true;
         if (javax.swing.JOptionPane.showOptionDialog(null, Dictionary.getString("enter-debug"), Dictionary.getString("question"), javax.swing.JOptionPane.YES_NO_OPTION, javax.swing.JOptionPane.QUESTION_MESSAGE, null, options, options[1]) != javax.swing.JOptionPane.YES_OPTION) {
+            prompt = false;
             return;
         }
-       access = Access.DEV;
+        prompt = false;
+        access = Access.DEV;
     }
 
     static public String obfuscate(String code) {
@@ -1301,53 +1473,83 @@ public class OrigamiScriptTerminal {
         return result;
     }
 
+    private boolean prompt;
+    
+    @SuppressWarnings("deprecation")
     public void execute(String code) throws Exception {
 
         history.add(code);
         code = obfuscate(code);
-        String[] szavak = code.split(" ");
+        final String[] szavak = code.split(" ");
 
-        try {
+        final Exception[] unreportedException = {null};
+        Thread exec = new Thread(new Runnable() {
+            @Override
+            public void run() {
 
-            for (int i = 0; i < szavak.length; i++) {
-
-                if (!(szavak[i].contains("[") || szavak[i].contains("]"))) {
-
-                    if (Commands.containsKey(szavak[i])) {
-
-                        Commands.get(szavak[i]).execute();
-                    }
-
-                    if (Params.containsKey(szavak[i])) {
-
-                        ArrayList<String> argumentumok = new ArrayList<>();
-                        for (int ii = i + 1; ii < szavak.length; ii++) {
-
-                            if (Commands.containsKey(szavak[ii])
-                                    || Params.containsKey(szavak[ii])) {
-                                break;
+                try {
+                    for (int i = 0; i < szavak.length; i++) {
+                        if (!(szavak[i].contains("[") || szavak[i].contains("]"))) {
+                            if (Commands.containsKey(szavak[i])) {
+                                Commands.get(szavak[i]).execute();
                             }
 
-                            if (!szavak[ii].equals("")) {
-                                argumentumok.add(szavak[ii].replace("[", "")
-                                        .replace("]", "").replace("_", " "));
+                            if (Params.containsKey(szavak[i])) {
+
+                                ArrayList<String> argumentumok = new ArrayList<>();
+                                for (int ii = i + 1; ii < szavak.length; ii++) {
+                                    if (Commands.containsKey(szavak[ii])
+                                            || Params.containsKey(szavak[ii])) {
+                                        break;
+                                    }
+                                    if (!szavak[ii].equals("")) {
+                                        argumentumok.add(szavak[ii].replace("[", "")
+                                                .replace("]", "").replace("_", " "));
+                                    }
+                                }
+
+                                String[] tombarg = new String[argumentumok.size()];
+                                for (int iii = 0; iii < argumentumok.size(); iii++) {
+                                    tombarg[iii] = argumentumok.get(iii);
+                                }
+
+                                Params.get(szavak[i]).execute(tombarg);
                             }
                         }
-
-                        String[] tombarg = new String[argumentumok.size()];
-                        for (int iii = 0; iii < argumentumok.size(); iii++) {
-
-                            tombarg[iii] = argumentumok.get(iii);
-                        }
-
-                        Params.get(szavak[i]).execute(tombarg);
                     }
+                } catch (Exception exc) {
+
+                    history.subList(history.size() - 1, history.size()).clear();
+                    unreportedException[0] = exc;
                 }
-            }
-        } catch (Exception exc) {
 
-            history.subList(history.size() - 1, history.size()).clear();
-            throw exc;
+            }
+        });
+
+        long timeout = System.currentTimeMillis() + 10000;
+        String timeout_notif = Dictionary.getString("timeout");
+        exec.start();
+        while (exec.isAlive()) {
+            if (System.currentTimeMillis() > timeout) {
+                if (prompt) {
+                    break;
+                }
+                Object[] options = {Dictionary.getString("timeout_stop"), Dictionary.getString("timeout_wait")};
+                if (javax.swing.JOptionPane.showOptionDialog(null, timeout_notif, Dictionary.getString("question"), javax.swing.JOptionPane.YES_NO_OPTION, javax.swing.JOptionPane.QUESTION_MESSAGE, null, options, options[0]) == javax.swing.JOptionPane.YES_OPTION) {
+                    exec.stop();
+                    break;
+                } else {
+                    timeout = System.currentTimeMillis() + 30000;
+                    timeout_notif = Dictionary.getString("+30timeout");
+                }
+            } else {
+                //estimation of the longest time we feel instantaneous
+                Thread.sleep(80);
+            }
+        }
+
+        if (unreportedException[0] != null) {
+            throw unreportedException[0];
         }
     }
 

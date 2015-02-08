@@ -1,5 +1,5 @@
 // This file is part of Origami Editor 3D.
-// Copyright (C) 2013, 2014, 2015 Bágyoni Attila <bagyoni.attila@gmail.com>
+// Copyright (C) 2013, 2014, 2015 Bágyoni Attila <ba-sz-at@users.sourceforge.net>
 // Origami Editor 3D is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
@@ -22,10 +22,8 @@ import java.util.ArrayList;
  * Metódusokat nyújt az {@linkplain Origami} objektumok PDF és OpenCTM
  * formátumba exportálásához.
  *
- * @author Attila Bágyoni <bagyoni.attila@gmail.com>
+ * @author Attila Bágyoni (ba-sz-at@users.sourceforge.net)
  * @since 2013-01-14
- * @see Origami
- * @see Kamera
  */
 public class Export {
 
@@ -40,14 +38,6 @@ public class Export {
         return exports;
     }
 
-    /**
-     * OpenCTM 3D fájlba exportálja a paraméterként megadott
-     * {@linkplain Origami}t.
-     *
-     * @param origami	Az exportáladnó {@linkplain Origami}.
-     * @param filename	A fájl elérési útja.
-     * @return	1, ha az eljárás sikeresen lefutott, <p> 0, ha nem.
-     */
     static public int exportCTM(Origami origami, String filename) {
 
         try {
@@ -265,18 +255,11 @@ public class Export {
         }
     }
 
-    /**
-     * PDF 1.3 formátumba exportálja a paraméterként megadott
-     * {@linkplain Origami}t.
-     *
-     * @param origami	Az exportáladnó {@linkplain Origami}.
-     * @param filename	A fájl elérési útja a készülék Letöltések mappájában.
-     * @return	1, ha az eljárás sikeresen lefutott, <p> 0, ha nem.
-     */
     static public int exportPDF(Origami origami, String filename, String title) {
 
         try {
 
+            Origami origami1 = origami.clone();
             File pdf = new File(filename);
             if (pdf.exists()) {
                 pdf.delete();
@@ -292,35 +275,35 @@ public class Export {
             int ures_muveletek = 0;
             ArrayList<Integer> UresIndexek = new ArrayList<>();
 
-            for (int i = 0; i < origami.history().size(); i++) {
+            for (int i = 0; i < origami1.history().size(); i++) {
 
-                if (origami.history().get(i)[0] == 2.0) {
+                if (origami1.history().get(i)[0] == 2.0) {
 
-                    if (i < origami.history().size() - 1) {
+                    if (i < origami1.history().size() - 1) {
 
-                        if (origami.history().get(i + 1)[0] == 2.0
-                                && origami.history().get(i + 1)[1] == origami.history().get(i)[1]
-                                && origami.history().get(i + 1)[2] == origami.history().get(i)[2]
-                                && origami.history().get(i + 1)[3] == origami.history().get(i)[3]
-                                && origami.history().get(i + 1)[4] == origami.history().get(i)[4]
-                                && origami.history().get(i + 1)[5] == origami.history().get(i)[5]
-                                && origami.history().get(i + 1)[6] == origami.history().get(i)[6]) {
+                        if (origami1.history().get(i + 1)[0] == 2.0
+                                && origami1.history().get(i + 1)[1] == origami1.history().get(i)[1]
+                                && origami1.history().get(i + 1)[2] == origami1.history().get(i)[2]
+                                && origami1.history().get(i + 1)[3] == origami1.history().get(i)[3]
+                                && origami1.history().get(i + 1)[4] == origami1.history().get(i)[4]
+                                && origami1.history().get(i + 1)[5] == origami1.history().get(i)[5]
+                                && origami1.history().get(i + 1)[6] == origami1.history().get(i)[6]) {
                             ures_muveletek++;
                             UresIndexek.add(i);
                         }
                     }
-                } else if (origami.history().get(i)[0] == 4.0) {
+                } else if (origami1.history().get(i)[0] == 4.0) {
 
-                    if (i < origami.history().size() - 1) {
+                    if (i < origami1.history().size() - 1) {
 
-                        if (origami.history().get(i + 1)[0] == 4.0
-                                && origami.history().get(i + 1)[1] == origami.history().get(i)[1]
-                                && origami.history().get(i + 1)[2] == origami.history().get(i)[2]
-                                && origami.history().get(i + 1)[3] == origami.history().get(i)[3]
-                                && origami.history().get(i + 1)[4] == origami.history().get(i)[4]
-                                && origami.history().get(i + 1)[5] == origami.history().get(i)[5]
-                                && origami.history().get(i + 1)[6] == origami.history().get(i)[6]
-                                && origami.history().get(i + 1)[8] == origami.history().get(i)[8]) {
+                        if (origami1.history().get(i + 1)[0] == 4.0
+                                && origami1.history().get(i + 1)[1] == origami1.history().get(i)[1]
+                                && origami1.history().get(i + 1)[2] == origami1.history().get(i)[2]
+                                && origami1.history().get(i + 1)[3] == origami1.history().get(i)[3]
+                                && origami1.history().get(i + 1)[4] == origami1.history().get(i)[4]
+                                && origami1.history().get(i + 1)[5] == origami1.history().get(i)[5]
+                                && origami1.history().get(i + 1)[6] == origami1.history().get(i)[6]
+                                && origami1.history().get(i + 1)[8] == origami1.history().get(i)[8]) {
                             ures_muveletek++;
                             UresIndexek.add(i);
                         }
@@ -338,14 +321,14 @@ public class Export {
 
             //Méretezés és elôigazítás
             Camera kamera = new Camera(0, 0, 0.5);
-            kamera.setOrthogonalView();
+            kamera.nextOrthogonalView();
 
             //Felmérjük az olyan lépések számát, amikhez szemszögváltás kell.
-            for (int i = 1; i < origami.history().size(); i++) {
+            for (int i = 1; i < origami1.history().size(); i++) {
 
                 double[] regiVaszonNV = kamera.camera_dir;
 
-                kamera.camera_dir = Origami.vector_product(new double[]{origami.history().get(i)[4], origami.history().get(i)[5], origami.history().get(i)[6]},
+                kamera.camera_dir = Origami.vector_product(new double[]{origami1.history().get(i)[4], origami1.history().get(i)[5], origami1.history().get(i)[6]},
                         new double[]{0, 1, 0});
 
                 if (Origami.vector_length(kamera.camera_dir) < .00000001) {
@@ -364,10 +347,10 @@ public class Export {
                     ForgatasSzogek.add((int) (Math.acos(cos >= -1 && cos <= 1 ? cos : 1) / Math.PI * 180));
                 }
             }
-            ForgatasIndexek.add(origami.history().size());
+            ForgatasIndexek.add(origami1.history().size());
 
             //Egy oldalon 6 cella van (papírmérettôl függetlenül)
-            int cellak_szama = origami.history().size() + forgatasok - ures_muveletek + 2;
+            int cellak_szama = origami1.history().size() + forgatasok - ures_muveletek + 2;
 
             //Fejléc
             String fajl = "";
@@ -524,27 +507,27 @@ public class Export {
             fajl = "";
 
             //Ez már élesben megy
-            origami.reset();
-            Double maxdim = origami.circumscribedSquareSize();
+            origami1.reset();
+            Double maxdim = origami1.circumscribedSquareSize();
             if (maxdim == .0) maxdim = 1.;
 
             kamera = new Camera(0, 0, figure_frame/maxdim);
-            kamera.setOrthogonalView();
-            kamera.unadjust(origami);
+            kamera.nextOrthogonalView();
+            kamera.unadjust(origami1);
 
             //Az objektum indexe, ahol épp tartunk
             int objindex = (int) Math.ceil((double) cellak_szama / 6) + 5;
 
             //Ábrák
-            for (int i = 0; i <= origami.history().size(); i++) {
+            for (int i = 0; i <= origami1.history().size(); i++) {
 
                 while (UresIndexek.contains(i - 1)) {
 
-                    origami.execute(i - 1, 1);
+                    origami1.execute(i - 1, 1);
                     i++;
                 }
 
-                origami.execute(i - 1, 1);
+                origami1.execute(i - 1, 1);
 
                 int x = 0, y = 0;
                 String kep;
@@ -587,7 +570,7 @@ public class Export {
                             break;
                     }
 
-                    kep = kamera.drawFaces(x, y, origami) + kamera.drawEdges(x, y, origami);
+                    kep = kamera.drawFaces(x, y, origami1) + kamera.drawEdges(x, y, origami1);
 
                     Offszetek.add(bajtszam);
                     stream = "q";
@@ -613,11 +596,11 @@ public class Export {
                     fajl = "";
                 }
 
-                if (i < origami.history().size()) {
+                if (i < origami1.history().size()) {
 
                     double[] regiVaszonNV = kamera.camera_dir;
 
-                    kamera.camera_dir = Origami.vector_product(new double[]{origami.history().get(i)[4], origami.history().get(i)[5], origami.history().get(i)[6]},
+                    kamera.camera_dir = Origami.vector_product(new double[]{origami1.history().get(i)[4], origami1.history().get(i)[5], origami1.history().get(i)[6]},
                             new double[]{0, 1, 0});
 
                     if (Origami.scalar_product(kamera.camera_dir, kamera.camera_dir) < 0.00000001) {
@@ -684,54 +667,54 @@ public class Export {
                     double[] sikpont;
                     double[] siknv;
 
-                    kamera.adjust(origami);
+                    kamera.adjust(origami1);
 
-                    switch ((int) origami.history().get(i)[0]) {
+                    switch ((int) origami1.history().get(i)[0]) {
 
                         case 1:
-                            sikpont = new double[]{origami.history().get(i)[1], origami.history().get(i)[2], origami.history().get(i)[3]};
-                            siknv = new double[]{origami.history().get(i)[4], origami.history().get(i)[5], origami.history().get(i)[6]};
-                            kep = kamera.drawFaces(x, y, origami) + kamera.drawEdges(x, y, origami) + kamera.pfdLiner(x, y, sikpont, siknv);
+                            sikpont = new double[]{origami1.history().get(i)[1], origami1.history().get(i)[2], origami1.history().get(i)[3]};
+                            siknv = new double[]{origami1.history().get(i)[4], origami1.history().get(i)[5], origami1.history().get(i)[6]};
+                            kep = kamera.drawFaces(x, y, origami1) + kamera.drawEdges(x, y, origami1) + kamera.pfdLiner(x, y, sikpont, siknv);
                             break;
 
                         case 2:
-                            sikpont = new double[]{origami.history().get(i)[1], origami.history().get(i)[2], origami.history().get(i)[3]};
-                            siknv = new double[]{origami.history().get(i)[4], origami.history().get(i)[5], origami.history().get(i)[6]};
-                            kep = kamera.drawFaces(x, y, origami) + kamera.drawEdges(x, y, origami) + kamera.pfdLiner(x, y, sikpont, siknv);
+                            sikpont = new double[]{origami1.history().get(i)[1], origami1.history().get(i)[2], origami1.history().get(i)[3]};
+                            siknv = new double[]{origami1.history().get(i)[4], origami1.history().get(i)[5], origami1.history().get(i)[6]};
+                            kep = kamera.drawFaces(x, y, origami1) + kamera.drawEdges(x, y, origami1) + kamera.pfdLiner(x, y, sikpont, siknv);
                             break;
 
                         case 3:
-                            sikpont = new double[]{origami.history().get(i)[1], origami.history().get(i)[2], origami.history().get(i)[3]};
-                            siknv = new double[]{origami.history().get(i)[4], origami.history().get(i)[5], origami.history().get(i)[6]};
-                            kep = kamera.drawSelection(x, y, sikpont, siknv, (int) origami.history().get(i)[7], origami) + kamera.drawEdges(x, y, origami) + kamera.pfdLiner(x, y, sikpont, siknv);
+                            sikpont = new double[]{origami1.history().get(i)[1], origami1.history().get(i)[2], origami1.history().get(i)[3]};
+                            siknv = new double[]{origami1.history().get(i)[4], origami1.history().get(i)[5], origami1.history().get(i)[6]};
+                            kep = kamera.drawSelection(x, y, sikpont, siknv, (int) origami1.history().get(i)[7], origami1) + kamera.drawEdges(x, y, origami1) + kamera.pfdLiner(x, y, sikpont, siknv);
                             break;
 
                         case 4:
-                            sikpont = new double[]{origami.history().get(i)[1], origami.history().get(i)[2], origami.history().get(i)[3]};
-                            siknv = new double[]{origami.history().get(i)[4], origami.history().get(i)[5], origami.history().get(i)[6]};
-                            kep = kamera.drawSelection(x, y, sikpont, siknv, (int) origami.history().get(i)[8], origami) + kamera.drawEdges(x, y, origami) + kamera.pfdLiner(x, y, sikpont, siknv);
+                            sikpont = new double[]{origami1.history().get(i)[1], origami1.history().get(i)[2], origami1.history().get(i)[3]};
+                            siknv = new double[]{origami1.history().get(i)[4], origami1.history().get(i)[5], origami1.history().get(i)[6]};
+                            kep = kamera.drawSelection(x, y, sikpont, siknv, (int) origami1.history().get(i)[8], origami1) + kamera.drawEdges(x, y, origami1) + kamera.pfdLiner(x, y, sikpont, siknv);
                             break;
 
                         case 5:
-                            sikpont = new double[]{origami.history().get(i)[1], origami.history().get(i)[2], origami.history().get(i)[3]};
-                            siknv = new double[]{origami.history().get(i)[4], origami.history().get(i)[5], origami.history().get(i)[6]};
-                            kep = kamera.drawFaces(x, y, origami) + kamera.drawEdges(x, y, origami) + kamera.pfdLiner(x, y, sikpont, siknv);
+                            sikpont = new double[]{origami1.history().get(i)[1], origami1.history().get(i)[2], origami1.history().get(i)[3]};
+                            siknv = new double[]{origami1.history().get(i)[4], origami1.history().get(i)[5], origami1.history().get(i)[6]};
+                            kep = kamera.drawFaces(x, y, origami1) + kamera.drawEdges(x, y, origami1) + kamera.pfdLiner(x, y, sikpont, siknv);
                             break;
 
                         case 6:
-                            sikpont = new double[]{origami.history().get(i)[1], origami.history().get(i)[2], origami.history().get(i)[3]};
-                            siknv = new double[]{origami.history().get(i)[4], origami.history().get(i)[5], origami.history().get(i)[6]};
-                            kep = kamera.drawFaces(x, y, origami) + kamera.drawEdges(x, y, origami) + kamera.pfdLiner(x, y, sikpont, siknv);
+                            sikpont = new double[]{origami1.history().get(i)[1], origami1.history().get(i)[2], origami1.history().get(i)[3]};
+                            siknv = new double[]{origami1.history().get(i)[4], origami1.history().get(i)[5], origami1.history().get(i)[6]};
+                            kep = kamera.drawFaces(x, y, origami1) + kamera.drawEdges(x, y, origami1) + kamera.pfdLiner(x, y, sikpont, siknv);
                             break;
                             
                         case 7:
-                            sikpont = new double[]{origami.history().get(i)[1], origami.history().get(i)[2], origami.history().get(i)[3]};
-                            siknv = new double[]{origami.history().get(i)[4], origami.history().get(i)[5], origami.history().get(i)[6]};
-                            kep = kamera.drawSelection(x, y, sikpont, siknv, (int) origami.history().get(i)[7], origami) + kamera.drawEdges(x, y, origami) + kamera.pfdLiner(x, y, sikpont, siknv);
+                            sikpont = new double[]{origami1.history().get(i)[1], origami1.history().get(i)[2], origami1.history().get(i)[3]};
+                            siknv = new double[]{origami1.history().get(i)[4], origami1.history().get(i)[5], origami1.history().get(i)[6]};
+                            kep = kamera.drawSelection(x, y, sikpont, siknv, (int) origami1.history().get(i)[7], origami1) + kamera.drawEdges(x, y, origami1) + kamera.pfdLiner(x, y, sikpont, siknv);
                             break;
                             
                         default:
-                            kep = kamera.drawFaces(x, y, origami) + kamera.drawEdges(x, y, origami);
+                            kep = kamera.drawFaces(x, y, origami1) + kamera.drawEdges(x, y, origami1);
                             break;
                     }
 
@@ -768,7 +751,7 @@ public class Export {
             stream += Integer.toString((int) (page_width - 2 * figure_frame) / 4) + " "
                     + Integer.toString(736-Cookbook.PDF_DISCLAIMER.length()*14+Cookbook.PDF_DISCLAIMER.replace(") '", ") ").length()*14) + " Td";
             stream += (char) 10;
-            stream += Cookbook.PDF_PAPERTYPE + origami.papertype().toString() + ") Tj";
+            stream += Cookbook.PDF_PAPERTYPE + origami1.papertype().toString() + ") Tj";
             stream += (char) 10;
             stream += "ET";
             stream += (char) 10;
@@ -821,7 +804,7 @@ public class Export {
             int sorszam = 1;
 
             //Szövegek
-            for (int i = 0; i <= origami.history().size(); i++) {
+            for (int i = 0; i <= origami1.history().size(); i++) {
 
                 while (UresIndexek.contains(i)) {
                     i++;
@@ -834,14 +817,14 @@ public class Export {
 
                 if (ForgatasIndexek.contains(i)) {
 
-                    if (i == origami.history().size()) {
+                    if (i == origami1.history().size()) {
 
                         utasitas = "(" + Integer.toString(sorszam) + ". " + Cookbook.PDF_OUTRO;
                         sorszam++;
                     } else if (i == 0) {
 
                         utasitas = "(" + Integer.toString(sorszam) + ". ";
-                        switch (origami.papertype()) {
+                        switch (origami1.papertype()) {
 
                             case A4:
                                 utasitas += Cookbook.PDF_INTRO_A4;
@@ -856,9 +839,9 @@ public class Export {
                                 utasitas += Cookbook.PDF_INTRO_DOLLAR;
                                 break;
                             case Custom:
-                                if (origami.corners().size() == 3)
+                                if (origami1.corners().size() == 3)
                                     utasitas += Cookbook.PDF_INTRO_TRIANGLE;
-                                else if (origami.corners().size() == 4)
+                                else if (origami1.corners().size() == 4)
                                     utasitas += Cookbook.PDF_INTRO_QUAD;
                                 else
                                     utasitas += Cookbook.PDF_INTRO_POLYGON;
@@ -941,11 +924,11 @@ public class Export {
                     fajl = "";
                 }
 
-                if (i < origami.history().size()) {
+                if (i < origami1.history().size()) {
 
                     double[] regiVaszonNV = kamera.camera_dir;
 
-                    kamera.camera_dir = Origami.vector_product(new double[]{origami.history().get(i)[4], origami.history().get(i)[5], origami.history().get(i)[6]},
+                    kamera.camera_dir = Origami.vector_product(new double[]{origami1.history().get(i)[4], origami1.history().get(i)[5], origami1.history().get(i)[6]},
                             new double[]{0, 1, 0});
 
                     if (Origami.scalar_product(kamera.camera_dir, kamera.camera_dir) < 0.00000001) {
@@ -973,12 +956,12 @@ public class Export {
                         kamera.axis_x = Origami.vector(Origami.nullvektor, kamera.axis_x);
                     }
 
-                    switch ((int) origami.history().get(i)[0]) {
+                    switch ((int) origami1.history().get(i)[0]) {
 
                         case 1:
-                            siknv = new double[]{origami.history().get(i)[4],
-                                origami.history().get(i)[5],
-                                origami.history().get(i)[6]};
+                            siknv = new double[]{origami1.history().get(i)[4],
+                                origami1.history().get(i)[5],
+                                origami1.history().get(i)[6]};
                             utasitas = "(" + Integer.toString(sorszam) + ". ";
                             switch (kamera.pdfLinerDir(siknv)) {
 
@@ -1001,9 +984,9 @@ public class Export {
                             break;
 
                         case 2:
-                            siknv = new double[]{origami.history().get(i)[4],
-                                origami.history().get(i)[5],
-                                origami.history().get(i)[6]};
+                            siknv = new double[]{origami1.history().get(i)[4],
+                                origami1.history().get(i)[5],
+                                origami1.history().get(i)[6]};
                             utasitas = "(" + Integer.toString(sorszam) + ". ";
                             switch (kamera.pdfLinerDir(siknv)) {
 
@@ -1026,13 +1009,13 @@ public class Export {
                             int j = i - 1;
                             while (UresIndexek.contains(j)) {
 
-                                if (origami.history().get(j)[0] == 2.0) {
+                                if (origami1.history().get(j)[0] == 2.0) {
 
-                                    szog += (int) origami.history().get(j)[7];
+                                    szog += (int) origami1.history().get(j)[7];
                                 }
                                 j--;
                             }
-                            utasitas += Integer.toString(szog + (int) origami.history().get(i)[7])
+                            utasitas += Integer.toString(szog + (int) origami1.history().get(i)[7])
                                     + Cookbook.PDF_ROTATE_ANGLE;
                             sorszam++;
                             break;
@@ -1050,13 +1033,13 @@ public class Export {
                             int j1 = i - 1;
                             while (UresIndexek.contains(j1)) {
 
-                                if (origami.history().get(j1)[0] == 4.0) {
+                                if (origami1.history().get(j1)[0] == 4.0) {
 
-                                    szog1 += (int) origami.history().get(j1)[7];
+                                    szog1 += (int) origami1.history().get(j1)[7];
                                 }
                                 j1--;
                             }
-                            utasitas += Integer.toString(szog1 + (int) origami.history().get(i)[7])
+                            utasitas += Integer.toString(szog1 + (int) origami1.history().get(i)[7])
                                     + Cookbook.PDF_ROTATE_ANGLE;
                             sorszam++;
                             break;
@@ -1068,9 +1051,9 @@ public class Export {
                             break;
 
                         case 6:
-                            siknv = new double[]{origami.history().get(i)[4],
-                                origami.history().get(i)[5],
-                                origami.history().get(i)[6]};
+                            siknv = new double[]{origami1.history().get(i)[4],
+                                origami1.history().get(i)[5],
+                                origami1.history().get(i)[6]};
                             utasitas = "(" + Integer.toString(sorszam) + ". ";
                             switch (kamera.pdfLinerDir(siknv)) {
 
@@ -1211,6 +1194,274 @@ public class Export {
 
         } catch (Exception exc) {
 
+            return 0;
+        }
+    }
+    
+    static public int exportGIF(Origami origami, Camera refcam, int color, int width, int height, String filename) {
+        
+        try (FileOutputStream fos = new FileOutputStream(filename)) {
+            
+            fos.write('G');
+            fos.write('I');
+            fos.write('F');
+            fos.write('8');
+            fos.write('9');
+            fos.write('a');
+            
+            fos.write((byte)width);
+            fos.write((byte)(width >>> 8));
+            fos.write((byte)height);
+            fos.write((byte)(height >>> 8));
+            fos.write(0b10010110);
+            fos.write(0);
+            fos.write(0);
+            
+            for (int r=1; r<=5; r++) {
+                for (int g=1; g<=5; g++) {
+                    for (int b=1; b<=5; b++) {
+                        
+                        fos.write(r*51);
+                        fos.write(g*51);
+                        fos.write(b*51);
+                    }
+                }
+            }
+            for (int i=0; i<9; i++) {
+                fos.write(0);
+            }
+            
+            fos.write(0x21);
+            fos.write(0xFF);
+            fos.write(0x0B);
+            fos.write('N');
+            fos.write('E');
+            fos.write('T');
+            fos.write('S');
+            fos.write('C');
+            fos.write('A');
+            fos.write('P');
+            fos.write('E');
+            fos.write('2');
+            fos.write('.');
+            fos.write('0');
+            fos.write(0x03);
+            fos.write(0x01);
+            fos.write(0x00);
+            fos.write(0x00);
+            fos.write(0x00);
+            
+            java.awt.image.BufferedImage img = new java.awt.image.BufferedImage(width, height, java.awt.image.BufferedImage.TYPE_INT_RGB);
+            java.awt.Graphics2D gimg = img.createGraphics();
+            gimg.setBackground(java.awt.Color.WHITE);
+            Origami origami1 = origami.clone();
+            Camera cam = new Camera(width/2, height/2, 1);
+            cam.camera_dir = refcam.camera_dir.clone();
+            cam.axis_x = refcam.axis_x.clone();
+            cam.axis_y = refcam.axis_y.clone();
+            cam.setZoom(0.8 * Math.min(width, height) / origami1.circumscribedSquareSize());
+            int steps = origami1.history_pointer();
+            origami1.undo(steps);
+            boolean last = false;
+            while (origami1.history_pointer() < steps || (last = !last && origami1.history_pointer() == steps)) {
+                    
+                    gimg.clearRect(0, 0, width, height);
+                    cam.adjust(origami1);
+                    cam.drawFaces(gimg, color, origami1);
+                    cam.drawEdges(gimg, java.awt.Color.black, origami1);
+                    origami1.redo();
+                    fos.write(0x21);
+                    fos.write(0xF9);
+                    fos.write(0x04);
+                    fos.write(0x04);
+                    fos.write(0x64); //delay time
+                    fos.write(0x00);
+                    fos.write(0x00);
+                    fos.write(0x00);
+                    
+                    fos.write(0x2C);
+                    fos.write(0x00);
+                    fos.write(0x00);
+                    fos.write(0x00);
+                    fos.write(0x00);
+                    fos.write((byte)width);
+                    fos.write((byte)(width >>> 8));
+                    fos.write((byte)height);
+                    fos.write((byte)(height >>> 8));
+                    fos.write(0x00);
+                    
+                    fos.write(0x07);
+                    
+                    byte[] bimg = new byte[width*height];
+                    for(int y=0; y<height; y++) {
+                        
+                        fos.write(width/2+1);
+                        fos.write(0x80);
+                        for (int x=0; x<width/2; x++) {
+                            
+                            int rgb = img.getRGB(x, y) & 0xFFFFFF;
+                            int b = rgb % 0x100;
+                            int g = (rgb >>> 8) % 0x100;
+                            int r = rgb >>> 16;
+                            
+                            fos.write((((r*5)/256)*25+((g*5)/256)*5+(b*5)/256));
+                        }
+                        fos.write(width-width/2+1);
+                        fos.write(0x80);
+                        for (int x=width/2; x<width; x++) {
+                            
+                            int rgb = img.getRGB(x, y) & 0xFFFFFF;
+                            int b = rgb % 0x100;
+                            int g = (rgb >>> 8) % 0x100;
+                            int r = rgb >>> 16;
+                            
+                            fos.write((((r*5)/256)*25+((g*5)/256)*5+(b*5)/256));
+                        }
+                    }
+                    fos.write(0x01);
+                    fos.write(0x81);
+                    fos.write(0);
+            }
+            
+            fos.write(0x3B);
+            fos.close();
+            return 1;
+        } catch (Exception ex) {
+            
+            return 0;
+        }
+    }
+    
+    
+    static public int exportRevolvingGIF(Origami origami, Camera refcam, int color, int width, int height, String filename) {
+        
+        try (FileOutputStream fos = new FileOutputStream(filename)) {
+            
+            fos.write('G');
+            fos.write('I');
+            fos.write('F');
+            fos.write('8');
+            fos.write('9');
+            fos.write('a');
+            
+            fos.write((byte)width);
+            fos.write((byte)(width >>> 8));
+            fos.write((byte)height);
+            fos.write((byte)(height >>> 8));
+            fos.write(0b10010110);
+            fos.write(0);
+            fos.write(0);
+            
+            for (int r=1; r<=5; r++) {
+                for (int g=1; g<=5; g++) {
+                    for (int b=1; b<=5; b++) {
+                        
+                        fos.write(r*51);
+                        fos.write(g*51);
+                        fos.write(b*51);
+                    }
+                }
+            }
+            for (int i=0; i<9; i++) {
+                fos.write(0);
+            }
+            
+            fos.write(0x21);
+            fos.write(0xFF);
+            fos.write(0x0B);
+            fos.write('N');
+            fos.write('E');
+            fos.write('T');
+            fos.write('S');
+            fos.write('C');
+            fos.write('A');
+            fos.write('P');
+            fos.write('E');
+            fos.write('2');
+            fos.write('.');
+            fos.write('0');
+            fos.write(0x03);
+            fos.write(0x01);
+            fos.write(0x00);
+            fos.write(0x00);
+            fos.write(0x00);
+            
+            java.awt.image.BufferedImage img = new java.awt.image.BufferedImage(width, height, java.awt.image.BufferedImage.TYPE_INT_RGB);
+            java.awt.Graphics2D gimg = img.createGraphics();
+            gimg.setBackground(java.awt.Color.WHITE);
+            Origami origami1 = origami.clone();
+            Camera cam = new Camera(width/2, height/2, 1);
+            cam.camera_dir = refcam.camera_dir.clone();
+            cam.axis_x = refcam.axis_x.clone();
+            cam.axis_y = refcam.axis_y.clone();
+            cam.setZoom(0.8 * Math.min(width, height) / origami1.circumscribedSquareSize());
+            cam.adjust(origami1);
+            
+            for (int i=0; i<72; i++) {
+                    
+                    gimg.clearRect(0, 0, width, height);
+                    cam.drawFaces(gimg, color, origami1);
+                    cam.drawEdges(gimg, java.awt.Color.black, origami1);
+                    cam.rotate(10, 0);
+                    
+                    fos.write(0x21);
+                    fos.write(0xF9);
+                    fos.write(0x04);
+                    fos.write(0x04);
+                    fos.write(0x05); //delay time
+                    fos.write(0x00);
+                    fos.write(0x00);
+                    fos.write(0x00);
+                    
+                    fos.write(0x2C);
+                    fos.write(0x00);
+                    fos.write(0x00);
+                    fos.write(0x00);
+                    fos.write(0x00);
+                    fos.write((byte)width);
+                    fos.write((byte)(width >>> 8));
+                    fos.write((byte)height);
+                    fos.write((byte)(height >>> 8));
+                    fos.write(0x00);
+                    
+                    fos.write(0x07);
+                    
+                    byte[] bimg = new byte[width*height];
+                    for(int y=0; y<height; y++) {
+                        
+                        fos.write(width/2+1);
+                        fos.write(0x80);
+                        for (int x=0; x<width/2; x++) {
+                            
+                            int rgb = img.getRGB(x, y) & 0xFFFFFF;
+                            int b = rgb % 0x100;
+                            int g = (rgb >>> 8) % 0x100;
+                            int r = rgb >>> 16;
+                            
+                            fos.write((((r*5)/256)*25+((g*5)/256)*5+(b*5)/256));
+                        }
+                        fos.write(width-width/2+1);
+                        fos.write(0x80);
+                        for (int x=width/2; x<width; x++) {
+                            
+                            int rgb = img.getRGB(x, y) & 0xFFFFFF;
+                            int b = rgb % 0x100;
+                            int g = (rgb >>> 8) % 0x100;
+                            int r = rgb >>> 16;
+                            
+                            fos.write((((r*5)/256)*25+((g*5)/256)*5+(b*5)/256));
+                        }
+                    }
+                    fos.write(0x01);
+                    fos.write(0x81);
+                    fos.write(0);
+            }
+            
+            fos.write(0x3B);
+            fos.close();
+            return 1;
+        } catch (Exception ex) {
+            
             return 0;
         }
     }

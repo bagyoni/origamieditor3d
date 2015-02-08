@@ -1,5 +1,5 @@
 // This file is part of Origami Editor 3D.
-// Copyright (C) 2013, 2014, 2015 Bágyoni Attila <bagyoni.attila@gmail.com>
+// Copyright (C) 2013, 2014, 2015 Bágyoni Attila <ba-sz-at@users.sourceforge.net>
 // Origami Editor 3D is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
@@ -18,13 +18,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 /**
- * Metódusokat nyújt {@linkplain Global#Main} külsô fájlként való mentésére és
- * megnyitására.
- *
- * @author Attila Bágyoni <bagyoni.attila@gmail.com>
+ * 
+ * @author Attila Bágyoni (ba-sz-at@users.sourceforge.net)
  * @since 2013-01-14
- * @see Global
- * @see Origami
  */
 public class OrigamiIO {
 
@@ -897,101 +893,5 @@ public class OrigamiIO {
 
             throw OrigamiException.H005;
         }
-    }
-
-    /**
-     * A paraméterként megadott sík egyenletének együtthatóit olymódon kerekíti
-     * {@link float}-ra, hogy a {@linkplain Fajlkezelo#Ment(String)} eljárásban
-     * használt tömörítés ne legyen veszteséges, majd visszaadja az így kapott
-     * sík egy pontját.
-     *
-     * @param sikpont	A sík egy tetszôleges pontjának térbeli derékszögû
-     * koordinátáit tartalmazó tömb.
-     * @param siknv	A sík normálvektorának térbeli derékszögû koordinátáit
-     * tartalmazó tömb.
-     * @return	A kerekítéssel kapott sík egy pontjának térbeli derékszögû
-     * koordinátáit tartalmazó tömb.
-     * @see Fajlkezelo#Ment(String)
-     */
-    static public double[] planarPointRound(double[] sikpont, double[] siknv) {
-        double max_tavolsag = -1;
-        int hasznalt_origo = 0;
-        double[] sikpontnv = new double[]{0, 0, 0};
-        double konst = sikpont[0] * siknv[0] + sikpont[1] * siknv[1] + sikpont[2] * siknv[2];
-        for (int ii = 0; ii < Origins.length; ii++) {
-            double[] iranyvek = siknv;
-            double X = Origins[ii][0];
-            double Y = Origins[ii][1];
-            double Z = Origins[ii][2];
-            double U = iranyvek[0];
-            double V = iranyvek[1];
-            double W = iranyvek[2];
-            double A = siknv[0];
-            double B = siknv[1];
-            double C = siknv[2];
-            double t = -(A * X + B * Y + C * Z - konst) / (A * U + B * V + C * W);
-            double[] talppont = new double[]{X + t * U, Y + t * V, Z + t * W};
-            if (Origami.vector_length(Origami.vector(talppont, Origins[ii])) > max_tavolsag) {
-                sikpontnv = Origami.vector(talppont, Origins[ii]);
-                max_tavolsag = Origami.vector_length(sikpontnv);
-                hasznalt_origo = ii;
-            }
-        }
-        int Xe = (int) sikpontnv[0];
-        int Ye = (int) sikpontnv[1];
-        int Ze = (int) sikpontnv[2];
-        int Xt = (int) Math.round((Math.abs(sikpontnv[0] - Xe)) * 256 * 256);
-        int Yt = (int) Math.round((Math.abs(sikpontnv[1] - Ye)) * 256 * 256);
-        int Zt = (int) Math.round((Math.abs(sikpontnv[2] - Ze)) * 256 * 256);
-        return new double[]{(double) Xe + Math.signum(Xe) * Xt / 256 / 256 + Origins[hasznalt_origo][0], (double) Ye + Math.signum(Ye) * Yt / 256 / 256 + Origins[hasznalt_origo][1], (double) Ze + Math.signum(Ze) * Zt / 256 / 256 + Origins[hasznalt_origo][2]};
-    }
-
-    /**
-     * A paraméterként megadott sík egyenletének együtthatóit olymódon kerekíti
-     * {@link float}-ra, hogy a {@linkplain Fajlkezelo#Ment(String)} eljárásban
-     * használt tömörítés ne legyen veszteséges, majd visszaadja az így kapott
-     * sík normálvektorát.
-     *
-     * @param sikpont	A sík egy tetszôleges pontjának térbeli derékszögû
-     * koordinátáit tartalmazó tömb.
-     * @param siknv	A sík normálvektorának térbeli derékszögû koordinátáit
-     * tartalmazó tömb.
-     * @return	A kerekítéssel kapott sík normálvektorának térbeli derékszögû
-     * koordinátáit tartalmazó tömb.
-     * @see Fajlkezelo#Ment(String)
-     */
-    static public double[] normalvectorRound(double[] sikpont, double[] siknv) {
-        double max_tavolsag = -1;
-        double[] sikpontnv = new double[]{0, 0, 0};
-        double konst = sikpont[0] * siknv[0] + sikpont[1] * siknv[1] + sikpont[2] * siknv[2];
-        for (double[] origo : Origins) {
-            double[] iranyvek = siknv;
-            double X = origo[0];
-            double Y = origo[1];
-            double Z = origo[2];
-            double U = iranyvek[0];
-            double V = iranyvek[1];
-            double W = iranyvek[2];
-            double A = siknv[0];
-            double B = siknv[1];
-            double C = siknv[2];
-            double t = -(A * X + B * Y + C * Z - konst) / (A * U + B * V + C * W);
-            double[] talppont = new double[]{X + t * U, Y + t * V, Z + t * W};
-            if (Origami.vector_length(Origami.vector(talppont, origo)) > max_tavolsag) {
-                sikpontnv = Origami.vector(talppont, origo);
-                max_tavolsag = Origami.vector_length(sikpontnv);
-            }
-        }
-        double elojel = 1;
-        if (Origami.scalar_product(siknv, sikpontnv) < 0) {
-            elojel = -1;
-        }
-        int Xe = (int) sikpontnv[0];
-        int Ye = (int) sikpontnv[1];
-        int Ze = (int) sikpontnv[2];
-        int Xt = (int) Math.round((Math.abs(sikpontnv[0] - Xe)) * 256 * 256);
-        int Yt = (int) Math.round((Math.abs(sikpontnv[1] - Ye)) * 256 * 256);
-        int Zt = (int) Math.round((Math.abs(sikpontnv[2] - Ze)) * 256 * 256);
-        return new double[]{elojel * ((double) Xe + Math.signum(Xe) * Xt / 256 / 256), elojel * ((double) Ye + Math.signum(Ye) * Yt / 256 / 256), elojel * ((double) Ze + Math.signum(Ze) * Zt / 256 / 256)};
     }
 }

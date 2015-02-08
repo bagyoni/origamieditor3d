@@ -1,5 +1,5 @@
 // This file is part of Origami Editor 3D.
-// Copyright (C) 2013, 2014, 2015 Bágyoni Attila <bagyoni.attila@gmail.com>
+// Copyright (C) 2013, 2014, 2015 Bágyoni Attila <ba-sz-at@users.sourceforge.net>
 // Origami Editor 3D is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
@@ -19,12 +19,12 @@ import java.awt.Graphics;
 import javax.swing.JPanel;
 
 /**
- * @author Attila Bágyoni <bagyoni.attila@gmail.com>
+ * @author Attila Bágyoni (ba-sz-at@users.sourceforge.net)
  */
 public class PaperPanel extends JPanel implements BasicEditing {
 
-	private static final long serialVersionUID = 1L;
-	private Origami PanelOrigami;
+    private static final long serialVersionUID = 1L;
+    private Origami PanelOrigami;
     protected Camera PanelCamera;
     private Integer tracker_x, tracker_y;
     private double[] tracker_im;

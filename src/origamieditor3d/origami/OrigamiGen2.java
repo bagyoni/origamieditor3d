@@ -1,5 +1,5 @@
 // This file is part of Origami Editor 3D.
-// Copyright (C) 2013, 2014, 2015 Bágyoni Attila <bagyoni.attila@gmail.com>
+// Copyright (C) 2013, 2014, 2015 Bágyoni Attila <ba-sz-at@users.sourceforge.net>
 // Origami Editor 3D is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
@@ -14,6 +14,15 @@ package origamieditor3d.origami;
 
 import java.util.ArrayList;
 
+/**
+ * This is the first patch to the {@link Origami} class.
+ * It resolves a serious bug in the
+ * {@link Origami#cutPolygon(double[], double[], int) cutPolygon} method that
+ * allowed contiguous polygons to overlap in the paper space and, as a
+ * consequence, be torn apart in the origami space.
+ * 
+ * @author Attila Bágyoni (ba-sz-at@users.sourceforge.net)
+ */
 public class OrigamiGen2 extends Origami {
 
     public OrigamiGen2(PaperType papertype) {
@@ -171,5 +180,24 @@ public class OrigamiGen2 extends Origami {
             return false;
         }
         return false;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public OrigamiGen2 clone() {
+        
+        OrigamiGen2 copy = new OrigamiGen2(papertype);
+        copy.corners = (ArrayList<double[]>) corners.clone();
+        copy.history = (ArrayList<double[]>) history.clone();
+        copy.history_pointer = history_pointer;
+        copy.vertices_size = vertices_size;
+        copy.vertices = (ArrayList<double[]>) vertices.clone();
+        copy.vertices2d = (ArrayList<double[]>) vertices2d.clone();
+        copy.polygons_size = polygons_size;
+        copy.polygons = (ArrayList<ArrayList<Integer>>) polygons.clone();
+        copy.last_cut_polygons = (ArrayList<ArrayList<Integer>>) last_cut_polygons.clone();
+        copy.cutpolygon_nodes = (ArrayList<int[]>) cutpolygon_nodes.clone();
+        copy.cutpolygon_pairs = (ArrayList<int[]>) cutpolygon_pairs.clone();
+        return copy;
     }
 }
