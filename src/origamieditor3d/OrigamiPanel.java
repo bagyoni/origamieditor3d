@@ -259,7 +259,6 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
 
                 case UV:
                     PanelCamera.drawTexture(g, this.getWidth(), this.getHeight());
-                    PanelCamera.drawEdges(g, Color.black, PanelOrigami);
                     break;
                     
                 case GRADIENT:
@@ -329,11 +328,13 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
 
             g.setColor(Color.red);
             if (neusisOn) {
-                int maxdim = Math.max(this.getWidth(), this.getHeight());
+                int maxdim = Math.max(this.getWidth(), this.getHeight())
+                        /Math.max(Math.max(Math.abs(liner_y1 - liner_y2), Math.abs(liner_x1 - liner_x2)), 1) + 1;
                 g.drawLine(liner_x2 + maxdim * (liner_y1 - liner_y2), liner_y2 + maxdim * (liner_x2 - liner_x1),
                         liner_x2 - maxdim * (liner_y1 - liner_y2), liner_y2 - maxdim * (liner_x2 - liner_x1));
             } else {
-                int maxdim = Math.max(this.getWidth(), this.getHeight());
+                int maxdim = Math.max(this.getWidth(), this.getHeight())
+                        /Math.max(Math.max(Math.abs(liner_y1 - liner_y2), Math.abs(liner_x1 - liner_x2)), 1) + 1;
                 g.drawLine(liner_x1 + maxdim * (liner_x1 - liner_x2), liner_y1 + maxdim * (liner_y1 - liner_y2),
                         liner_x2 - maxdim * (liner_x1 - liner_x2), liner_y2 - maxdim * (liner_y1 - liner_y2));
             }

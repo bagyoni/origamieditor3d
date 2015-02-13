@@ -35,6 +35,7 @@ public class OrigamiScriptTerminal {
         corners = new ArrayList<>();
         papertype = Origami.PaperType.Custom;
         paper_color = 0x0000FF;
+        paper_texture = null;
         history = new ArrayList<>();
         filename = null;
         ppoint = null;
@@ -76,12 +77,16 @@ public class OrigamiScriptTerminal {
     private Integer phi;
     private ArrayList<double[]> corners;
     private Origami.PaperType papertype;
-    private int paper_color;
     private String title;
     //
     // eltárolt szerkesztési mezők
     public Origami TerminalOrigami;
     public Camera TerminalCamera;
+    private int paper_color;
+    private java.awt.image.BufferedImage paper_texture;
+    public java.awt.image.BufferedImage paper_texture() {
+        return paper_texture;
+    }
 
     private void paramReset() {
 
@@ -92,7 +97,6 @@ public class OrigamiScriptTerminal {
         title = null;
         corners = new ArrayList<>(Arrays.asList(new double[][]{}));
         papertype = Origami.PaperType.Custom;
-        paper_color = 0x0000FF;
     }
 
     private void totalReset() {
@@ -300,6 +304,20 @@ public class OrigamiScriptTerminal {
                 OPEN();
             }
         });
+        
+        Commands.put("load-texture", new Command() {
+            @Override
+            public void execute(String... args) throws Exception {
+                LOAD_TEXTURE();
+            }
+        });
+        
+        Commands.put("unload-texture", new Command() {
+            @Override
+            public void execute(String... args) throws Exception {
+                UNLOAD_TEXTURE();
+            }
+        });
 
         Commands.put("export-ctm", new Command() {
             @Override
@@ -319,6 +337,13 @@ public class OrigamiScriptTerminal {
             @Override
             public void execute(String... args) throws Exception {
                 EXPORT_GIF();
+            }
+        });
+        
+        Commands.put("export-png", new Command() {
+            @Override
+            public void execute(String... args) throws Exception {
+                EXPORT_PNG();
             }
         });
         
@@ -1122,6 +1147,28 @@ public class OrigamiScriptTerminal {
 
         }
     }
+    
+    private void LOAD_TEXTURE() throws Exception {
+
+        switch (version) {
+
+            default:
+                LOAD_TEXTURE1();
+                break;
+
+        }
+    }
+    
+    private void UNLOAD_TEXTURE() throws Exception {
+
+        switch (version) {
+
+            default:
+                UNLOAD_TEXTURE1();
+                break;
+
+        }
+    }
 
     private void EXPORT_CTM() throws Exception {
 
@@ -1166,6 +1213,17 @@ public class OrigamiScriptTerminal {
 
         }
     }
+    
+    private void EXPORT_PNG() throws Exception {
+        
+        switch (version) {
+
+            default:
+                EXPORT_PNG1();
+                break;
+
+        }
+    }
 
     private void EXPORT_ORI() throws Exception {
 
@@ -1202,7 +1260,7 @@ public class OrigamiScriptTerminal {
 
     private void DIAGNOSTICS1() throws Exception {
 
-        if (this.access == Access.DEV) {
+        if (access == Access.DEV) {
 
             System.out.println("TerminalOrigami.vertices_size == "
                     + Integer.toString(TerminalOrigami.vertices_size()));
@@ -1241,7 +1299,7 @@ public class OrigamiScriptTerminal {
 
     private void COMPILE1() throws Exception {
 
-        if (this.access == Access.ROOT || this.access == Access.DEV) {
+        if (access == Access.ROOT || access == Access.DEV) {
 
             if (filename != null) {
 
@@ -1269,7 +1327,7 @@ public class OrigamiScriptTerminal {
 
     private void LOAD1() throws Exception {
 
-        if (this.access == Access.ROOT || this.access == Access.DEV) {
+        if (access == Access.ROOT || access == Access.DEV) {
 
             historyReset();
             history.add("version 1 filename [" + filename + "] load");
@@ -1283,7 +1341,7 @@ public class OrigamiScriptTerminal {
                         bajtok += sor + (char) 10;
                     }
 
-                    this.execute(bajtok, Access.USER);
+                    execute(bajtok, Access.USER);
                 }
             } else {
                 throw OrigamiException.H010;
@@ -1297,7 +1355,7 @@ public class OrigamiScriptTerminal {
 
     private void OPEN1() throws Exception {
 
-        if (this.access == Access.ROOT || this.access == Access.DEV) {
+        if (access == Access.ROOT || access == Access.DEV) {
 
             historyReset();
             history.add("version 1 filename [" + filename + "] open");
@@ -1313,13 +1371,30 @@ public class OrigamiScriptTerminal {
                 for (int i = 0; i < bytesb.size(); i++) {
                     bytes[i] = bytesb.get(i);
                 }
-                this.TerminalOrigami = OrigamiIO.read_gen2(new java.io.ByteArrayInputStream(bytes));
+                TerminalOrigami = OrigamiIO.read_gen2(new java.io.ByteArrayInputStream(bytes));
             } else {
                 throw OrigamiException.H010;
             }
         } else {
             throw OrigamiException.H011;
         }
+    }
+    
+    private void LOAD_TEXTURE1() throws Exception {
+
+        if (filename != null) {
+
+            paper_texture = javax.imageio.ImageIO.read(new java.io.File(filename));
+            if (paper_texture.getColorModel().hasAlpha()) {
+                throw OrigamiException.H013;
+            }
+        } else {
+            throw OrigamiException.H010;
+        }
+    }
+    
+    private void UNLOAD_TEXTURE1() throws Exception {
+        paper_texture = null;
     }
 
     private void EXPORT_CTM1() throws Exception {
@@ -1329,7 +1404,7 @@ public class OrigamiScriptTerminal {
             if (new java.io.File(filename).exists() && access != Access.ROOT && access != Access.DEV) {
                 throw OrigamiException.H011;
             }
-            Export.exportCTM(TerminalOrigami, filename);
+            Export.exportCTM(TerminalOrigami, filename, paper_texture);
         } else {
             throw OrigamiException.H010;
         }
@@ -1382,6 +1457,21 @@ public class OrigamiScriptTerminal {
         paramReset();
     }
 
+    private void EXPORT_PNG1() throws Exception {
+
+        if (filename != null) {
+
+            if (new java.io.File(filename).exists() && access != Access.ROOT && access != Access.DEV) {
+                throw OrigamiException.H011;
+            }
+            Export.exportPNG(TerminalOrigami, filename);
+        } else {
+            throw OrigamiException.H010;
+        }
+
+        paramReset();
+    }
+    
     private void EXPORT_ORI1() throws Exception {
 
         if (filename != null) {

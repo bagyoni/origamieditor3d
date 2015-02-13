@@ -968,6 +968,7 @@ public class Camera {
     }
 
     public void setTexture(java.awt.image.BufferedImage texture) throws Exception {
+        
         if (texture.getColorModel().hasAlpha()) {
             throw OrigamiException.H013;
         }

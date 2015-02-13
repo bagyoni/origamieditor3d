@@ -12,6 +12,7 @@
 // along with this program.  If not, see <http:// www.gnu.org/licenses/>.
 package origamieditor3d.origami;
 
+import java.awt.Color;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -31,18 +32,11 @@ public class Export {
     final static public int page_height = 842;
     final static public int figure_frame = 200;
 
-    static private int exports = 1;
-
-    static public int exports() {
-
-        return exports;
-    }
-
-    static public int exportCTM(Origami origami, String filename) {
+    static public int exportCTM(Origami origami, String filename, java.awt.image.BufferedImage texture) {
 
         try {
 
-            Camera kamera = new Camera(230, 230, 1);
+            Camera kamera = new Camera(0, 0, 1);
             kamera.adjust(origami);
 
             int haromszogek_hossz = 0;
@@ -92,7 +86,7 @@ public class Export {
             bajtlista.add((byte) (uj_int >>> 24));
 
             //UV térképek száma
-            uj_int = 0x00000000;
+            uj_int = texture == null ? 0 : 1;
             bajtlista.add((byte) (uj_int));
             bajtlista.add((byte) (uj_int >>> 8));
             bajtlista.add((byte) (uj_int >>> 16));
@@ -230,13 +224,66 @@ public class Export {
                 bajtlista.add((byte) (uj_int >>> 16));
                 bajtlista.add((byte) (uj_int >>> 24));
             }
+            
+            if (texture != null) {
+                
+                uj_int = 0x43584554;
+                bajtlista.add((byte) (uj_int));
+                bajtlista.add((byte) (uj_int >>> 8));
+                bajtlista.add((byte) (uj_int >>> 16));
+                bajtlista.add((byte) (uj_int >>> 24));
+                
+                bajtlista.add((byte)5);
+                bajtlista.add((byte)0);
+                bajtlista.add((byte)0);
+                bajtlista.add((byte)0);
+                bajtlista.add((byte)'P');
+                bajtlista.add((byte)'a');
+                bajtlista.add((byte)'p');
+                bajtlista.add((byte)'e');
+                bajtlista.add((byte)'r');
+                
+                long u = 0;
+                File teximg = new File(filename + "-texture.png");
+                
+                while (teximg.exists()) {
+                    
+                    teximg = new File(filename + "-texture" + u + ".png");
+                    u++;
+                }
+                
+                javax.imageio.ImageIO.write(texture, "png", teximg);
+                
+                bajtlista.add((byte)teximg.getName().length());
+                bajtlista.add((byte)0);
+                bajtlista.add((byte)0);
+                bajtlista.add((byte)0);
+                for (int i=0; i<teximg.getName().length(); i++) {
+                    bajtlista.add((byte)teximg.getName().charAt(i));
+                }
+                
+                //the UV mapping is defined by the vertices in the paper space
+                for (int i = 0; i < origami.vertices_size(); i++) {
+
+                    uj_int = Float.floatToIntBits((float) (origami.vertices2d().get(i)[0]/origami.paperWidth()));
+                    bajtlista.add((byte) (uj_int));
+                    bajtlista.add((byte) (uj_int >>> 8));
+                    bajtlista.add((byte) (uj_int >>> 16));
+                    bajtlista.add((byte) (uj_int >>> 24));
+
+                    uj_int = Float.floatToIntBits((float) (1 - origami.vertices2d().get(i)[1]/origami.paperHeight()));
+                    bajtlista.add((byte) (uj_int));
+                    bajtlista.add((byte) (uj_int >>> 8));
+                    bajtlista.add((byte) (uj_int >>> 16));
+                    bajtlista.add((byte) (uj_int >>> 24));
+                }
+            }
 
             byte[] bajtok = new byte[bajtlista.size()];
             for (int i = 0; i < bajtlista.size(); i++) {
 
                 bajtok[i] = bajtlista.get(i);
             }
-
 
             File ctm = new File(filename);
             if (ctm.exists()) ctm.delete();
@@ -1327,11 +1374,9 @@ public class Export {
             fos.close();
             return 1;
         } catch (Exception ex) {
-            
             return 0;
         }
     }
-    
     
     static public int exportRevolvingGIF(Origami origami, Camera refcam, int color, int width, int height, String filename) {
         
@@ -1461,7 +1506,28 @@ public class Export {
             fos.close();
             return 1;
         } catch (Exception ex) {
+            return 0;
+        }
+    }
+    
+    static public int exportPNG(Origami origami, String filename) {
+        
+        try {
             
+            File png = new File(filename);
+            if (png.exists()) png.delete();
+            java.awt.image.BufferedImage img = new java.awt.image.BufferedImage((int)origami.paperWidth(), (int)origami.paperHeight(), java.awt.image.BufferedImage.TYPE_INT_RGB);
+            java.awt.Graphics2D g = img.createGraphics();
+            g.setBackground(java.awt.Color.WHITE);
+            g.clearRect(0, 0, (int)origami.paperWidth(), (int)origami.paperHeight());
+            new Camera((int)origami.paperWidth()/2, (int)origami.paperHeight()/2, 1).drawCreasePattern(g, Color.BLACK, origami);
+            
+            if (javax.imageio.ImageIO.write(img, "png", png)) {
+                return 1;
+            } else {
+                return 0;
+            }
+        } catch (Exception ex) {
             return 0;
         }
     }
