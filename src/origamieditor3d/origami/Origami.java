@@ -601,13 +601,14 @@ public class Origami {
      */
     protected boolean cutPolygon(double[] ppoint, double[] pnormal, int polygonIndex) {
 
-        if (isNonDegenerate(polygonIndex)) {
+        if (isCut(ppoint, pnormal, polygonIndex)) {
 
             ArrayList<Integer> ujsokszog1 = new ArrayList<>();
             ArrayList<Integer> ujsokszog2 = new ArrayList<>();
 
-            for (int i = 0; i < polygons.get(polygonIndex).size() - 1; i++) {
+            for (int i = 0; i < polygons.get(polygonIndex).size(); i++) {
 
+                int j = (i + 1) % polygons.get(polygonIndex).size();
                 if (point_on_plane(ppoint, pnormal, vertices.get(polygons.get(polygonIndex).get(i)))) {
 
                     ujsokszog1.add(polygons.get(polygonIndex).get(i));
@@ -620,16 +621,16 @@ public class Origami {
                         ujsokszog2.add(polygons.get(polygonIndex).get(i));
                     }
 
-                    if (plane_between_points(ppoint, pnormal, vertices.get(polygons.get(polygonIndex).get(i)), vertices.get(polygons.get(polygonIndex).get(i + 1)))) {
+                    if (plane_between_points(ppoint, pnormal, vertices.get(polygons.get(polygonIndex).get(i)), vertices.get(polygons.get(polygonIndex).get(j)))) {
 
                         freshcut:
                         {
                             for (int[] szakasz : cutpolygon_nodes) {
-                                if (szakasz[0] == polygons.get(polygonIndex).get(i) && szakasz[1] == polygons.get(polygonIndex).get(i + 1)) {
+                                if (szakasz[0] == polygons.get(polygonIndex).get(i) && szakasz[1] == polygons.get(polygonIndex).get(j)) {
                                     ujsokszog1.add(szakasz[2]);
                                     ujsokszog2.add(szakasz[2]);
                                     break freshcut;
-                                } else if (szakasz[0] == polygons.get(polygonIndex).get(i + 1) && szakasz[1] == polygons.get(polygonIndex).get(i)) {
+                                } else if (szakasz[0] == polygons.get(polygonIndex).get(j) && szakasz[1] == polygons.get(polygonIndex).get(i)) {
                                     ujsokszog1.add(szakasz[2]);
                                     ujsokszog2.add(szakasz[2]);
                                     break freshcut;
@@ -637,7 +638,7 @@ public class Origami {
                             }
                             double D = ppoint[0] * pnormal[0] + ppoint[1] * pnormal[1] + ppoint[2] * pnormal[2];
 
-                            double[] iranyvek = vector(vertices.get(polygons.get(polygonIndex).get(i)), vertices.get(polygons.get(polygonIndex).get(i + 1)));
+                            double[] iranyvek = vector(vertices.get(polygons.get(polygonIndex).get(i)), vertices.get(polygons.get(polygonIndex).get(j)));
                             double X = vertices.get(polygons.get(polygonIndex).get(i))[0];
                             double Y = vertices.get(polygons.get(polygonIndex).get(i))[1];
                             double Z = vertices.get(polygons.get(polygonIndex).get(i))[2];
@@ -652,89 +653,27 @@ public class Origami {
                             double[] metszet = new double[]{X + t * U, Y + t * V, Z + t * W};
                             addVertex(metszet);
 
-                            double suly1 = vector_length(vector(metszet, vertices.get(polygons.get(polygonIndex).get(i + 1))));
+                            double suly1 = vector_length(vector(metszet, vertices.get(polygons.get(polygonIndex).get(j))));
                             double suly2 = vector_length(vector(metszet, vertices.get(polygons.get(polygonIndex).get(i))));
                             add2dVertex(new double[]{
-                                (vertices2d.get(polygons.get(polygonIndex).get(i))[0] * suly1 + vertices2d.get(polygons.get(polygonIndex).get(i + 1))[0] * suly2) / (suly1 + suly2),
-                                (vertices2d.get(polygons.get(polygonIndex).get(i))[1] * suly1 + vertices2d.get(polygons.get(polygonIndex).get(i + 1))[1] * suly2) / (suly1 + suly2),
+                                (vertices2d.get(polygons.get(polygonIndex).get(i))[0] * suly1 + vertices2d.get(polygons.get(polygonIndex).get(j))[0] * suly2) / (suly1 + suly2),
+                                (vertices2d.get(polygons.get(polygonIndex).get(i))[1] * suly1 + vertices2d.get(polygons.get(polygonIndex).get(j))[1] * suly2) / (suly1 + suly2),
                                 0
                             });
 
                             ujsokszog1.add(vertices_size - 1);
                             ujsokszog2.add(vertices_size - 1);
-                            cutpolygon_nodes.add(new int[]{polygons.get(polygonIndex).get(i), polygons.get(polygonIndex).get(i + 1), vertices_size - 1});
+                            cutpolygon_nodes.add(new int[]{polygons.get(polygonIndex).get(i), polygons.get(polygonIndex).get(j), vertices_size - 1});
                         }
                     }
                 }
             }
 
-            if (point_on_plane(ppoint, pnormal, vertices.get(polygons.get(polygonIndex).get(polygons.get(polygonIndex).size() - 1)))) {
-
-                ujsokszog1.add(polygons.get(polygonIndex).get(polygons.get(polygonIndex).size() - 1));
-                ujsokszog2.add(polygons.get(polygonIndex).get(polygons.get(polygonIndex).size() - 1));
-            } else {
-
-                if (scalar_product(vertices.get(polygons.get(polygonIndex).get(polygons.get(polygonIndex).size() - 1)), pnormal) > scalar_product(ppoint, pnormal)) {
-                    ujsokszog1.add(polygons.get(polygonIndex).get(polygons.get(polygonIndex).size() - 1));
-                } else {
-                    ujsokszog2.add(polygons.get(polygonIndex).get(polygons.get(polygonIndex).size() - 1));
-                }
-
-                if (plane_between_points(ppoint, pnormal, vertices.get(polygons.get(polygonIndex).get(polygons.get(polygonIndex).size() - 1)), vertices.get(polygons.get(polygonIndex).get(0)))) {
-
-                    freshcut:
-                    {
-                        for (int[] szakasz : cutpolygon_nodes) {
-                            if (szakasz[0] == polygons.get(polygonIndex).get(polygons.get(polygonIndex).size() - 1) && szakasz[1] == polygons.get(polygonIndex).get(0)) {
-                                ujsokszog1.add(szakasz[2]);
-                                ujsokszog2.add(szakasz[2]);
-                                break freshcut;
-                            } else if (szakasz[0] == polygons.get(polygonIndex).get(0) && szakasz[1] == polygons.get(polygonIndex).get(polygons.get(polygonIndex).size() - 1)) {
-                                ujsokszog1.add(szakasz[2]);
-                                ujsokszog2.add(szakasz[2]);
-                                break freshcut;
-                            }
-                        }
-                        double D = ppoint[0] * pnormal[0] + ppoint[1] * pnormal[1] + ppoint[2] * pnormal[2];
-
-                        double[] iranyvek = vector(vertices.get(polygons.get(polygonIndex).get(polygons.get(polygonIndex).size() - 1)), vertices.get(polygons.get(polygonIndex).get(0)));
-                        double X = vertices.get(polygons.get(polygonIndex).get(polygons.get(polygonIndex).size() - 1))[0];
-                        double Y = vertices.get(polygons.get(polygonIndex).get(polygons.get(polygonIndex).size() - 1))[1];
-                        double Z = vertices.get(polygons.get(polygonIndex).get(polygons.get(polygonIndex).size() - 1))[2];
-                        double U = iranyvek[0];
-                        double V = iranyvek[1];
-                        double W = iranyvek[2];
-                        double A = pnormal[0];
-                        double B = pnormal[1];
-                        double C = pnormal[2];
-                        double t = -(A * X + B * Y + C * Z - D) / (A * U + B * V + C * W);
-
-                        double[] metszet = new double[]{X + t * U, Y + t * V, Z + t * W};
-                        addVertex(metszet);
-
-                        double suly1 = vector_length(vector(metszet, vertices.get(polygons.get(polygonIndex).get(0))));
-                        double suly2 = vector_length(vector(metszet, vertices.get(polygons.get(polygonIndex).get(polygons.get(polygonIndex).size() - 1))));
-                        add2dVertex(new double[]{
-                            (vertices2d.get(polygons.get(polygonIndex).get(polygons.get(polygonIndex).size() - 1))[0] * suly1 + vertices2d.get(polygons.get(polygonIndex).get(0))[0] * suly2) / (suly1 + suly2),
-                            (vertices2d.get(polygons.get(polygonIndex).get(polygons.get(polygonIndex).size() - 1))[1] * suly1 + vertices2d.get(polygons.get(polygonIndex).get(0))[1] * suly2) / (suly1 + suly2),
-                            0
-                        });
-
-                        ujsokszog1.add(vertices_size - 1);
-                        ujsokszog2.add(vertices_size - 1);
-                        cutpolygon_nodes.add(new int[]{polygons.get(polygonIndex).get(polygons.get(polygonIndex).size() - 1), polygons.get(polygonIndex).get(0), vertices_size - 1});
-                    }
-                }
-            }
-            if (isCut(ppoint, pnormal, polygonIndex)) {
-
-                cutpolygon_pairs.add(new int[]{polygonIndex, polygons.size()});
-                last_cut_polygons.add(polygons.get(polygonIndex));
-                polygons.set(polygonIndex, ujsokszog1);
-                addPolygon(ujsokszog2);
-                return true;
-            }
-            return false;
+            cutpolygon_pairs.add(new int[]{polygonIndex, polygons.size()});
+            last_cut_polygons.add(polygons.get(polygonIndex));
+            polygons.set(polygonIndex, ujsokszog1);
+            addPolygon(ujsokszog2);
+            return true;
         }
         return false;
     }
@@ -1900,6 +1839,108 @@ public class Origami {
         int Yt = (int) Math.round((Math.abs(sikpontnv[1] - Ye)) * 256 * 256);
         int Zt = (int) Math.round((Math.abs(sikpontnv[2] - Ze)) * 256 * 256);
         return new double[]{elojel * ((double) Xe + Math.signum(Xe) * Xt / 256 / 256), elojel * ((double) Ye + Math.signum(Ye) * Yt / 256 / 256), elojel * ((double) Ze + Math.signum(Ze) * Zt / 256 / 256)};
+    }
+    
+    public ArrayList<double[]> foldingLine (double[] ppoint, double[] pnormal) {
+        
+        double[] ppoint1 = planarPointRound(ppoint, pnormal);
+        double[] pnormal1 = normalvectorRound(ppoint, pnormal);
+        ArrayList<double[]> line = new ArrayList<>();
+        for (int polygonIndex = 0; polygonIndex < polygons_size; polygonIndex++) {
+            
+            if (isCut(ppoint1, pnormal1, polygonIndex)) {
+
+                double[] start = null, end = null;
+                for (int i = 0; i < polygons.get(polygonIndex).size(); i++) {
+
+                    int j = (i + 1) % polygons.get(polygonIndex).size();
+                    if (point_on_plane(ppoint1, pnormal1, vertices.get(polygons.get(polygonIndex).get(i)))) {
+
+                        end = start;
+                        start = vertices.get(polygons.get(polygonIndex).get(i));
+                    } else {
+
+                        if (plane_between_points(ppoint1, pnormal1, vertices.get(polygons.get(polygonIndex).get(i)), vertices.get(polygons.get(polygonIndex).get(j)))) {
+
+                            double D = ppoint1[0] * pnormal1[0] + ppoint1[1] * pnormal1[1] + ppoint1[2] * pnormal1[2];
+
+                            double[] iranyvek = vector(vertices.get(polygons.get(polygonIndex).get(i)), vertices.get(polygons.get(polygonIndex).get(j)));
+                            double X = vertices.get(polygons.get(polygonIndex).get(i))[0];
+                            double Y = vertices.get(polygons.get(polygonIndex).get(i))[1];
+                            double Z = vertices.get(polygons.get(polygonIndex).get(i))[2];
+                            double U = iranyvek[0];
+                            double V = iranyvek[1];
+                            double W = iranyvek[2];
+                            double A = pnormal1[0];
+                            double B = pnormal1[1];
+                            double C = pnormal1[2];
+                            double t = -(A * X + B * Y + C * Z - D) / (A * U + B * V + C * W);
+
+                            end = start;
+                            start = new double[]{X + t * U, Y + t * V, Z + t * W};
+                        }
+                    }
+                }
+                line.add(start);
+                line.add(end);
+            }
+        }
+        return line;
+    }
+    
+    public ArrayList<double[]> foldingLine2d (double[] ppoint, double[] pnormal) {
+        
+        double[] ppoint1 = planarPointRound(ppoint, pnormal);
+        double[] pnormal1 = normalvectorRound(ppoint, pnormal);
+        ArrayList<double[]> line = new ArrayList<>();
+        for (int polygonIndex = 0; polygonIndex < polygons_size; polygonIndex++) {
+            
+            if (isCut(ppoint1, pnormal1, polygonIndex)) {
+
+                double[] start = null, end = null;
+                for (int i = 0; i < polygons.get(polygonIndex).size(); i++) {
+
+                    int j = (i + 1) % polygons.get(polygonIndex).size();
+                    if (point_on_plane(ppoint1, pnormal1, vertices.get(polygons.get(polygonIndex).get(i)))) {
+
+                        end = start;
+                        start = vertices2d.get(polygons.get(polygonIndex).get(i));
+                    } else {
+
+                        if (plane_between_points(ppoint1, pnormal1, vertices.get(polygons.get(polygonIndex).get(i)), vertices.get(polygons.get(polygonIndex).get(j)))) {
+
+                            double D = ppoint1[0] * pnormal1[0] + ppoint1[1] * pnormal1[1] + ppoint1[2] * pnormal1[2];
+
+                            double[] iranyvek = vector(vertices.get(polygons.get(polygonIndex).get(i)), vertices.get(polygons.get(polygonIndex).get(j)));
+                            double X = vertices.get(polygons.get(polygonIndex).get(i))[0];
+                            double Y = vertices.get(polygons.get(polygonIndex).get(i))[1];
+                            double Z = vertices.get(polygons.get(polygonIndex).get(i))[2];
+                            double U = iranyvek[0];
+                            double V = iranyvek[1];
+                            double W = iranyvek[2];
+                            double A = pnormal1[0];
+                            double B = pnormal1[1];
+                            double C = pnormal1[2];
+                            double t = -(A * X + B * Y + C * Z - D) / (A * U + B * V + C * W);
+
+                            double[] metszet = new double[]{X + t * U, Y + t * V, Z + t * W};
+
+                            double suly1 = vector_length(vector(metszet, vertices.get(polygons.get(polygonIndex).get(j))));
+                            double suly2 = vector_length(vector(metszet, vertices.get(polygons.get(polygonIndex).get(i))));
+                            end = start;
+                            start = new double[]{
+                                (vertices2d.get(polygons.get(polygonIndex).get(i))[0] * suly1 + vertices2d.get(polygons.get(polygonIndex).get(j))[0] * suly2) / (suly1 + suly2),
+                                (vertices2d.get(polygons.get(polygonIndex).get(i))[1] * suly1 + vertices2d.get(polygons.get(polygonIndex).get(j))[1] * suly2) / (suly1 + suly2),
+                                0
+                            };
+                        }
+                    }
+                }
+                line.add(start);
+                line.add(end);
+            }
+        }
+        return line;
     }
     
     @Override

@@ -637,6 +637,32 @@ public class Camera {
             }
         }
     }
+    
+    public void drawFoldingLine(Graphics canvas, Color color, double[] ppoint, double[] pnormal, Origami origami) {
+        
+        canvas.setColor(color);
+        java.util.ArrayList<double[]> line = origami.foldingLine(ppoint, pnormal);
+        for (int i = 0; i < line.size(); i += 2) {
+            canvas.drawLine(
+                    (short) (projection(line.get(i))[0] + xshift),
+                    (short) (projection(line.get(i))[1] + yshift), 
+                    (short) (projection(line.get(i+1))[0] + xshift),
+                    (short) (projection(line.get(i+1))[1] + yshift));
+        }
+    }
+    
+    public void draw2dFoldingLine(Graphics canvas, Color color, double[] ppoint, double[] pnormal, Origami origami) {
+        
+        canvas.setColor(color);
+        java.util.ArrayList<double[]> line = origami.foldingLine2d(ppoint, pnormal);
+        for (int i = 0; i < line.size(); i += 2) {
+            canvas.drawLine(
+                    (short) (projection(line.get(i))[0] + xshift),
+                    (short) (projection(line.get(i))[1] + yshift), 
+                    (short) (projection(line.get(i+1))[0] + xshift),
+                    (short) (projection(line.get(i+1))[1] + yshift));
+        }
+    }
 
     public String pfdLiner(int x, int y, double[] ppoint, double[] pnormal) {
 

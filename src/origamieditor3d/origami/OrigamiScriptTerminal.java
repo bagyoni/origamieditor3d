@@ -1545,7 +1545,7 @@ public class OrigamiScriptTerminal {
             result = result.replace("  ", " ");
         }
 
-        // 5. lépés: szögletes zárójelen belüli szóközök cseréje _-ra.
+        // 5. lépés: szögletes zárójelen belüli szóközök cseréje |-ra.
         boolean param = false;
         for (int i = 0; i < result.length() - 1; i++) {
 
@@ -1553,7 +1553,7 @@ public class OrigamiScriptTerminal {
                 param = false;
             }
             if (param && result.charAt(i) == ' ') {
-                result = result.substring(0, i) + "_" + result.substring(i + 1);
+                result = result.substring(0, i) + "|" + result.substring(i + 1);
             }
             if (result.charAt(i) == '[') {
                 param = true;
@@ -1594,7 +1594,7 @@ public class OrigamiScriptTerminal {
                                     }
                                     if (!szavak[ii].equals("")) {
                                         argumentumok.add(szavak[ii].replace("[", "")
-                                                .replace("]", "").replace("_", " "));
+                                                .replace("]", "").replace("|", " "));
                                     }
                                 }
 

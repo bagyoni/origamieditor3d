@@ -43,10 +43,10 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
         alignment_point = null;
         alignment_radius = 0;
         paper_front_color = 0xFFFFFF;
-        neusisOn = false;
         previewOn = false;
         displaymode = DisplayMode.GRADIENT;
         beacons = null;
+        linerMode = LinerMode.Normal;
     }
     private Origami PanelOrigami;
     protected Camera PanelCamera;
@@ -61,11 +61,11 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
     private int[] alignment_point;
     private int alignment_radius;
     private int paper_front_color;
-    private boolean neusisOn;
     private boolean previewOn;
     private DisplayMode displaymode;
     private double[][] beacons;
     private Integer protractor_angle;
+    private LinerMode linerMode;
 
     public enum DisplayMode {
 
@@ -78,7 +78,7 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
     }
 
     @Override
-    public void grabLinerAt(int vertIndex) {
+    public void grabTriangleAt(int vertIndex) {
         liner_grab_index = vertIndex;
     }
 
@@ -92,7 +92,8 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
         ready_to_paint = true;
     }
 
-    public void linerOn(int x1, int y1, int x2, int y2) {
+    @Override
+    public void linerOn(Camera refcam, int x1, int y1, int x2, int y2) {
 
         liner_x1 = x1;
         liner_y1 = y1;
@@ -101,16 +102,9 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
         linerOn = true;
     }
 
+    @Override
     public void linerOff() {
         linerOn = false;
-    }
-
-    public void neusisOn() {
-        neusisOn = true;
-    }
-
-    public void neusisOff() {
-        neusisOn = false;
     }
 
     public void previewOn() {
@@ -137,9 +131,22 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
         }
         trackerOn = true;
     }
+    
+    @Override
+    public void resetTracker() {
+
+        tracker_x = null;
+        tracker_y = null;
+        trackerOn = false;
+    }
 
     @Override
-    public void tiltLinerTo(Camera refkamera, Integer... xy) {
+    public void setLinerMode(LinerMode mode) {
+        linerMode = mode;
+    }
+    
+    @Override
+    public void tiltTriangleTo(Camera refkamera, Integer... xy) {
 
         try {
             int x = xy[0];
@@ -155,6 +162,15 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
         }
         liner_grab_index++;
         liner_grab_index %= 3;
+    }
+    
+    @Override
+    public void resetTriangle() {
+        
+        liner_grab_index = 0;
+        liner_triangle[0] = null;
+        liner_triangle[1] = null;
+        liner_triangle[2] = null;
     }
 
     public void setAlignmentPoint(int... point) {
@@ -319,7 +335,7 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
                     this.PanelCamera.axis_x[1] / this.PanelCamera.zoom() * pont1X + this.PanelCamera.axis_y[1] / this.PanelCamera.zoom() * pont1Y + this.PanelCamera.camera_pos[1],
                     this.PanelCamera.axis_x[2] / this.PanelCamera.zoom() * pont1X + this.PanelCamera.axis_y[2] / this.PanelCamera.zoom() * pont1Y + this.PanelCamera.camera_pos[2]
                 };
-                if (neusisOn) {
+                if (linerMode == LinerMode.Neusis) {
                     vonalzoNV = Origami.vector(vonalzoPT, vonalzoPT1);
                 }
 
@@ -327,7 +343,7 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
             }
 
             g.setColor(Color.red);
-            if (neusisOn) {
+            if (linerMode == LinerMode.Neusis) {
                 int maxdim = Math.max(this.getWidth(), this.getHeight())
                         /Math.max(Math.max(Math.abs(liner_y1 - liner_y2), Math.abs(liner_x1 - liner_x2)), 1) + 1;
                 g.drawLine(liner_x2 + maxdim * (liner_y1 - liner_y2), liner_y2 + maxdim * (liner_x2 - liner_x1),
@@ -345,7 +361,10 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
             g.drawLine(x - 5, y, x + 5, y);
             g.drawLine(x, y - 5, x, y + 5);
         }
+        
         g.setColor(Color.magenta);
+        ((java.awt.Graphics2D)g).setStroke(new java.awt.BasicStroke(2));
+        
         if (liner_triangle[0] != null) {
             int x = (int) (PanelCamera.projection(liner_triangle[0])[0]) + PanelCamera.xshift;
             int y = (int) (PanelCamera.projection(liner_triangle[0])[1]) + PanelCamera.yshift;
@@ -364,6 +383,8 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
             g.drawLine(x - 3, y + 3, x + 3, y - 3);
             g.drawLine(x - 3, y - 3, x + 3, y + 3);
         }
+        ((java.awt.Graphics2D)g).setStroke(new java.awt.BasicStroke(1));
+        
         if (protractor_angle != null) {
             drawProtractor(g, protractor_angle);
         }
