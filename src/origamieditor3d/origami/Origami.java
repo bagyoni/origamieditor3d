@@ -139,6 +139,10 @@ public class Origami {
         }
         reset();
     }
+    
+    public int generation() {
+        return 1;
+    }
 
     protected ArrayList<double[]> vertices = new ArrayList<>(Arrays.asList(new double[][]{}));
 
@@ -1941,6 +1945,100 @@ public class Origami {
             }
         }
         return line;
+    }
+    
+    public int complexity(int step) {
+        
+        Origami origami = clone();
+        if (step > origami.history_pointer) {
+            return 0;
+        }
+        if (origami.history.get(step)[0] == 1) {
+            
+            origami.undo(origami.history_pointer-step);
+            origami.redo(1);
+            ArrayList<int[]> pairs = (ArrayList<int[]>)origami.cutpolygon_pairs.clone();
+            origami.undo(1);
+            int maxcompl = 0;
+            
+            while (!pairs.isEmpty()) {
+                
+                ArrayList<int[]> pairs_local = new ArrayList<>();
+                pairs_local.add(pairs.remove(0));
+                for (int i=0; i<pairs_local.size(); i++) {
+                    for (int ii=0; ii<pairs.size(); ii++) {
+                        
+                        for (int vert : origami.polygons.get(pairs.get(ii)[0])) {
+                            if (origami.polygons.get(pairs_local.get(i)[0]).contains(vert)) {
+                                
+                                pairs_local.add(pairs.remove(ii));
+                                ii--;
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (pairs_local.size() - 1 > maxcompl) {
+                    maxcompl = pairs_local.size() - 1;
+                }
+            }
+            
+            return maxcompl;
+        }
+        if (origami.history.get(step)[0] == 3) {
+            
+            origami.undo(origami.history_pointer-step+1);
+            origami.redo(1);
+            
+            double[] point = new double[] {
+                origami.history().get(step)[1],
+                origami.history().get(step)[2],
+                origami.history().get(step)[3]
+            };
+            double[] normal = new double[] {
+                origami.history().get(step)[4],
+                origami.history().get(step)[5],
+                origami.history().get(step)[6]
+            };
+            int index = (int)origami.history().get(step)[7];
+            
+            ArrayList<int[]> pairs = (ArrayList<int[]>)origami.cutpolygon_pairs.clone();
+            ArrayList<Integer> selection = origami.polygonSelect(point, normal, index);
+            int compl = 0;
+            
+            for (int[] pair : pairs) {
+                if (selection.contains(pair[0]) || selection.contains(pair[1])) {
+                    compl ++;
+                }
+            }
+            
+            return compl > 0 ? compl - 1 : 0;
+        }
+        return 0;
+    }
+    
+    public int difficulty() {
+        
+        Origami origami = clone();
+        origami.redoAll();
+
+        int sum = 0;
+        for (int i=0; i<origami.history().size(); i++) {
+            
+            sum += origami.complexity(i);
+        }
+        return sum;
+    }
+    
+    static public int difficultyLevel(int difficulty) {
+        
+        if (difficulty == 0) return 0;
+        if (difficulty <= 50) return 1;
+        if (difficulty <= 100) return 2;
+        if (difficulty <= 200) return 3;
+        if (difficulty <= 400) return 4;
+        if (difficulty <= 800) return 5;
+        return 6;
     }
     
     @Override

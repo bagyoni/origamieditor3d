@@ -42,6 +42,11 @@ public class OrigamiGen2 extends Origami {
     }
     
     @Override
+    public int generation() {
+        return 2;
+    }
+    
+    @Override
     protected boolean cutPolygon(double[] ppoint, double[] pnormal, int polygonIndex) {
 
         if (isCut(ppoint, pnormal, polygonIndex)) {
