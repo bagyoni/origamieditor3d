@@ -340,6 +340,13 @@ public class OrigamiScriptTerminal {
             }
         });
         
+        Commands.put("export-jar", new Command() {
+            @Override
+            public void execute(String... args) throws Exception {
+                EXPORT_JAR();
+            }
+        });
+        
         Commands.put("export-png", new Command() {
             @Override
             public void execute(String... args) throws Exception {
@@ -1214,6 +1221,17 @@ public class OrigamiScriptTerminal {
         }
     }
     
+    private void EXPORT_JAR() throws Exception {
+        
+        switch (version) {
+
+            default:
+                EXPORT_JAR1();
+                break;
+
+        }
+    }
+    
     private void EXPORT_PNG() throws Exception {
         
         switch (version) {
@@ -1457,6 +1475,21 @@ public class OrigamiScriptTerminal {
         paramReset();
     }
 
+    private void EXPORT_JAR1() throws Exception {
+
+        if (filename != null) {
+
+            if (new java.io.File(filename).exists() && access != Access.ROOT && access != Access.DEV) {
+                throw OrigamiException.H011;
+            }
+            Export.exportJAR(TerminalOrigami, filename);
+        } else {
+            throw OrigamiException.H010;
+        }
+
+        paramReset();
+    }
+    
     private void EXPORT_PNG1() throws Exception {
 
         if (filename != null) {

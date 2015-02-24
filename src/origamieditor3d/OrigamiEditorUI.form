@@ -143,6 +143,14 @@
                     </MenuItem>
                   </SubComponents>
                 </Menu>
+                <MenuItem class="javax.swing.JMenuItem" name="ui_file_export_toself">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="To self-displaying ORI..."/>
+                  </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="ui_file_export_toselfActionPerformed"/>
+                  </Events>
+                </MenuItem>
                 <MenuItem class="javax.swing.JMenuItem" name="ui_file_export_crease">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Crease pattern to PNG..."/>
@@ -155,12 +163,12 @@
             </Menu>
             <MenuItem class="javax.swing.JPopupMenu$Separator" name="jSeparator6">
             </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="jMenuItem2">
+            <MenuItem class="javax.swing.JMenuItem" name="ui_file_properties">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Properties"/>
               </Properties>
               <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jMenuItem2ActionPerformed"/>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="ui_file_propertiesActionPerformed"/>
               </Events>
             </MenuItem>
           </SubComponents>
