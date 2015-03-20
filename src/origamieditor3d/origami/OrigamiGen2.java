@@ -69,7 +69,8 @@ public class OrigamiGen2 extends Origami {
                         ujsokszog2.add(polygons.get(polygonIndex).get(i));
                     }
 
-                    if (plane_between_points(ppoint, pnormal, vertices.get(polygons.get(polygonIndex).get(i)), vertices.get(polygons.get(polygonIndex).get(j))) && !point_on_plane(ppoint, pnormal, vertices.get(polygons.get(polygonIndex).get(j)))) {
+                    if (plane_between_points(ppoint, pnormal, vertices.get(polygons.get(polygonIndex).get(i)), vertices.get(polygons.get(polygonIndex).get(j)))
+                            && !point_on_plane(ppoint, pnormal, vertices.get(polygons.get(polygonIndex).get(j)))) {
 
                         freshcut:
                         {
@@ -112,6 +113,16 @@ public class OrigamiGen2 extends Origami {
                             ujsokszog1.add(vertices_size - 1);
                             ujsokszog2.add(vertices_size - 1);
                             cutpolygon_nodes.add(new int[]{polygons.get(polygonIndex).get(i), polygons.get(polygonIndex).get(j), vertices_size - 1});
+                            
+                            for (int ii = 0; ii < border.size(); ii++) {
+                                if (border.get(ii).equals(polygons.get(polygonIndex).get(i))) {
+                                    if (border.get((ii + 1) % border.size()).equals(polygons.get(polygonIndex).get(j))) {
+                                        
+                                        border.add(ii + 1, vertices_size - 1);
+                                        break;
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -142,6 +153,7 @@ public class OrigamiGen2 extends Origami {
         copy.last_cut_polygons = (ArrayList<ArrayList<Integer>>) last_cut_polygons.clone();
         copy.cutpolygon_nodes = (ArrayList<int[]>) cutpolygon_nodes.clone();
         copy.cutpolygon_pairs = (ArrayList<int[]>) cutpolygon_pairs.clone();
+        copy.border = (ArrayList<Integer>) border.clone();
         return copy;
     }
 }
