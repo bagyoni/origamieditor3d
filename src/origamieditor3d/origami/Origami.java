@@ -566,9 +566,11 @@ public class Origami {
 
             boolean egyik = false, masik = false;
             for (int i = 0; i < polygons.get(polygonIndex).size(); i++) {
-                if (scalar_product(vertices.get(polygons.get(polygonIndex).get(i)), pnormal) / Math.sqrt(Math.max(scalar_product(pnormal, pnormal), 1)) > scalar_product(ppoint, pnormal) / Math.sqrt(Math.max(scalar_product(pnormal, pnormal), 1)) + 0.00000001) {
+                if (scalar_product(vertices.get(polygons.get(polygonIndex).get(i)), pnormal) / Math.sqrt(Math.max(scalar_product(pnormal, pnormal), 1))
+                        > scalar_product(ppoint, pnormal) / Math.sqrt(Math.max(scalar_product(pnormal, pnormal), 1)) + 0.00000001) {
                     egyik = true;
-                } else if (scalar_product(vertices.get(polygons.get(polygonIndex).get(i)), pnormal) / Math.sqrt(Math.max(scalar_product(pnormal, pnormal), 1)) < scalar_product(ppoint, pnormal) / Math.sqrt(Math.max(scalar_product(pnormal, pnormal), 1)) - 0.00000001) {
+                } else if (scalar_product(vertices.get(polygons.get(polygonIndex).get(i)), pnormal) / Math.sqrt(Math.max(scalar_product(pnormal, pnormal), 1))
+                        < scalar_product(ppoint, pnormal) / Math.sqrt(Math.max(scalar_product(pnormal, pnormal), 1)) - 0.00000001) {
                     masik = true;
                 }
                 if (egyik && masik) {
@@ -672,7 +674,7 @@ public class Origami {
                             for (int ii = 0; ii < border.size(); ii++) {
                                 if (border.get(ii).equals(polygons.get(polygonIndex).get(i))) {
                                     if (border.get((ii + 1) % border.size()).equals(polygons.get(polygonIndex).get(j))) {
-                                        
+
                                         border.add(ii + 1, vertices_size - 1);
                                         break;
                                     }
@@ -730,7 +732,11 @@ public class Origami {
             }
 
             java.util.Random eltolas = new java.util.Random(polygonIndex);
-            vissza = new double[]{vissza[0] / polygons.get(polygonIndex).size() + eltolas.nextDouble() * 10 - 5, vissza[1] / polygons.get(polygonIndex).size() + eltolas.nextDouble() * 10 - 5, vissza[2] / polygons.get(polygonIndex).size() + eltolas.nextDouble() * 10 - 5};
+            vissza = new double[]{
+                vissza[0] / polygons.get(polygonIndex).size() + eltolas.nextDouble() * 10 - 5,
+                vissza[1] / polygons.get(polygonIndex).size() + eltolas.nextDouble() * 10 - 5,
+                vissza[2] / polygons.get(polygonIndex).size() + eltolas.nextDouble() * 10 - 5
+            };
         }
         return vissza;
     }
@@ -851,7 +857,10 @@ public class Origami {
 
         for (int i = 1; i < hajtopontok.size() && i != maspont; i++) {
 
-            if (vector_length(vector_product(vector(vertices.get(hajtopontok.get(0)), vertices.get(hajtopontok.get(i))), vector(vertices.get(maspont), vertices.get(hajtopontok.get(i))))) > vector_length(vector(vertices.get(hajtopontok.get(0)), vertices.get(maspont)))) {
+            if (vector_length(vector_product(vector(vertices.get(hajtopontok.get(0)), vertices.get(hajtopontok.get(i))),
+                    vector(vertices.get(maspont), vertices.get(hajtopontok.get(i)))))
+                    > vector_length(vector(vertices.get(hajtopontok.get(0)), vertices.get(maspont)))) {
+
                 collin = false;
                 break;
             }
@@ -879,14 +888,15 @@ public class Origami {
                     double kepY = X * (Cy * Cx * (1 - cosphi) + Cz * sinphi) + Y * (cosphi + Cy * Cy * (1 - cosphi)) + Z * (Cy * Cz * (1 - cosphi) - Cx * sinphi);
                     double kepZ = X * (Cz * Cx * (1 - cosphi) - Cy * sinphi) + Y * (Cz * Cy * (1 - cosphi) + Cx * sinphi) + Z * (cosphi + Cz * Cz * (1 - cosphi));
 
-                    double[] kep = new double[]{kepX + vertices.get(hajtopontok.get(0))[0], kepY + vertices.get(hajtopontok.get(0))[1], kepZ + vertices.get(hajtopontok.get(0))[2]};
+                    double[] kep = new double[]{
+                        kepX + vertices.get(hajtopontok.get(0))[0],
+                        kepY + vertices.get(hajtopontok.get(0))[1],
+                        kepZ + vertices.get(hajtopontok.get(0))[2]
+                    };
                     vertices.set(i, kep);
                 }
             }
             return 0;
-        } else if (phi != 0) {
-            undo(1);
-            return 1;
         } else {
             return 1;
         }
@@ -910,7 +920,7 @@ public class Origami {
      * {@link Origami#polygonSelect(double[], double[], int) polygonSelect}.
      */
     protected void internalReflectionFold(double[] ppoint, double[] pnormal, int polygonIndex) {
-        
+
         ArrayList<Integer> kijeloles = polygonSelect(ppoint, pnormal, polygonIndex);
 
         double konst = ppoint[0] * pnormal[0] + ppoint[1] * pnormal[1] + ppoint[2] * pnormal[2];
@@ -1000,7 +1010,10 @@ public class Origami {
 
         for (int i = 1; i < hajtopontok.size() && i != maspont; i++) {
 
-            if (vector_length(vector_product(vector(vertices.get(hajtopontok.get(0)), vertices.get(hajtopontok.get(i))), vector(vertices.get(maspont), vertices.get(hajtopontok.get(i))))) > vector_length(vector(vertices.get(hajtopontok.get(0)), vertices.get(maspont)))) {
+            if (vector_length(vector_product(vector(vertices.get(hajtopontok.get(0)), vertices.get(hajtopontok.get(i))),
+                    vector(vertices.get(maspont), vertices.get(hajtopontok.get(i)))))
+                    > vector_length(vector(vertices.get(hajtopontok.get(0)), vertices.get(maspont)))) {
+
                 collin = false;
                 break;
             }
@@ -1802,7 +1815,11 @@ public class Origami {
         int Xt = (int) Math.round((Math.abs(sikpontnv[0] - Xe)) * 256 * 256);
         int Yt = (int) Math.round((Math.abs(sikpontnv[1] - Ye)) * 256 * 256);
         int Zt = (int) Math.round((Math.abs(sikpontnv[2] - Ze)) * 256 * 256);
-        return new double[]{(double) Xe + Math.signum(Xe) * Xt / 256 / 256 + Origins[hasznalt_origo][0], (double) Ye + Math.signum(Ye) * Yt / 256 / 256 + Origins[hasznalt_origo][1], (double) Ze + Math.signum(Ze) * Zt / 256 / 256 + Origins[hasznalt_origo][2]};
+        return new double[]{
+            (double) Xe + Math.signum(Xe) * Xt / 256 / 256 + Origins[hasznalt_origo][0],
+            (double) Ye + Math.signum(Ye) * Yt / 256 / 256 + Origins[hasznalt_origo][1],
+            (double) Ze + Math.signum(Ze) * Zt / 256 / 256 + Origins[hasznalt_origo][2]
+        };
     }
 
     /**
@@ -1851,7 +1868,11 @@ public class Origami {
         int Xt = (int) Math.round((Math.abs(sikpontnv[0] - Xe)) * 256 * 256);
         int Yt = (int) Math.round((Math.abs(sikpontnv[1] - Ye)) * 256 * 256);
         int Zt = (int) Math.round((Math.abs(sikpontnv[2] - Ze)) * 256 * 256);
-        return new double[]{elojel * ((double) Xe + Math.signum(Xe) * Xt / 256 / 256), elojel * ((double) Ye + Math.signum(Ye) * Yt / 256 / 256), elojel * ((double) Ze + Math.signum(Ze) * Zt / 256 / 256)};
+        return new double[]{
+            elojel * ((double) Xe + Math.signum(Xe) * Xt / 256 / 256),
+            elojel * ((double) Ye + Math.signum(Ye) * Yt / 256 / 256),
+            elojel * ((double) Ze + Math.signum(Ze) * Zt / 256 / 256)
+        };
     }
 
     public ArrayList<double[]> foldingLine(double[] ppoint, double[] pnormal) {
@@ -1964,32 +1985,145 @@ public class Origami {
         return line;
     }
 
+    public int foldType(double[] ppoint, double[] pnormal) {
+
+        ArrayList<Integer> lines = new ArrayList<>();
+        ArrayList<Integer> line_pols = new ArrayList<>();
+        for (int i=0; i<polygons_size; i++) {
+            for (int vert : polygons.get(i)) {
+
+                if (point_on_plane(ppoint, pnormal, vertices.get(vert))) {
+
+                    if (!lines.contains(vert)) {
+                        lines.add(vert);
+                    }
+                    if (isNonDegenerate(i)) {
+                        line_pols.add(i);
+                    }
+                }
+            }
+        }
+        int components = -1;
+        while (!line_pols.isEmpty()) {
+            
+            line_pols.removeAll(polygonSelect(ppoint, pnormal, line_pols.get(0)));
+            components ++;
+        }
+        
+        if (lines.size() < 2) {
+            return 0;
+        }
+        
+        if (components == 1) {
+            
+            boolean collin = false;
+            int maspont = -1;
+            double tavolsagmax = -1;
+
+            for (int hp : lines) {
+                if (vector_length(vector(vertices.get(hp), vertices.get(lines.get(0)))) > 0) {
+                    collin = true;
+                    if (vector_length(vector(vertices.get(hp), vertices.get(lines.get(0)))) > tavolsagmax) {
+                        maspont = hp;
+                        tavolsagmax = vector_length(vector(vertices.get(hp), vertices.get(lines.get(0))));
+                    }
+                }
+            }
+
+            if (collin) {
+            for (int ii = 1; ii < lines.size() && ii != maspont; ii++) {
+
+                if (vector_length(vector_product(vector(vertices.get(lines.get(0)), vertices.get(lines.get(ii))),
+                        vector(vertices.get(maspont), vertices.get(lines.get(ii)))))
+                        > vector_length(vector(vertices.get(lines.get(0)), vertices.get(maspont)))) {
+
+                    collin = false;
+                    break;
+                }
+            }
+            }
+
+            for (int i = 0; i < lines.size(); i += 2) {
+
+                if (border.contains(lines.get(i))) {
+
+                    if (lines.size() == 2) {
+                        return -1;
+                    }
+                    if (collin) {
+                        return -2;
+                    }
+                    return -3;
+                }
+            }
+            if (collin) {
+                return -4;
+            }
+            return -5;
+        }
+        
+        return components;
+    }
+
     public int foldType(double[] ppoint, double[] pnormal, int polygonIndex) {
 
-        ArrayList<double[]> line = new ArrayList<>();
-        ArrayList<Integer> line_i = new ArrayList<>();
+        ArrayList<Integer> line = new ArrayList<>();
         for (int spoly : polygonSelect(ppoint, pnormal, polygonIndex)) {
             for (int vert : polygons.get(spoly)) {
 
                 if (point_on_plane(ppoint, pnormal, vertices.get(vert))) {
-
-                    line.add(vertices.get(vert));
-                    line_i.add(vert);
+                    line.add(vert);
                 }
             }
         }
-        if (line.isEmpty()) {
+        if (line.size() < 2) {
             return 0;
         }
-        ArrayList<Integer> order = new ArrayList<>();
-        for (int i = 0; i < line_i.size(); i += 2) {
 
-            if (border.contains(line_i.get(i))) {
-                
-                
+        boolean collin = false;
+        int maspont = -1;
+        double tavolsagmax = -1;
+
+        for (int hp : line) {
+            if (vector_length(vector(vertices.get(hp), vertices.get(line.get(0)))) > 0) {
+                collin = true;
+                if (vector_length(vector(vertices.get(hp), vertices.get(line.get(0)))) > tavolsagmax) {
+                    maspont = hp;
+                    tavolsagmax = vector_length(vector(vertices.get(hp), vertices.get(line.get(0))));
+                }
             }
         }
-        return 3;
+
+        if (collin) {
+        for (int ii = 1; ii < line.size() && ii != maspont; ii++) {
+
+            if (vector_length(vector_product(vector(vertices.get(line.get(0)), vertices.get(line.get(ii))),
+                    vector(vertices.get(maspont), vertices.get(line.get(ii)))))
+                    > vector_length(vector(vertices.get(line.get(0)), vertices.get(maspont)))) {
+
+                collin = false;
+                break;
+            }
+        }
+        }
+        
+        for (int i = 0; i < line.size(); i += 2) {
+
+            if (border.contains(line.get(i))) {
+
+                if (line.size() == 2) {
+                    return -1;
+                }
+                if (collin) {
+                    return -2;
+                }
+                return -3;
+            }
+        }
+        if (collin) {
+            return -4;
+        }
+        return -5;
     }
 
     public int complexity(int step) {
