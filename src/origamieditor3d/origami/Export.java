@@ -371,7 +371,7 @@ public class Export {
             ForgatasSzogek.add(0);
 
             ArrayList<Integer> foldtypes = new ArrayList<>();
-            int firstblood = -1;
+            boolean firstblood = true;
 
             //Méretezés és elôigazítás
             Camera kamera = new Camera(0, 0, 0.5);
@@ -513,7 +513,11 @@ public class Export {
             stream += (char) 10;
             stream += "100 800 Td";
             stream += (char) 10;
-            stream += "(" + title + ") Tj";
+            stream += "(";
+            for (int i=0; i<18-title.length()/2; i++) {
+                stream += " ";
+            }
+            stream += title + ") Tj";
             stream += (char) 10;
             stream += "ET";
             stream += (char) 10;
@@ -837,7 +841,7 @@ public class Export {
             stream += "/F1 12 Tf";
             stream += (char) 10;
             stream += Integer.toString((int) (page_width - 2 * figure_frame) / 4) + " "
-                    + Integer.toString(736 - Instructor.getString("disclaimer", OrigamiEditorUI.Version).length() * 14
+                    + Integer.toString(722 - Instructor.getString("disclaimer", OrigamiEditorUI.Version).length() * 14
                             + Instructor.getString("disclaimer", OrigamiEditorUI.Version).replace(") '", ") ").length() * 14)
                     + " Td";
             stream += (char) 10;
@@ -870,7 +874,7 @@ public class Export {
             stream += "/F1 12 Tf";
             stream += (char) 10;
             stream += Integer.toString((int) (page_width - 2 * figure_frame) / 4) + " "
-                    + Integer.toString(722 - Instructor.getString("disclaimer", OrigamiEditorUI.Version).length() * 14
+                    + Integer.toString(736 - Instructor.getString("disclaimer", OrigamiEditorUI.Version).length() * 14
                             + Instructor.getString("disclaimer", OrigamiEditorUI.Version).replace(") '", ") ").length() * 14)
                     + " Td";
             stream += (char) 10;
@@ -946,7 +950,7 @@ public class Export {
                         sorszam++;
                     } else {
 
-                        utasitas = Instructor.getString("turn", Integer.toString(sorszam), ForgatasSzogek.get(ForgatasIndexek.indexOf(i)));
+                        utasitas = Instructor.getString("turn", sorszam, ForgatasSzogek.get(ForgatasIndexek.indexOf(i)));
                         sorszam++;
                     }
 
@@ -1056,6 +1060,10 @@ public class Export {
                                 origami1.history().get(i)[6]};
                             switch (foldtypes.get(i)) {
 
+                                case 0:
+                                    utasitas = Instructor.getString("no_fold", sorszam);
+                                    break;
+                                    
                                 case -1:
                                     switch (kamera.pdfLinerDir(siknv)) {
                                         case Camera.PDF_NORTH:
@@ -1163,24 +1171,6 @@ public class Export {
                             siknv = new double[]{origami1.history().get(i)[4],
                                 origami1.history().get(i)[5],
                                 origami1.history().get(i)[6]};
-                            utasitas = "(" + Integer.toString(sorszam) + ". ";
-                            switch (kamera.pdfLinerDir(siknv)) {
-
-                                case Camera.PDF_NORTH:
-                                    utasitas += Cookbook.PDF_ROTATE_NORTH;
-                                    break;
-                                case Camera.PDF_EAST:
-                                    utasitas += Cookbook.PDF_ROTATE_EAST;
-                                    break;
-                                case Camera.PDF_SOUTH:
-                                    utasitas += Cookbook.PDF_ROTATE_SOUTH;
-                                    break;
-                                case Camera.PDF_WEST:
-                                    utasitas += Cookbook.PDF_ROTATE_WEST;
-                                    break;
-                                default:
-                                    break;
-                            }
                             int szog = 0;
                             int j = i - 1;
                             while (UresIndexek.contains(j)) {
@@ -1191,13 +1181,32 @@ public class Export {
                                 }
                                 j--;
                             }
-                            utasitas += Integer.toString(szog + (int) origami1.history().get(i)[7])
-                                    + Cookbook.PDF_ROTATE_ANGLE;
+                            switch (kamera.pdfLinerDir(siknv)) {
+
+                                case Camera.PDF_NORTH:
+                                    utasitas = Instructor.getString("rotate_north", sorszam, szog + (int) origami1.history().get(i)[7]);
+                                    break;
+                                case Camera.PDF_EAST:
+                                    utasitas = Instructor.getString("rotate_north", sorszam, szog + (int) origami1.history().get(i)[7]);
+                                    break;
+                                case Camera.PDF_SOUTH:
+                                    utasitas = Instructor.getString("rotate_north", sorszam, szog + (int) origami1.history().get(i)[7]);
+                                    break;
+                                case Camera.PDF_WEST:
+                                    utasitas = Instructor.getString("rotate_north", sorszam, szog + (int) origami1.history().get(i)[7]);
+                                    break;
+                                default:
+                                    break;
+                            }
                             sorszam++;
                             break;
 
                         case 3:
                             switch (foldtypes.get(i)) {
+                                
+                                case 0:
+                                    utasitas = Instructor.getString("no_fold", sorszam);
+                                    break;
                                 case -1:
                                     utasitas = Instructor.getString("fold_gray", sorszam);
                                     break;
@@ -1218,8 +1227,6 @@ public class Export {
                             break;
 
                         case 4:
-                            utasitas = "(" + Integer.toString(sorszam) + ". ";
-                            utasitas += Cookbook.PDF_ROTATE_TARGET;
                             int szog1 = 0;
                             int j1 = i - 1;
                             while (UresIndexek.contains(j1)) {
@@ -1230,14 +1237,12 @@ public class Export {
                                 }
                                 j1--;
                             }
-                            utasitas += Integer.toString(szog1 + (int) origami1.history().get(i)[7])
-                                    + Cookbook.PDF_ROTATE_ANGLE;
+                            utasitas = Instructor.getString("rotate_gray", sorszam, szog1 + (int)origami1.history().get(i)[7]);
                             sorszam++;
                             break;
 
                         case 5:
-                            utasitas = "(" + Integer.toString(sorszam) + ". ";
-                            utasitas += Cookbook.PDF_CREASE + Integer.toString(sorszam + 1) + Cookbook.PDF_CREASE_STEP;
+                            utasitas = Instructor.getString("crease", sorszam, sorszam + 1);
                             sorszam++;
                             break;
 
@@ -1245,36 +1250,41 @@ public class Export {
                             siknv = new double[]{origami1.history().get(i)[4],
                                 origami1.history().get(i)[5],
                                 origami1.history().get(i)[6]};
-                            utasitas = "(" + Integer.toString(sorszam) + ". ";
                             switch (kamera.pdfLinerDir(siknv)) {
 
                                 case Camera.PDF_NORTH:
-                                    utasitas += Cookbook.PDF_CUT_NORTH;
+                                    utasitas = Instructor.getString("cut_north", sorszam);
                                     break;
                                 case Camera.PDF_EAST:
-                                    utasitas += Cookbook.PDF_CUT_EAST;
+                                    utasitas = Instructor.getString("cut_east", sorszam);
                                     break;
                                 case Camera.PDF_SOUTH:
-                                    utasitas += Cookbook.PDF_CUT_SOUTH;
+                                    utasitas = Instructor.getString("cut_south", sorszam);
                                     break;
                                 case Camera.PDF_WEST:
-                                    utasitas += Cookbook.PDF_CUT_WEST;
+                                    utasitas = Instructor.getString("cut_west", sorszam);
                                     break;
                                 default:
                                     break;
+                            }
+                            if (firstblood) {
+                                utasitas += Instructor.getString("cut_notice");
+                                firstblood = false;
                             }
                             sorszam++;
                             break;
 
                         case 7:
-                            utasitas = "(" + Integer.toString(sorszam) + ". ";
-                            utasitas += Cookbook.PDF_CUT_TARGET;
+                            utasitas = Instructor.getString("cut_gray", sorszam);
+                            if (firstblood) {
+                                utasitas += Instructor.getString("cut_notice");
+                                firstblood = false;
+                            }
                             sorszam++;
                             break;
 
                         default:
-                            utasitas = "(" + Integer.toString(sorszam) + ". ";
-                            utasitas += "???) ' ";
+                            utasitas = "(" + sorszam + ". ???) ' ";
                             sorszam++;
                             break;
                     }
@@ -1384,7 +1394,7 @@ public class Export {
             return 1;
 
         } catch (Exception exc) {
-//exc.printStackTrace();
+
             return 0;
         }
     }

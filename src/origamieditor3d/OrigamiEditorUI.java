@@ -30,7 +30,7 @@ import origamieditor3d.resources.Models;
 public class OrigamiEditorUI extends javax.swing.JFrame {
 
     final static private long serialVersionUID = 1L;
-    final static private String Version = "1.2.3";
+    final static public String Version = "1.2.4";
     private Integer mouseX, mouseY;
     private int scroll_angle;
     private Integer liner1X, liner1Y, liner2X, liner2Y;
@@ -78,7 +78,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
 
     @SuppressWarnings("empty-statement")
     public OrigamiEditorUI() {
-
+        
         setIconImage(java.awt.Toolkit.getDefaultToolkit().getImage(getClass().getClassLoader().getResource("res/icon.png")));
 
         try {
@@ -2596,7 +2596,11 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                 + "Copyright © 2014 Bágyoni-Szabó Attila (ba-sz-at@users.sourceforge.net) <br>"
                 + "<br>"
                 + "Origami Editor 3D is licensed under the GNU General Public License version 3. <br>"
-                + "<a href=\"/res/LICENSE.txt\">Click here for more information.</a>"
+                + "<a href=\"/res/LICENSE.txt\">Click here for more information.</a> <br>"
+                + "<br>"
+                + "Some of the origami models bundled with this program are copyrighted works. <br>"
+                + "The usage of such models within this program serves a purely demonstrational/<br>"
+                + "educational purpose, and therefore should be considered 'fair use' by all means.<br>"
                 + "</body></html>");
 
         html.setEditable(false);

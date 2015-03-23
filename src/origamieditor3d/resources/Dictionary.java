@@ -18,8 +18,8 @@ package origamieditor3d.resources;
  */
 public class Dictionary {
     
-    
     static private java.util.ResourceBundle messages;
+    
     static {
         try {
             messages = java.util.ResourceBundle.getBundle("language", new java.util.Locale(System.getProperty("user.language"), System.getProperty("user.country")));
