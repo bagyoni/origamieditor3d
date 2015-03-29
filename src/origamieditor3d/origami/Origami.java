@@ -560,6 +560,23 @@ public class Origami {
         return false;
     }
 
+    public boolean isStrictlyNonDegenerate(int polygonIndex) {
+
+        if (polygons.get(polygonIndex).size() > 2) {
+
+            for (int pont1ind : polygons().get(polygonIndex)) {
+                for (int pont2ind : polygons().get(polygonIndex)) {
+
+                    if (vector_length(vector_product(vector(vertices().get(pont1ind), vertices().get(polygons().get(polygonIndex).get(0))),
+                            vector(vertices().get(pont2ind), vertices().get(polygons().get(polygonIndex).get(0))))) > 0) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
     protected boolean isCut(double[] ppoint, double[] pnormal, int polygonIndex) {
 
         if (isNonDegenerate(polygonIndex)) {
@@ -1989,7 +2006,7 @@ public class Origami {
 
         ArrayList<Integer> lines = new ArrayList<>();
         ArrayList<Integer> line_pols = new ArrayList<>();
-        for (int i=0; i<polygons_size; i++) {
+        for (int i = 0; i < polygons_size; i++) {
             for (int vert : polygons.get(i)) {
 
                 if (point_on_plane(ppoint, pnormal, vertices.get(vert))) {
@@ -1997,7 +2014,7 @@ public class Origami {
                     if (!lines.contains(vert)) {
                         lines.add(vert);
                     }
-                    if (isNonDegenerate(i)) {
+                    if (isStrictlyNonDegenerate(i)) {
                         line_pols.add(i);
                     }
                 }
@@ -2005,17 +2022,17 @@ public class Origami {
         }
         int components = -1;
         while (!line_pols.isEmpty()) {
-            
+
             line_pols.removeAll(polygonSelect(ppoint, pnormal, line_pols.get(0)));
-            components ++;
+            components++;
         }
-        
+
         if (lines.size() < 2) {
             return 0;
         }
-        
+
         if (components == 1) {
-            
+
             boolean collin = false;
             int maspont = -1;
             double tavolsagmax = -1;
@@ -2031,16 +2048,16 @@ public class Origami {
             }
 
             if (collin) {
-            for (int ii = 1; ii < lines.size() && ii != maspont; ii++) {
+                for (int ii = 1; ii < lines.size() && ii != maspont; ii++) {
 
-                if (vector_length(vector_product(vector(vertices.get(lines.get(0)), vertices.get(lines.get(ii))),
-                        vector(vertices.get(maspont), vertices.get(lines.get(ii)))))
-                        > vector_length(vector(vertices.get(lines.get(0)), vertices.get(maspont)))) {
+                    if (vector_length(vector_product(vector(vertices.get(lines.get(0)), vertices.get(lines.get(ii))),
+                            vector(vertices.get(maspont), vertices.get(lines.get(ii)))))
+                            > vector_length(vector(vertices.get(lines.get(0)), vertices.get(maspont)))) {
 
-                    collin = false;
-                    break;
+                        collin = false;
+                        break;
+                    }
                 }
-            }
             }
 
             for (int i = 0; i < lines.size(); i += 2) {
@@ -2061,7 +2078,7 @@ public class Origami {
             }
             return -5;
         }
-        
+
         return components;
     }
 
@@ -2095,18 +2112,18 @@ public class Origami {
         }
 
         if (collin) {
-        for (int ii = 1; ii < line.size() && ii != maspont; ii++) {
+            for (int ii = 1; ii < line.size() && ii != maspont; ii++) {
 
-            if (vector_length(vector_product(vector(vertices.get(line.get(0)), vertices.get(line.get(ii))),
-                    vector(vertices.get(maspont), vertices.get(line.get(ii)))))
-                    > vector_length(vector(vertices.get(line.get(0)), vertices.get(maspont)))) {
+                if (vector_length(vector_product(vector(vertices.get(line.get(0)), vertices.get(line.get(ii))),
+                        vector(vertices.get(maspont), vertices.get(line.get(ii)))))
+                        > vector_length(vector(vertices.get(line.get(0)), vertices.get(maspont)))) {
 
-                collin = false;
-                break;
+                    collin = false;
+                    break;
+                }
             }
         }
-        }
-        
+
         for (int i = 0; i < line.size(); i += 2) {
 
             if (border.contains(line.get(i))) {
@@ -2126,6 +2143,7 @@ public class Origami {
         return -5;
     }
 
+    @SuppressWarnings("unchecked")
     public int complexity(int step) {
 
         Origami origami = clone();

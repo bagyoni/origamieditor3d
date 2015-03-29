@@ -53,6 +53,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
     private String fajlnev;
     final private javax.swing.JFrame beallitasok;
     final private javax.swing.JDialog timeline;
+    private javax.swing.JFileChooser chooser;
     private javax.swing.JFileChooser save;
     private javax.swing.JFileChooser open;
     private javax.swing.JFileChooser ctm_export;
@@ -78,7 +79,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
 
     @SuppressWarnings("empty-statement")
     public OrigamiEditorUI() {
-        
+
         setIconImage(java.awt.Toolkit.getDefaultToolkit().getImage(getClass().getClassLoader().getResource("res/icon.png")));
 
         try {
@@ -413,40 +414,24 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         beallitasok.pack();
 
         try {
+            chooser = new javax.swing.JFileChooser();
             //texture dialog init
-            texture_open = new javax.swing.JFileChooser();
-            texture_open.setAcceptAllFileFilterUsed(false);
-            texture_open.addChoosableFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(Dictionary.getString("img"), javax.imageio.ImageIO.getReaderFormatNames()));
+            texture_open = chooser;
             //open dialog init
-            open = new javax.swing.JFileChooser();
-            open.setAcceptAllFileFilterUsed(false);
-            open.addChoosableFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(Dictionary.getString("ori"), "ori"));
-            open.addChoosableFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(Dictionary.getString("txt"), "txt"));
+            open = chooser;
             //save dialog init
-            save = new javax.swing.JFileChooser();
-            save.setAcceptAllFileFilterUsed(false);
-            save.addChoosableFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(Dictionary.getString("ori"), "ori"));
+            save = chooser;
             //ctm dialog init
-            ctm_export = new javax.swing.JFileChooser();
-            ctm_export.setAcceptAllFileFilterUsed(false);
-            ctm_export.addChoosableFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(Dictionary.getString("ctm"), "ctm"));
+            ctm_export = chooser;
             //pdf dialog init
-            pdf_export = new javax.swing.JFileChooser();
-            pdf_export.setAcceptAllFileFilterUsed(false);
-            pdf_export.addChoosableFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(Dictionary.getString("pdf"), "pdf"));
+            pdf_export = chooser;
             //gif dialog init
-            gif_export = new javax.swing.JFileChooser();
-            gif_export.setAcceptAllFileFilterUsed(false);
-            gif_export.addChoosableFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(Dictionary.getString("gif"), "gif"));
+            gif_export = chooser;
             //jar dialog init
-            jar_export = new javax.swing.JFileChooser();
-            jar_export.setAcceptAllFileFilterUsed(false);
-            jar_export.addChoosableFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(Dictionary.getString("ori.jar"), "ori.jar"));
+            jar_export = chooser;
             //png dialog init
-            png_export = new javax.swing.JFileChooser();
-            png_export.setAcceptAllFileFilterUsed(false);
-            png_export.addChoosableFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(Dictionary.getString("png"), "png"));
-
+            png_export = chooser;
+            
         } catch (Exception ex) {
             ui_file_open.addActionListener(new java.awt.event.ActionListener() {
 
@@ -505,6 +490,13 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                 }
             });
             ui_file_export_crease.addActionListener(new java.awt.event.ActionListener() {
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    javax.swing.JOptionPane.showMessageDialog(OrigamiEditorUI.this, Dictionary.getString("sandbox"));
+                }
+            });
+            ui_file_export_toself.addActionListener(new java.awt.event.ActionListener() {
 
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -2096,8 +2088,21 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
     //
     private void ui_file_export_topdfActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ui_file_export_topdfActionPerformed
 
+        pdf_export.resetChoosableFileFilters();
+        pdf_export.setAcceptAllFileFilterUsed(false);
+        pdf_export.addChoosableFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(Dictionary.getString("pdf"), "pdf"));
+            
         if (pdf_export.showSaveDialog(this) == javax.swing.JFileChooser.APPROVE_OPTION) {
 
+            if (new java.io.File(pdf_export.getSelectedFile().getPath().endsWith(".pdf")
+                    ? pdf_export.getSelectedFile().getPath()
+                    : pdf_export.getSelectedFile().getPath() + ".pdf").exists()) {
+                if (javax.swing.JOptionPane.showConfirmDialog(null, Dictionary.getString("overwrite"), Dictionary.getString("question"), javax.swing.JOptionPane.YES_NO_OPTION) == javax.swing.JOptionPane.NO_OPTION) {
+                    ui_file_export_topdfActionPerformed(evt);
+                    return;
+                }
+            }
+            
             try {
 
                 final javax.swing.JDialog exporting = new javax.swing.JDialog(this);
@@ -2219,12 +2224,16 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
     //
     private void ui_file_saveasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ui_file_saveasActionPerformed
 
-        if (save.showSaveDialog(this) == javax.swing.JFileChooser.APPROVE_OPTION) {
+        save.resetChoosableFileFilters();
+        save.setAcceptAllFileFilterUsed(false);
+        save.addChoosableFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(Dictionary.getString("ori"), "ori"));
 
+        if (save.showSaveDialog(this) == javax.swing.JFileChooser.APPROVE_OPTION) {
             if (new java.io.File(save.getSelectedFile().getPath().endsWith(".ori")
                     ? save.getSelectedFile().getPath()
                     : save.getSelectedFile().getPath() + ".ori").exists()) {
                 if (javax.swing.JOptionPane.showConfirmDialog(null, Dictionary.getString("overwrite"), Dictionary.getString("question"), javax.swing.JOptionPane.YES_NO_OPTION) == javax.swing.JOptionPane.NO_OPTION) {
+                    
                     ui_file_saveasActionPerformed(evt);
                     return;
                 }
@@ -2256,8 +2265,21 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
     //
     private void ui_file_export_toopenctmActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ui_file_export_toopenctmActionPerformed
 
+        ctm_export.resetChoosableFileFilters();
+        ctm_export.setAcceptAllFileFilterUsed(false);
+        ctm_export.addChoosableFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(Dictionary.getString("ctm"), "ctm"));
+            
         if (ctm_export.showSaveDialog(this) == javax.swing.JFileChooser.APPROVE_OPTION) {
-
+            if (new java.io.File(ctm_export.getSelectedFile().getPath().endsWith(".ctm")
+                    ? ctm_export.getSelectedFile().getPath()
+                    : ctm_export.getSelectedFile().getPath() + ".ctm").exists()) {
+                if (javax.swing.JOptionPane.showConfirmDialog(null, Dictionary.getString("overwrite"), Dictionary.getString("question"), javax.swing.JOptionPane.YES_NO_OPTION) == javax.swing.JOptionPane.NO_OPTION) {
+                    
+                    ui_file_export_toopenctmActionPerformed(evt);
+                    return;
+                }
+            }
+            
             try {
                 terminal.execute("filename [" + ctm_export.getSelectedFile().getPath()
                         + (ctm_export.getSelectedFile().getPath().endsWith(".ctm") ? "] export-ctm" : ".ctm] export-ctm"), OrigamiScriptTerminal.Access.ROOT);
@@ -2285,6 +2307,12 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                 return;
             }
         }
+        
+        open.resetChoosableFileFilters();
+        open.setAcceptAllFileFilterUsed(false);
+        open.addChoosableFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(Dictionary.getString("ori"), "ori"));
+        open.addChoosableFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(Dictionary.getString("txt"), "txt"));
+        
         if (open.showOpenDialog(this) == javax.swing.JFileChooser.APPROVE_OPTION) {
 
             if (open.getFileFilter() == open.getChoosableFileFilters()[0]) {
@@ -2354,7 +2382,6 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
     }//GEN-LAST:event_ui_file_openActionPerformed
 
     private void ui_edit_planeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ui_edit_planeActionPerformed
-
         ui_planeActionPerformed(evt);
     }//GEN-LAST:event_ui_edit_planeActionPerformed
 
@@ -2629,13 +2656,17 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
     ///
     private void ui_file_saveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ui_file_saveActionPerformed
 
+        save.resetChoosableFileFilters();
+        save.setAcceptAllFileFilterUsed(false);
+        save.addChoosableFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(Dictionary.getString("ori"), "ori"));
+
         if (fajlnev == null) {
             if (save.showSaveDialog(this) == javax.swing.JFileChooser.APPROVE_OPTION) {
-
                 if (new java.io.File(save.getSelectedFile().getPath().endsWith(".ori")
                         ? save.getSelectedFile().getPath()
                         : save.getSelectedFile().getPath() + ".ori").exists()) {
                     if (javax.swing.JOptionPane.showConfirmDialog(null, Dictionary.getString("overwrite"), Dictionary.getString("question"), javax.swing.JOptionPane.YES_NO_OPTION) == javax.swing.JOptionPane.NO_OPTION) {
+                        
                         ui_file_saveActionPerformed(evt);
                         return;
                     }
@@ -2735,6 +2766,10 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
     //
     private void ui_view_paper_imageActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ui_view_paper_imageActionPerformed
 
+        texture_open.resetChoosableFileFilters();
+        texture_open.setAcceptAllFileFilterUsed(false);
+        texture_open.addChoosableFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(Dictionary.getString("img"), javax.imageio.ImageIO.getReaderFormatNames()));
+            
         ui_view_paper_image.setSelected(false);
         if (tex == null) {
 
@@ -2916,10 +2951,26 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         oPanel1.repaint();
     }//GEN-LAST:event_ui_view_paper_gradientActionPerformed
 
+    //
+    //  REVOLVING GIF EXPORT
+    //
     private void ui_file_export_togif_revolvingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ui_file_export_togif_revolvingActionPerformed
 
+        gif_export.resetChoosableFileFilters();
+        gif_export.setAcceptAllFileFilterUsed(false);
+        gif_export.addChoosableFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(Dictionary.getString("gif"), "gif"));
+            
         if (gif_export.showSaveDialog(this) == javax.swing.JFileChooser.APPROVE_OPTION) {
-
+            if (new java.io.File(gif_export.getSelectedFile().getPath().endsWith(".gif")
+                    ? gif_export.getSelectedFile().getPath()
+                    : gif_export.getSelectedFile().getPath() + ".gif").exists()) {
+                if (javax.swing.JOptionPane.showConfirmDialog(null, Dictionary.getString("overwrite"), Dictionary.getString("question"), javax.swing.JOptionPane.YES_NO_OPTION) == javax.swing.JOptionPane.NO_OPTION) {
+                    
+                    ui_file_export_togif_revolvingActionPerformed(evt);
+                    return;
+                }
+            }
+            
             try {
 
                 final javax.swing.JDialog exporting = new javax.swing.JDialog(this);
@@ -2984,10 +3035,26 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_ui_file_export_togif_revolvingActionPerformed
 
+    //
+    //  FOLDING GIF EXPORT
+    //
     private void ui_file_export_togif_foldingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ui_file_export_togif_foldingActionPerformed
 
+        gif_export.resetChoosableFileFilters();
+        gif_export.setAcceptAllFileFilterUsed(false);
+        gif_export.addChoosableFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(Dictionary.getString("gif"), "gif"));
+        
         if (gif_export.showSaveDialog(this) == javax.swing.JFileChooser.APPROVE_OPTION) {
-
+            if (new java.io.File(gif_export.getSelectedFile().getPath().endsWith(".gif")
+                    ? gif_export.getSelectedFile().getPath()
+                    : gif_export.getSelectedFile().getPath() + ".gif").exists()) {
+                if (javax.swing.JOptionPane.showConfirmDialog(null, Dictionary.getString("overwrite"), Dictionary.getString("question"), javax.swing.JOptionPane.YES_NO_OPTION) == javax.swing.JOptionPane.NO_OPTION) {
+                    
+                    ui_file_export_togif_foldingActionPerformed(evt);
+                    return;
+                }
+            }
+            
             try {
 
                 final javax.swing.JDialog exporting = new javax.swing.JDialog(this);
@@ -3051,10 +3118,26 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_ui_file_export_togif_foldingActionPerformed
 
+    //
+    //  PNG EXPORT
+    //
     private void ui_file_export_creaseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ui_file_export_creaseActionPerformed
 
-        if (png_export.showSaveDialog(this) == javax.swing.JFileChooser.APPROVE_OPTION) {
+        png_export.resetChoosableFileFilters();
+        png_export.setAcceptAllFileFilterUsed(false);
+        png_export.addChoosableFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(Dictionary.getString("png"), "png"));
 
+        if (png_export.showSaveDialog(this) == javax.swing.JFileChooser.APPROVE_OPTION) {
+            if (new java.io.File(png_export.getSelectedFile().getPath().endsWith(".png")
+                    ? png_export.getSelectedFile().getPath()
+                    : png_export.getSelectedFile().getPath() + ".png").exists()) {
+                if (javax.swing.JOptionPane.showConfirmDialog(null, Dictionary.getString("overwrite"), Dictionary.getString("question"), javax.swing.JOptionPane.YES_NO_OPTION) == javax.swing.JOptionPane.NO_OPTION) {
+                    
+                    ui_file_export_creaseActionPerformed(evt);
+                    return;
+                }
+            }
+            
             try {
                 terminal.execute("filename [" + png_export.getSelectedFile().getPath()
                         + (png_export.getSelectedFile().getPath().endsWith(".png") ? "] export-png" : ".png] export-png"),
@@ -3190,9 +3273,10 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_ui_snap_4ActionPerformed
 
+    @SuppressWarnings("deprecation")
     private void ui_file_propertiesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ui_file_propertiesActionPerformed
 
-        javax.swing.JDialog properties = new javax.swing.JDialog(this, Dictionary.getString("properties"));
+        final javax.swing.JDialog properties = new javax.swing.JDialog(this, Dictionary.getString("properties"));
         properties.getContentPane().setLayout(new java.awt.GridBagLayout());
         java.awt.GridBagConstraints c = new java.awt.GridBagConstraints();
         c.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -3229,45 +3313,89 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         c.gridy = 5;
         properties.getContentPane().add(new javax.swing.JLabel(" "), c);
         c.gridy = 6;
-        int dif = Origami.difficultyLevel(terminal.TerminalOrigami.difficulty());
-        String difname = null;
-        switch (dif) {
-            case 0:
-                difname = Dictionary.getString("level0");
-                break;
-            case 1:
-                difname = Dictionary.getString("level1");
-                break;
-            case 2:
-                difname = Dictionary.getString("level2");
-                break;
-            case 3:
-                difname = Dictionary.getString("level3");
-                break;
-            case 4:
-                difname = Dictionary.getString("level4");
-                break;
-            case 5:
-                difname = Dictionary.getString("level5");
-                break;
-            case 6:
-                difname = Dictionary.getString("level6");
-                break;
-        }
-        properties.getContentPane().add(new javax.swing.JLabel(String.format(Dictionary.getString("level"), dif, difname)), c);
+        final javax.swing.JLabel diflabel = new javax.swing.JLabel(Dictionary.getString("calculating..."));
+        properties.getContentPane().add(diflabel, c);
         c.gridy = 7;
         properties.getContentPane().add(new javax.swing.JLabel(" "), c);
 
         properties.setResizable(false);
         properties.pack();
         properties.setLocationRelativeTo(this);
+        
+        final Thread difth = new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+
+                int dif = Origami.difficultyLevel(terminal.TerminalOrigami.difficulty());
+                String difname = null;
+                switch (dif) {
+                    case 0:
+                        difname = Dictionary.getString("level0");
+                        break;
+                    case 1:
+                        difname = Dictionary.getString("level1");
+                        break;
+                    case 2:
+                        difname = Dictionary.getString("level2");
+                        break;
+                    case 3:
+                        difname = Dictionary.getString("level3");
+                        break;
+                    case 4:
+                        difname = Dictionary.getString("level4");
+                        break;
+                    case 5:
+                        difname = Dictionary.getString("level5");
+                        break;
+                    case 6:
+                        difname = Dictionary.getString("level6");
+                        break;
+                }
+                diflabel.setText(String.format(Dictionary.getString("level"), dif, difname));
+                properties.pack();
+            }
+        });
+        
+        properties.addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosed(java.awt.event.WindowEvent evt) {
+                
+                difth.stop();
+                super.windowClosed(evt);
+            }
+        });
+        
         properties.setVisible(true);
+        
+        javax.swing.SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                difth.start();
+            }
+        });
     }//GEN-LAST:event_ui_file_propertiesActionPerformed
 
+    //
+    //  JAR EXPORT
+    //
     private void ui_file_export_toselfActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ui_file_export_toselfActionPerformed
 
+        jar_export.resetChoosableFileFilters();
+        jar_export.setAcceptAllFileFilterUsed(false);
+        jar_export.addChoosableFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(Dictionary.getString("ori.jar"), "ori.jar"));
+            
         if (jar_export.showSaveDialog(this) == javax.swing.JFileChooser.APPROVE_OPTION) {
-
+            if (new java.io.File(jar_export.getSelectedFile().getPath().endsWith(".ori.jar")
+                    ? jar_export.getSelectedFile().getPath()
+                    : jar_export.getSelectedFile().getPath() + ".ori.jar").exists()) {
+                if (javax.swing.JOptionPane.showConfirmDialog(null, Dictionary.getString("overwrite"), Dictionary.getString("question"), javax.swing.JOptionPane.YES_NO_OPTION) == javax.swing.JOptionPane.NO_OPTION) {
+                    
+                    ui_file_export_toselfActionPerformed(evt);
+                    return;
+                }
+            }
+            
             try {
                 terminal.execute("filename [" + jar_export.getSelectedFile().getPath()
                         + (jar_export.getSelectedFile().getPath().endsWith(".ori.jar") ? "] export-jar" : ".ori.jar] export-jar"),

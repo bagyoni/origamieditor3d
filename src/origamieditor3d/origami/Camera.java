@@ -415,19 +415,7 @@ public class Camera {
 
     public boolean isDrawable(int polygonIndex, Origami origami) {
 
-        if (origami.polygons().get(polygonIndex).size() > 2) {
-
-            for (int pont1ind : origami.polygons().get(polygonIndex)) {
-                for (int pont2ind : origami.polygons().get(polygonIndex)) {
-
-                    if (Origami.vector_length(Origami.vector_product(Origami.vector(origami.vertices().get(pont1ind), origami.vertices().get(origami.polygons().get(polygonIndex).get(0))),
-                            Origami.vector(origami.vertices().get(pont2ind), origami.vertices().get(origami.polygons().get(polygonIndex).get(0))))) > 0) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
+        return origami.isStrictlyNonDegenerate(polygonIndex);
     }
 
     public boolean isDrawable(int polygonIndex, Origami origami, int... ref) {
