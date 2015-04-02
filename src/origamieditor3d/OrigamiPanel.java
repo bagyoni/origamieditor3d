@@ -279,16 +279,16 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
                     
                 case GRADIENT:
                     PanelCamera.drawGradient(g, paper_front_color, PanelOrigami);
-                    PanelCamera.drawEdges(g, Color.black, PanelOrigami);
+                    PanelCamera.drawEdges(g, new Color(0, 0, 0, .5f), PanelOrigami);
                     break;
 
                 case SIMA:
                     PanelCamera.drawFaces(g, paper_front_color, PanelOrigami);
-                    PanelCamera.drawEdges(g, Color.black, PanelOrigami);
+                    PanelCamera.drawEdges(g, new Color(0, 0, 0, .5f), PanelOrigami);
                     break;
 
                 case SEMMI:
-                    PanelCamera.drawEdges(g, Color.black, PanelOrigami);
+                    PanelCamera.drawEdges(g, new Color(0, 0, 0, .5f), PanelOrigami);
                     break;
             }
         }

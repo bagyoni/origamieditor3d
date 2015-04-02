@@ -18,7 +18,7 @@ import java.awt.Graphics;
 import java.awt.Polygon;
 
 /**
- * 
+ *
  * @author Attila Bágyoni (ba-sz-at@users.sourceforge.net)
  * @since 2013-01-14
  * @see Origami
@@ -26,7 +26,7 @@ import java.awt.Polygon;
 public class Camera {
 
     final static public int paper_back_color = 0xF7D6A6;
-    final static public int paper_front_color = 0x0033CC;
+    final static public int paper_front_color = 0x000097;
     final static public int maximal_zoom = 4;
 
     public Camera(int x, int y, double zoom) {
@@ -269,6 +269,21 @@ public class Camera {
         return vissza;
     }
 
+    public double circumscribedSquareSize(Origami origami) {
+
+        Double t, b, l, r;
+        t = (b = (l = (r = null)));
+        for (double[] vert : origami.vertices()) {
+
+            double[] proj = projection(vert);
+            t = t == null ? proj[1] : proj[1] < t ? proj[1] : t;
+            b = b == null ? proj[1] : proj[1] > b ? proj[1] : b;
+            l = l == null ? proj[0] : proj[0] < l ? proj[0] : t;
+            r = r == null ? proj[0] : proj[0] > r ? proj[0] : r;
+        }
+        return 2 * Math.max(Math.abs(t), Math.max(Math.abs(b), Math.max(Math.abs(l), Math.abs(r))));
+    }
+
     public void drawEdges(Graphics canvas, Color color, Origami origami) {
 
         canvas.setColor(color);
@@ -483,26 +498,22 @@ public class Camera {
                     }
                 }
 
-                double konst = far[0] * normalvek[0] + far[1] * normalvek[1] + far[2] * normalvek[2];
+                double[] grad_dir = Origami.vector_product(normalvek, Origami.vector_product(normalvek, camera_dir));
+                
+                double konst = close[0] * camera_dir[0] + close[1] * camera_dir[1] + close[2] * camera_dir[2];
 
-                double X = camera_dir[0];
-                double Y = camera_dir[1];
-                double Z = camera_dir[2];
-                double U = normalvek[0];
-                double V = normalvek[1];
-                double W = normalvek[2];
-                double A = normalvek[0];
-                double B = normalvek[1];
-                double C = normalvek[2];
+                double X = far[0];
+                double Y = far[1];
+                double Z = far[2];
+                double U = grad_dir[0];
+                double V = grad_dir[1];
+                double W = grad_dir[2];
+                double A = camera_dir[0];
+                double B = camera_dir[1];
+                double C = camera_dir[2];
                 double t = -(A * X + B * Y + C * Z - konst) / (A * U + B * V + C * W);
-
-                double[] grad_dir = {X + t * U, Y + t * V, Z + t * W};
-                double lambda = (Origami.scalar_product(close, camera_dir) - Origami.scalar_product(far, camera_dir)) / Origami.scalar_product(grad_dir, camera_dir);
-
-                close = new double[]{
-                    far[0] + grad_dir[0] * lambda,
-                    far[1] + grad_dir[1] * lambda,
-                    far[2] + grad_dir[2] * lambda,};
+                
+                close = new double[]{X + t * U, Y + t * V, Z + t * W};
 
                 double dclose = Origami.scalar_product(Origami.vector(close, camera_pos), camera_dir) / Math.max(origami.circumscribedSquareSize() * Math.sqrt(2) / 2, 1);
                 double dfar = Origami.scalar_product(Origami.vector(far, camera_pos), camera_dir) / Math.max(origami.circumscribedSquareSize() * Math.sqrt(2) / 2, 1);
@@ -625,30 +636,30 @@ public class Camera {
             }
         }
     }
-    
+
     public void drawFoldingLine(Graphics canvas, Color color, double[] ppoint, double[] pnormal, Origami origami) {
-        
+
         canvas.setColor(color);
         java.util.ArrayList<double[]> line = origami.foldingLine(ppoint, pnormal);
         for (int i = 0; i < line.size(); i += 2) {
             canvas.drawLine(
                     (short) (projection(line.get(i))[0] + xshift),
-                    (short) (projection(line.get(i))[1] + yshift), 
-                    (short) (projection(line.get(i+1))[0] + xshift),
-                    (short) (projection(line.get(i+1))[1] + yshift));
+                    (short) (projection(line.get(i))[1] + yshift),
+                    (short) (projection(line.get(i + 1))[0] + xshift),
+                    (short) (projection(line.get(i + 1))[1] + yshift));
         }
     }
-    
+
     public void draw2dFoldingLine(Graphics canvas, Color color, double[] ppoint, double[] pnormal, Origami origami) {
-        
+
         canvas.setColor(color);
         java.util.ArrayList<double[]> line = origami.foldingLine2d(ppoint, pnormal);
         for (int i = 0; i < line.size(); i += 2) {
             canvas.drawLine(
                     (short) (projection(line.get(i))[0] + xshift),
-                    (short) (projection(line.get(i))[1] + yshift), 
-                    (short) (projection(line.get(i+1))[0] + xshift),
-                    (short) (projection(line.get(i+1))[1] + yshift));
+                    (short) (projection(line.get(i))[1] + yshift),
+                    (short) (projection(line.get(i + 1))[0] + xshift),
+                    (short) (projection(line.get(i + 1))[1] + yshift));
         }
     }
 
@@ -874,7 +885,7 @@ public class Camera {
         sulypont = new double[]{sulypont[0] / origami.corners().size(), sulypont[1] / origami.corners().size(), 0};
         camera_pos = sulypont;
     }
-    
+
     public void setOrthogonalView(int orientation) {
 
         switch (orientation) {
@@ -925,7 +936,7 @@ public class Camera {
                 break;
         }
 
-        this.orientation = (byte)orientation;
+        this.orientation = (byte) orientation;
     }
 
     public void nextOrthogonalView() {
@@ -982,7 +993,7 @@ public class Camera {
     }
 
     public void setTexture(java.awt.image.BufferedImage texture) throws Exception {
-        
+
         if (texture.getColorModel().hasAlpha()) {
             throw OrigamiException.H013;
         }

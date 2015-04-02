@@ -191,12 +191,9 @@ public class PaperPanel extends JPanel implements BasicEditing {
                     if (Origami.vector_length(liner_normal) == 0.) {
                         linerOff();
                     }
-
                 }
             } catch (Exception ex) {
-
             }
-
         }
     }
 

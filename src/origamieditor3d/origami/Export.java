@@ -340,7 +340,7 @@ public class Export {
                                 && origami1.history().get(i + 1)[5] == origami1.history().get(i)[5]
                                 && origami1.history().get(i + 1)[6] == origami1.history().get(i)[6]) {
                             ures_muveletek++;
-                            UresIndexek.add(i+1);
+                            UresIndexek.add(i + 1);
                         }
                     }
                 } else if (origami1.history().get(i)[0] == 4.) {
@@ -356,11 +356,11 @@ public class Export {
                                 && origami1.history().get(i + 1)[6] == origami1.history().get(i)[6]
                                 && origami1.history().get(i + 1)[8] == origami1.history().get(i)[8]) {
                             ures_muveletek++;
-                            UresIndexek.add(i+1);
+                            UresIndexek.add(i + 1);
                         }
                     }
                 } else if (origami1.history().get(i)[0] == 5.) {
-                    
+
                     ures_muveletek++;
                     UresIndexek.add(i);
                 }
@@ -516,7 +516,7 @@ public class Export {
             stream += "100 800 Td";
             stream += (char) 10;
             stream += "(";
-            for (int i=0; i<18-title.length()/2; i++) {
+            for (int i = 0; i < 18 - title.length() / 2; i++) {
                 stream += " ";
             }
             stream += title + ") Tj";
@@ -579,7 +579,7 @@ public class Export {
 
             //Az objektum indexe, ahol épp tartunk
             int objindex = (int) Math.ceil((double) cellak_szama / 6) + 5;
-            
+
             //Ábrák
             for (int i = 0; i <= origami1.history().size(); i++) {
 
@@ -624,6 +624,8 @@ public class Export {
                             break;
                     }
 
+                    kamera.adjust(origami1);
+                    kamera.setZoom(figure_frame / Math.max(kamera.circumscribedSquareSize(origami1), 1.) * kamera.zoom());
                     kep = kamera.drawFaces(x, y, origami1) + kamera.drawEdges(x, y, origami1);
 
                     Offszetek.add(bajtszam);
@@ -722,6 +724,7 @@ public class Export {
                     double[] siknv;
 
                     kamera.adjust(origami1);
+                    kamera.setZoom(figure_frame / Math.max(kamera.circumscribedSquareSize(origami1), 1.) * kamera.zoom());
 
                     switch ((int) origami1.history().get(i)[0]) {
 
@@ -797,39 +800,39 @@ public class Export {
                 }
                 origami1.execute(i, 1);
                 if (i < origami1.history().size()) {
-                if (origami1.history.get(i)[0] == 1) {
+                    if (origami1.history.get(i)[0] == 1) {
 
-                    double[] ppoint = new double[]{
-                        origami1.history.get(i)[1],
-                        origami1.history.get(i)[2],
-                        origami1.history.get(i)[3]
-                    };
-                    double[] pnormal = new double[]{
-                        origami1.history.get(i)[4],
-                        origami1.history.get(i)[5],
-                        origami1.history.get(i)[6]
-                    };
-                    foldtypes.add(origami1.foldType(ppoint, pnormal));
-                } else if (origami1.history.get(i)[0] == 3) {
+                        double[] ppoint = new double[]{
+                            origami1.history.get(i)[1],
+                            origami1.history.get(i)[2],
+                            origami1.history.get(i)[3]
+                        };
+                        double[] pnormal = new double[]{
+                            origami1.history.get(i)[4],
+                            origami1.history.get(i)[5],
+                            origami1.history.get(i)[6]
+                        };
+                        foldtypes.add(origami1.foldType(ppoint, pnormal));
+                    } else if (origami1.history.get(i)[0] == 3) {
 
-                    double[] ppoint = new double[]{
-                        origami1.history.get(i)[1],
-                        origami1.history.get(i)[2],
-                        origami1.history.get(i)[3]
-                    };
-                    double[] pnormal = new double[]{
-                        origami1.history.get(i)[4],
-                        origami1.history.get(i)[5],
-                        origami1.history.get(i)[6]
-                    };
-                    int polygonIndex = (int) origami1.history.get(i)[7];
-                    foldtypes.add(origami1.foldType(ppoint, pnormal, polygonIndex));
-                } else {
-                    foldtypes.add(null);
-                }
+                        double[] ppoint = new double[]{
+                            origami1.history.get(i)[1],
+                            origami1.history.get(i)[2],
+                            origami1.history.get(i)[3]
+                        };
+                        double[] pnormal = new double[]{
+                            origami1.history.get(i)[4],
+                            origami1.history.get(i)[5],
+                            origami1.history.get(i)[6]
+                        };
+                        int polygonIndex = (int) origami1.history.get(i)[7];
+                        foldtypes.add(origami1.foldType(ppoint, pnormal, polygonIndex));
+                    } else {
+                        foldtypes.add(null);
+                    }
                 }
             }
-            
+
             int dif = Origami.difficultyLevel(origami1.difficulty());
             String difname = null;
             switch (dif) {
@@ -923,7 +926,7 @@ public class Export {
 
             //Szövegek
             for (int i = 0; i <= origami1.history().size(); i++) {
-                
+
                 String utasitas = "";
                 String koo = "";
 
@@ -1050,7 +1053,7 @@ public class Export {
                                 case 0:
                                     utasitas = Instructor.getString("no_fold", sorszam);
                                     break;
-                                    
+
                                 case -1:
                                     switch (kamera.pdfLinerDir(siknv)) {
                                         case Camera.PDF_NORTH:
@@ -1069,7 +1072,7 @@ public class Export {
                                             break;
                                     }
                                     break;
-                                    
+
                                 case -2:
                                     switch (kamera.pdfLinerDir(siknv)) {
                                         case Camera.PDF_NORTH:
@@ -1088,7 +1091,7 @@ public class Export {
                                             break;
                                     }
                                     break;
-                                    
+
                                 case -3:
                                     switch (kamera.pdfLinerDir(siknv)) {
                                         case Camera.PDF_NORTH:
@@ -1107,7 +1110,7 @@ public class Export {
                                             break;
                                     }
                                     break;
-                                    
+
                                 case -4:
                                     switch (kamera.pdfLinerDir(siknv)) {
                                         case Camera.PDF_NORTH:
@@ -1126,7 +1129,7 @@ public class Export {
                                             break;
                                     }
                                     break;
-                                    
+
                                 case -5:
                                     switch (kamera.pdfLinerDir(siknv)) {
                                         case Camera.PDF_NORTH:
@@ -1145,7 +1148,7 @@ public class Export {
                                             break;
                                     }
                                     break;
-                                    
+
                                 default:
                                     utasitas = Instructor.getString("compound", sorszam, foldtypes.get(i));
                                     break;
@@ -1190,7 +1193,7 @@ public class Export {
 
                         case 3:
                             switch (foldtypes.get(i)) {
-                                
+
                                 case 0:
                                     utasitas = Instructor.getString("no_fold", sorszam);
                                     break;
@@ -1224,7 +1227,7 @@ public class Export {
                                 }
                                 j1--;
                             }
-                            utasitas = Instructor.getString("rotate_gray", sorszam, szog1 + (int)origami1.history().get(i)[7]);
+                            utasitas = Instructor.getString("rotate_gray", sorszam, szog1 + (int) origami1.history().get(i)[7]);
                             sorszam++;
                             break;
 
@@ -1275,7 +1278,7 @@ public class Export {
                             sorszam++;
                             break;
                     }
-                    
+
                     if (i == 0) {
 
                         switch (origami1.papertype()) {
@@ -1411,7 +1414,7 @@ public class Export {
             return 1;
 
         } catch (Exception exc) {
-exc.printStackTrace();
+            exc.printStackTrace();
             return 0;
         }
     }

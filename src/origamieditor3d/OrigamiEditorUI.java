@@ -30,7 +30,7 @@ import origamieditor3d.resources.Models;
 public class OrigamiEditorUI extends javax.swing.JFrame {
 
     final static private long serialVersionUID = 1L;
-    final static public String Version = "1.2.4";
+    final static public String Version = "1.2.5";
     private Integer mouseX, mouseY;
     private int scroll_angle;
     private Integer liner1X, liner1Y, liner2X, liner2Y;
@@ -2102,6 +2102,9 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                     return;
                 }
             }
+            if (!chooser.getSelectedFile().getName().matches("[\\w\\.]+")) {
+                javax.swing.JOptionPane.showMessageDialog(null, Dictionary.getString("noword"), Dictionary.getString("warning"), javax.swing.JOptionPane.WARNING_MESSAGE);
+            }
             
             try {
 
@@ -2278,6 +2281,9 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                     ui_file_export_toopenctmActionPerformed(evt);
                     return;
                 }
+            }
+            if (!chooser.getSelectedFile().getName().matches("[\\w\\.]+")) {
+                javax.swing.JOptionPane.showMessageDialog(null, Dictionary.getString("noword"), Dictionary.getString("warning"), javax.swing.JOptionPane.WARNING_MESSAGE);
             }
             
             try {
@@ -2931,7 +2937,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                 fos.write(b);
             }
             fos.close();
-            Desktop.getDesktop().browse(tmp.toURI());
+            Desktop.getDesktop().open(tmp);
         } catch (Exception ex) {
             javax.swing.JOptionPane.showMessageDialog(this, ex.getMessage());
         }
@@ -3162,10 +3168,11 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         ui_toolbars.setDividerLocation(0.5);
     }//GEN-LAST:event_ui_toolbarsComponentResized
 
+    //
+    //  SELECT
+    //
     private void ui_selectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ui_selectActionPerformed
 
-        oPanel1.linerOff();
-        pPanel1.linerOff();
         ui_select.setSelected(true);
         ui_plane.setSelected(false);
         ui_angle.setSelected(false);
@@ -3273,6 +3280,9 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_ui_snap_4ActionPerformed
 
+    //
+    //  PROPERTIES
+    //
     @SuppressWarnings("deprecation")
     private void ui_file_propertiesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ui_file_propertiesActionPerformed
 
