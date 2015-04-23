@@ -26,7 +26,7 @@ public class OrigamiTracker {
     public OrigamiTracker(Origami origami, double[] tracker) throws Exception {
 
     	if (origami instanceof OrigamiGen2) {
-    		trackedOrigami = new OrigamiGen2(origami.corners(), origami.history){
+    		trackedOrigami = new OrigamiGen2(origami){
 
     		    @Override
     		    protected boolean cutPolygon(double[] ppoint, double[] pnormal, int polygonIndex) {
@@ -86,7 +86,7 @@ public class OrigamiTracker {
     		    }
     		};
     	} else {
-    		trackedOrigami = new Origami(origami.corners(), origami.history){
+    		trackedOrigami = new Origami(origami){
 
     		    @Override
     		    protected boolean cutPolygon(double[] ppoint, double[] pnormal, int polygonIndex) {

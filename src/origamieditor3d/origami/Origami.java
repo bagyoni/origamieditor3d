@@ -38,39 +38,13 @@ public class Origami {
      */
     public Origami(PaperType papertype) {
 
-        vertices = (vertices2d = new ArrayList<>(Arrays.asList(new double[][]{})));
+        vertices = (vertices2d = new ArrayList<>());
         vertices_size = 0;
         polygons = new ArrayList<>();
         polygons_size = 0;
-        history = new ArrayList<>(Arrays.asList(new double[][]{}));
+        history = new ArrayList<>();
+        history_stream = new ArrayList<>();
         history_pointer = 0;
-        this.papertype = papertype;
-        reset();
-    }
-
-    /**
-     * Creates a new origami model.
-     * <br>
-     * The new model will be initialized with a {@link #history() history} that
-     * is the specified {@link ArrayList}, a {@link #papertype() papertype} of
-     * the specified {@link PaperType}, and will be {@link #reset() reset}
-     * immediately afterwards.
-     * <br>
-     * The {@link #execute() execute()} method will not be called in this
-     * constructor; you will have to call it explicitly to fold the model based
-     * on its {@link #history() history}.
-     *
-     * @param papertype	The {@link #papertype() papertype} of the new instance.
-     * @param history	The {@link #history() history} of the new instance.
-     */
-    public Origami(PaperType papertype, ArrayList<double[]> history) {
-
-        vertices = (vertices2d = new ArrayList<>(Arrays.asList(new double[][]{})));
-        vertices_size = 0;
-        polygons = new ArrayList<>();
-        polygons_size = 0;
-        this.history = history;
-        history_pointer = this.history.size();
         this.papertype = papertype;
         reset();
     }
@@ -91,11 +65,12 @@ public class Origami {
      */
     public Origami(ArrayList<double[]> corners) throws Exception {
 
-        vertices = (vertices2d = new ArrayList<>(Arrays.asList(new double[][]{})));
+        vertices = (vertices2d = new ArrayList<>());
         vertices_size = 0;
         polygons = new ArrayList<>();
         polygons_size = 0;
-        history = new ArrayList<>(Arrays.asList(new double[][]{}));
+        history = new ArrayList<>();
+        history_stream = new ArrayList<>();
         history_pointer = 0;
         papertype = PaperType.Custom;
         this.corners = ccwWindingOrder(corners);
@@ -104,39 +79,13 @@ public class Origami {
         }
         reset();
     }
-
-    /**
-     * Creates a new origami model.
-     * <br>
-     * The new model will be initialized with a {@link #history() history} that
-     * is the specified {@link ArrayList}, a {@link #papertype() papertype} of
-     * {@link PaperType#Custom}, a {@link #corners() corners} list that is the
-     * {@link #ccwWindingOrder(ArrayList) ccwWindingOrder} of the specified
-     * {@link ArrayList}, and will be {@link #reset() reset} immediately
-     * afterwards.
-     * <br>
-     * The {@link #execute() execute()} method will not be called in this
-     * constructor; you will have to call it explicitly to fold the model based
-     * on its {@link #history() history}.
-     *
-     * @param corners The {@link #corners() corners} list of the new instance.
-     * @param history The {@link #history() history} of the new instance.
-     *
-     * @throws Exception if {@code !isConvex(ccwWindingOrder(corners))}
-     */
-    public Origami(ArrayList<double[]> corners, ArrayList<double[]> history) throws Exception {
-
-        vertices = (vertices2d = new ArrayList<>(Arrays.asList(new double[][]{})));
-        vertices_size = 0;
-        polygons = new ArrayList<>();
-        polygons_size = 0;
-        this.history = history;
-        history_pointer = this.history.size();
-        papertype = PaperType.Custom;
-        this.corners = ccwWindingOrder(corners);
-        if (!isConvex(this.corners)) {
-            throw new Exception("Varatlan konkav sokszog/Unexpected concave polygon");
-        }
+    
+    public Origami(Origami origami) {
+        
+        papertype = origami.papertype;
+        corners = origami.corners;
+        history = (ArrayList<double[]>)origami.history.clone();
+        history_stream = (ArrayList<int[]>)origami.history_stream.clone();
         reset();
     }
 
@@ -144,7 +93,7 @@ public class Origami {
         return 1;
     }
 
-    protected ArrayList<double[]> vertices = new ArrayList<>(Arrays.asList(new double[][]{}));
+    protected ArrayList<double[]> vertices = new ArrayList<>();
 
     /**
      * Returns a list of all the vertices in this origami, regardless of whether
@@ -206,7 +155,7 @@ public class Origami {
         return polygons_size;
     }
 
-    protected ArrayList<double[]> history = new ArrayList<>(Arrays.asList(new double[][]{}));
+    protected ArrayList<double[]> history = new ArrayList<>();
 
     /**
      * Returns an {@link ArrayList} containing information about some of the
@@ -224,6 +173,12 @@ public class Origami {
 
     public int history_pointer() {
         return history_pointer;
+    }
+    
+    protected ArrayList<int[]> history_stream = new ArrayList<>();
+    
+    public ArrayList<int[]> history_stream() {
+        return history_stream;
     }
 
     /**
@@ -351,7 +306,7 @@ public class Origami {
         return papertype;
     }
 
-    protected ArrayList<double[]> corners = new ArrayList<>(Arrays.asList(new double[][]{}));
+    protected ArrayList<double[]> corners = new ArrayList<>();
 
     /**
      * Returns a copy of the original {@link #vertices() vertices} list of this
@@ -366,7 +321,7 @@ public class Origami {
         return corners;
     }
 
-    protected ArrayList<double[]> vertices2d = new ArrayList<>(Arrays.asList(new double[][]{}));
+    protected ArrayList<double[]> vertices2d = new ArrayList<>();
 
     /**
      * Returns a list of all the vertices in this origami, regardless of whether
@@ -444,6 +399,261 @@ public class Origami {
 
         polygons.remove(polygonIndex);
         polygons_size--;
+    }
+    
+    protected void addCommand(int commandID, double[] ppoint, double[] pnormal, int polygonIndex, int phi) {
+        
+        int[] cblock = commandBlock(commandID, ppoint, pnormal, polygonIndex, phi);
+        addCommand(cblock);
+    }
+    
+    protected void addCommand(int[] cblock) {
+        
+        int i=-1;
+        
+        int header = cblock[++i];
+        header <<= 8;
+        header += cblock[++i];
+        header <<= 8;
+        header += cblock[++i];
+        header <<= 8;
+        header += cblock[++i];
+        
+        short Xint, Yint, Zint;
+        int Xfrac, Yfrac, Zfrac;
+
+        Xint = (short) cblock[++i];
+        Xint <<= 8;
+        Xint += cblock[++i];
+        Xfrac = cblock[++i];
+        Xfrac <<= 8;
+        Xfrac += cblock[++i];
+        double X = Xint + Math.signum(Xint) * (double) Xfrac / 256 / 256;
+
+        Yint = (short) cblock[++i];
+        Yint <<= 8;
+        Yint += cblock[++i];
+        Yfrac = cblock[++i];
+        Yfrac <<= 8;
+        Yfrac += cblock[++i];
+        double Y = Yint + Math.signum(Yint) * (double) Yfrac / 256 / 256;
+
+        Zint = (short) cblock[++i];
+        Zint <<= 8;
+        Zint += cblock[++i];
+        Zfrac = cblock[++i];
+        Zfrac <<= 8;
+        Zfrac += cblock[++i];
+        double Z = Zint + Math.signum(Zint) * (double) Zfrac / 256 / 256;
+
+        double[] sikpont = new double[3];
+        double[] siknv = new double[3];
+        sikpont[0] = (double) X + Origins[(((header >>> 24) % 32) - ((header >>> 24) % 8)) / 8][0];
+        sikpont[1] = (double) Y + Origins[(((header >>> 24) % 32) - ((header >>> 24) % 8)) / 8][1];
+        sikpont[2] = (double) Z + Origins[(((header >>> 24) % 32) - ((header >>> 24) % 8)) / 8][2];
+        siknv[0] = X;
+        siknv[1] = Y;
+        siknv[2] = Z;
+
+        //térfélválasztás
+        if (((header >>> 24) - ((header >>> 24) % 32)) / 32 == 1) {
+
+            siknv = new double[]{-siknv[0], -siknv[1], -siknv[2]};
+        }
+
+        double[] command;
+        if ((header >>> 24) % 8 == 1) {
+
+            //ref. fold
+            command = new double[7];
+            command[0] = 1;
+        } else if ((header >>> 24) % 8 == 2) {
+
+            //positive rot. fold
+            command = new double[8];
+            command[0] = 2;
+            command[7] = (header >>> 16) % 256;
+        } else if ((header >>> 24) % 8 == 3) {
+
+            //negative rot. fold
+            command = new double[8];
+            command[0] = 2;
+            command[7] = -(header >>> 16) % 256;
+        } else if ((header >>> 24) % 8 == 4) {
+
+            //partial ref. fold
+            command = new double[8];
+            command[0] = 3;
+            command[7] = (header % 65536);
+        } else if ((header >>> 24) % 8 == 5) {
+
+            //positive partial rot. fold
+            command = new double[9];
+            command[0] = 4;
+            command[7] = (header >>> 16) % 256;
+            command[8] = (header % 65536);
+        } else if ((header >>> 24) % 8 == 6) {
+
+            //negative partial rot. fold
+            command = new double[9];
+            command[0] = 4;
+            command[7] = -(header >>> 16) % 256;
+            command[8] = (header % 65536);
+        } else if ((header >>> 24) % 8 == 7) {
+
+            //crease
+            command = new double[7];
+            command[0] = 5;
+        } else if (header % 65536 == 65535) {
+
+            //cut
+            command = new double[7];
+            command[0] = 6;
+        } else {
+
+            //partial cut
+            command = new double[8];
+            command[0] = 7;
+            command[7] = (header % 65536);
+        }
+
+        command[1] = sikpont[0];
+        command[2] = sikpont[1];
+        command[3] = sikpont[2];
+        command[4] = siknv[0];
+        command[5] = siknv[1];
+        command[6] = siknv[2];
+
+        history.add(command);
+        history_stream.add(cblock);
+    }
+    
+    protected int[] commandBlock(int commandID, double[] ppoint, double[] pnormal, int polygonIndex, int phi) {
+        
+        double max_d = -1;
+        int used_origin = 0;
+        int used_hemispace = 0;
+        double[] pjoint = new double[]{0, 0, 0};
+        double konst = ppoint[0] * pnormal[0] + ppoint[1] * pnormal[1] + ppoint[2] * pnormal[2];
+
+        for (int ii = 0; ii < Origins.length; ii++) {
+
+            double[] iranyvek = pnormal;
+            double X = Origins[ii][0];
+            double Y = Origins[ii][1];
+            double Z = Origins[ii][2];
+            double U = iranyvek[0];
+            double V = iranyvek[1];
+            double W = iranyvek[2];
+            double A = pnormal[0];
+            double B = pnormal[1];
+            double C = pnormal[2];
+            double t = -(A * X + B * Y + C * Z - konst) / (A * U + B * V + C * W);
+
+            double[] talppont = new double[]{X + t * U, Y + t * V, Z + t * W};
+            if (Origami.vector_length(Origami.vector(talppont, Origins[ii])) > max_d) {
+
+                pjoint = Origami.vector(talppont, Origins[ii]);
+                max_d = Origami.vector_length(pjoint);
+                used_origin = ii;
+            }
+        }
+
+        //inner: 1, outer: 0
+        if (Origami.scalar_product(pnormal, pjoint) < 0) {
+            used_hemispace = 1;
+        }
+
+        int parancsazon = 0;
+        int mag = 65535;
+
+        switch (commandID) {
+
+            case 1:
+                parancsazon = 1;
+                break;
+
+            case 2:
+                while (phi < 0) {
+                    phi += 360;
+                }
+                phi %= 360;
+                if (phi <= 180) {
+                    parancsazon = 2;
+                } else {
+
+                    parancsazon = 3;
+                    phi = 360 - phi;
+                }
+                break;
+
+            case 3:
+                parancsazon = 4;
+                mag = polygonIndex;
+                break;
+
+            case 4:
+                while (phi < 0) {
+                    phi += 360;
+                }
+                phi %= 360;
+                if (phi <= 180) {
+                    parancsazon = 5;
+                } else {
+
+                    parancsazon = 6;
+                    phi = 360 - phi;
+                }
+                mag = polygonIndex;
+                break;
+
+            case 5:
+                parancsazon = 7;
+                break;
+
+            case 6:
+                parancsazon = 0;
+                break;
+
+            case 7:
+                parancsazon = 0;
+                mag = polygonIndex;
+                break;
+        }
+
+        int Xe = (int) pjoint[0];
+        int Ye = (int) pjoint[1];
+        int Ze = (int) pjoint[2];
+
+        int Xt = (int) Math.round((Math.abs(pjoint[0] - Xe)) * 256 * 256);
+        int Yt = (int) Math.round((Math.abs(pjoint[1] - Ye)) * 256 * 256);
+        int Zt = (int) Math.round((Math.abs(pjoint[2] - Ze)) * 256 * 256);
+
+        int[] cblock = {
+        
+            //header
+            (0xFF & (used_hemispace * 32 + used_origin * 8 + parancsazon)),
+            (0xFF & (phi)),
+            (0xFF & (mag >>> 8)),
+            (0xFF & (mag)),
+
+            //body
+            (0xFF & (Xe >>> 8)),
+            (0xFF & (Xe)),
+            (0xFF & (Xt >>> 8)),
+            (0xFF & (Xt)),
+
+            (0xFF & (Ye >>> 8)),
+            (0xFF & (Ye)),
+            (0xFF & (Yt >>> 8)),
+            (0xFF & (Yt)),
+
+            (0xFF & (Ze >>> 8)),
+            (0xFF & (Ze)),
+            (0xFF & (Zt >>> 8)),
+            (0xFF & (Zt))
+        };
+        return cblock;
     }
 
     static public boolean plane_between_points(double[] ppoint, double[] pnormal, double[] A, double[] B) {
@@ -598,8 +808,8 @@ public class Origami {
         return false;
     }
 
-    protected ArrayList<int[]> cutpolygon_nodes = new ArrayList<>(Arrays.asList(new int[][]{}));
-    protected ArrayList<int[]> cutpolygon_pairs = new ArrayList<>(Arrays.asList(new int[][]{}));
+    protected ArrayList<int[]> cutpolygon_nodes = new ArrayList<>();
+    protected ArrayList<int[]> cutpolygon_pairs = new ArrayList<>();
     protected ArrayList<ArrayList<Integer>> last_cut_polygons = new ArrayList<>();
 
     /**
@@ -1153,161 +1363,65 @@ public class Origami {
 
     public void reflectionFold(double[] ppoint, double[] pnormal) {
 
-        //naplózás
         history.subList(history_pointer, history.size()).clear();
-        double[] p1 = planarPointRound(ppoint, pnormal);
-        double[] n1 = normalvectorRound(ppoint, pnormal);
-        ppoint = p1;
-        pnormal = n1;
-        history.add(new double[]{
-            1,
-            ppoint[0],
-            ppoint[1],
-            ppoint[2],
-            pnormal[0],
-            pnormal[1],
-            pnormal[2]
-        });
+        history_stream.subList(history_pointer, history_stream.size()).clear();
+        addCommand(1, ppoint, pnormal, 0, 0);
+        execute(history_pointer, 1);
         history_pointer++;
-        //horpasztás
-        internalReflectionFold(ppoint, pnormal);
     }
 
-    public int rotationFold(double[] ppoint, double[] pnormal, int phi) {
+    public void rotationFold(double[] ppoint, double[] pnormal, int phi) {
 
-        //naplózás
         history.subList(history_pointer, history.size()).clear();
-        double[] p1 = planarPointRound(ppoint, pnormal);
-        double[] n1 = normalvectorRound(ppoint, pnormal);
-        ppoint = p1;
-        pnormal = n1;
-        history.add(new double[]{
-            2,
-            ppoint[0],
-            ppoint[1],
-            ppoint[2],
-            pnormal[0],
-            pnormal[1],
-            pnormal[2],
-            (double) phi
-        });
+        history_stream.subList(history_pointer, history_stream.size()).clear();
+        addCommand(2, ppoint, pnormal, 0, phi);
+        execute(history_pointer, 1);
         history_pointer++;
-        //hajtás
-        return internalRotationFold(ppoint, pnormal, phi);
     }
 
     public void reflectionFold(double[] ppoint, double[] pnormal, int polygonIndex) {
 
-        //naplózás
         history.subList(history_pointer, history.size()).clear();
-        double[] p1 = planarPointRound(ppoint, pnormal);
-        double[] n1 = normalvectorRound(ppoint, pnormal);
-        ppoint = p1;
-        pnormal = n1;
-        history.add(new double[]{
-            3,
-            ppoint[0],
-            ppoint[1],
-            ppoint[2],
-            pnormal[0],
-            pnormal[1],
-            pnormal[2],
-            (double) polygonIndex
-        });
+        history_stream.subList(history_pointer, history_stream.size()).clear();
+        addCommand(3, ppoint, pnormal, polygonIndex, 0);
+        execute(history_pointer, 1);
         history_pointer++;
-        //horpasztás
-        internalReflectionFold(ppoint, pnormal, polygonIndex);
     }
 
     public void rotationFold(double[] ppoint, double[] pnormal, int phi, int polygonIndex) {
 
-        //naplózás
         history.subList(history_pointer, history.size()).clear();
-        double[] p1 = planarPointRound(ppoint, pnormal);
-        double[] n1 = normalvectorRound(ppoint, pnormal);
-        ppoint = p1;
-        pnormal = n1;
-        history.add(new double[]{
-            4,
-            ppoint[0],
-            ppoint[1],
-            ppoint[2],
-            pnormal[0],
-            pnormal[1],
-            pnormal[2],
-            (double) phi,
-            (double) polygonIndex
-        });
+        history_stream.subList(history_pointer, history_stream.size()).clear();
+        addCommand(4, ppoint, pnormal, polygonIndex, phi);
+        execute(history_pointer, 1);
         history_pointer++;
-        //hajtás
-        internalRotationFold(ppoint, pnormal, phi, polygonIndex);
     }
 
     public void crease(double[] ppoint, double[] pnormal) {
 
-        //naplózás
         history.subList(history_pointer, history.size()).clear();
-        double[] p1 = planarPointRound(ppoint, pnormal);
-        double[] n1 = normalvectorRound(ppoint, pnormal);
-        ppoint = p1;
-        pnormal = n1;
-        history.add(new double[]{
-            5,
-            ppoint[0],
-            ppoint[1],
-            ppoint[2],
-            pnormal[0],
-            pnormal[1],
-            pnormal[2]
-        });
+        history_stream.subList(history_pointer, history_stream.size()).clear();
+        addCommand(5, ppoint, pnormal, 0, 0);
+        execute(history_pointer, 1);
         history_pointer++;
-        //"hajtás"
-        internalRotationFold(ppoint, pnormal, 0);
     }
 
     public void mutilation(double[] ppoint, double[] pnormal) {
 
-        //logging
         history.subList(history_pointer, history.size()).clear();
-        double[] p1 = planarPointRound(ppoint, pnormal);
-        double[] n1 = normalvectorRound(ppoint, pnormal);
-        ppoint = p1;
-        pnormal = n1;
-        history.add(new double[]{
-            6,
-            ppoint[0],
-            ppoint[1],
-            ppoint[2],
-            pnormal[0],
-            pnormal[1],
-            pnormal[2]
-        });
+        history_stream.subList(history_pointer, history_stream.size()).clear();
+        addCommand(6, ppoint, pnormal, 0, 0);
+        execute(history_pointer, 1);
         history_pointer++;
-        //"hajtás"
-        internalMutilation(ppoint, pnormal);
     }
 
     public void mutilation(double[] ppoint, double[] pnormal, int polygonIndex) {
 
-        //logging
         history.subList(history_pointer, history.size()).clear();
-        double[] p1 = planarPointRound(ppoint, pnormal);
-        double[] n1 = normalvectorRound(ppoint, pnormal);
-        ppoint = p1;
-        pnormal = n1;
-        history.add(new double[]{
-            7,
-            ppoint[0],
-            ppoint[1],
-            ppoint[2],
-            pnormal[0],
-            pnormal[1],
-            pnormal[2],
-            (double) polygonIndex
-        });
+        history_stream.subList(history_pointer, history_stream.size()).clear();
+        addCommand(7, ppoint, pnormal, polygonIndex, 0);
+        execute(history_pointer, 1);
         history_pointer++;
-        //"hajtás"
-        internalMutilation(ppoint, pnormal, polygonIndex);
     }
 
     /**
@@ -2257,6 +2371,7 @@ public class Origami {
         Origami copy = new Origami(papertype);
         copy.corners = (ArrayList<double[]>) corners.clone();
         copy.history = (ArrayList<double[]>) history.clone();
+        copy.history_stream = (ArrayList<int[]>) history_stream.clone();
         copy.history_pointer = history_pointer;
         copy.vertices_size = vertices_size;
         copy.vertices = (ArrayList<double[]>) vertices.clone();

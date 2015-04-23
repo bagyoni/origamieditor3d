@@ -105,7 +105,7 @@ public class OrigamiScriptTerminal {
         version = maxVersion;
         history.clear();
 
-        TerminalOrigami.undo(TerminalOrigami.history.size());
+        TerminalOrigami.undo(TerminalOrigami.history().size());
         TerminalCamera = new Camera(0, 0, 1);
     }
 
@@ -891,9 +891,8 @@ public class OrigamiScriptTerminal {
     private void ROTATE1() throws Exception {
 
         if (ppoint != null && pnormal != null && phi != null && tracker == null) {
-            if (TerminalOrigami.rotationFold(ppoint, pnormal, phi) == 1) {
-                undo(1);
-            }
+            TerminalOrigami.rotationFold(ppoint, pnormal, phi);
+            
         } else if (ppoint != null && pnormal != null && phi != null
                 && tracker != null) {
 
@@ -952,7 +951,7 @@ public class OrigamiScriptTerminal {
 
     private void UNDO1() throws Exception {
 
-        if (TerminalOrigami.history.size() > 0) {
+        if (TerminalOrigami.history().size() > 0) {
             TerminalOrigami.undo();
         } else {
             undo(1);

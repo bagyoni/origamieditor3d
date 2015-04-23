@@ -29,16 +29,12 @@ public class OrigamiGen2 extends Origami {
         super(papertype);
     }
 
-    public OrigamiGen2(PaperType papertype, ArrayList<double[]> history) {
-    	super(papertype, history);
-    }
-
     public OrigamiGen2(ArrayList<double[]> corners) throws Exception {
     	super(corners);
     }
-
-    public OrigamiGen2(ArrayList<double[]> corners, ArrayList<double[]> history) throws Exception {
-    	super(corners, history);
+    
+    public OrigamiGen2(Origami origami) throws Exception {
+    	super(origami);
     }
     
     @Override
@@ -144,6 +140,7 @@ public class OrigamiGen2 extends Origami {
         OrigamiGen2 copy = new OrigamiGen2(papertype);
         copy.corners = (ArrayList<double[]>) corners.clone();
         copy.history = (ArrayList<double[]>) history.clone();
+        copy.history_stream = (ArrayList<int[]>) history_stream.clone();
         copy.history_pointer = history_pointer;
         copy.vertices_size = vertices_size;
         copy.vertices = (ArrayList<double[]>) vertices.clone();

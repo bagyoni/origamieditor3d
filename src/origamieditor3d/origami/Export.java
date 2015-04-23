@@ -800,32 +800,32 @@ public class Export {
                 }
                 origami1.execute(i, 1);
                 if (i < origami1.history().size()) {
-                    if (origami1.history.get(i)[0] == 1) {
+                    if (origami1.history().get(i)[0] == 1) {
 
                         double[] ppoint = new double[]{
-                            origami1.history.get(i)[1],
-                            origami1.history.get(i)[2],
-                            origami1.history.get(i)[3]
+                            origami1.history().get(i)[1],
+                            origami1.history().get(i)[2],
+                            origami1.history().get(i)[3]
                         };
                         double[] pnormal = new double[]{
-                            origami1.history.get(i)[4],
-                            origami1.history.get(i)[5],
-                            origami1.history.get(i)[6]
+                            origami1.history().get(i)[4],
+                            origami1.history().get(i)[5],
+                            origami1.history().get(i)[6]
                         };
                         foldtypes.add(origami1.foldType(ppoint, pnormal));
-                    } else if (origami1.history.get(i)[0] == 3) {
+                    } else if (origami1.history().get(i)[0] == 3) {
 
                         double[] ppoint = new double[]{
-                            origami1.history.get(i)[1],
-                            origami1.history.get(i)[2],
-                            origami1.history.get(i)[3]
+                            origami1.history().get(i)[1],
+                            origami1.history().get(i)[2],
+                            origami1.history().get(i)[3]
                         };
                         double[] pnormal = new double[]{
-                            origami1.history.get(i)[4],
-                            origami1.history.get(i)[5],
-                            origami1.history.get(i)[6]
+                            origami1.history().get(i)[4],
+                            origami1.history().get(i)[5],
+                            origami1.history().get(i)[6]
                         };
-                        int polygonIndex = (int) origami1.history.get(i)[7];
+                        int polygonIndex = (int) origami1.history().get(i)[7];
                         foldtypes.add(origami1.foldType(ppoint, pnormal, polygonIndex));
                     } else {
                         foldtypes.add(null);
@@ -1177,13 +1177,13 @@ public class Export {
                                     utasitas = Instructor.getString("rotate_north", sorszam, szog + (int) origami1.history().get(i)[7]);
                                     break;
                                 case Camera.PDF_EAST:
-                                    utasitas = Instructor.getString("rotate_north", sorszam, szog + (int) origami1.history().get(i)[7]);
+                                    utasitas = Instructor.getString("rotate_east", sorszam, szog + (int) origami1.history().get(i)[7]);
                                     break;
                                 case Camera.PDF_SOUTH:
-                                    utasitas = Instructor.getString("rotate_north", sorszam, szog + (int) origami1.history().get(i)[7]);
+                                    utasitas = Instructor.getString("rotate_south", sorszam, szog + (int) origami1.history().get(i)[7]);
                                     break;
                                 case Camera.PDF_WEST:
-                                    utasitas = Instructor.getString("rotate_north", sorszam, szog + (int) origami1.history().get(i)[7]);
+                                    utasitas = Instructor.getString("rotate_west", sorszam, szog + (int) origami1.history().get(i)[7]);
                                     break;
                                 default:
                                     break;
@@ -1619,7 +1619,7 @@ public class Export {
             for (int i = 0; i < 72; i++) {
 
                 gimg.clearRect(0, 0, width, height);
-                cam.drawFaces(gimg, color, origami1);
+                cam.drawGradient(gimg, color, origami1);
                 cam.drawEdges(gimg, java.awt.Color.black, origami1);
                 cam.rotate(10, 0);
 

@@ -30,7 +30,7 @@ import origamieditor3d.resources.Models;
 public class OrigamiEditorUI extends javax.swing.JFrame {
 
     final static private long serialVersionUID = 1L;
-    final static public String Version = "1.2.5";
+    final static public String Version = "1.2.6";
     private Integer mouseX, mouseY;
     private int scroll_angle;
     private Integer liner1X, liner1Y, liner2X, liner2Y;
@@ -1591,17 +1591,17 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                 if (pPanel1.isTracked()) {
 
                     try {
-                        double magX = ((double) pPanel1.tracker_x() - oPanel1.PanelCamera.xshift
-                                + new Camera(
-                                        oPanel1.PanelCamera.xshift,
-                                        oPanel1.PanelCamera.yshift,
-                                        oPanel1.PanelCamera.zoom()).projection0(oPanel1.PanelCamera.camera_pos)[0]) / oPanel1.PanelCamera.zoom();
+                        double magX = ((double) pPanel1.tracker_x() - pPanel1.PanelCamera.xshift
+                            + new Camera(
+                                    pPanel1.PanelCamera.xshift,
+                                    pPanel1.PanelCamera.yshift,
+                                    pPanel1.PanelCamera.zoom()).projection0(pPanel1.PanelCamera.camera_pos)[0]) / pPanel1.PanelCamera.zoom();
 
-                        double magY = ((double) pPanel1.tracker_y() - oPanel1.PanelCamera.yshift
+                        double magY = ((double) pPanel1.tracker_y() - pPanel1.PanelCamera.yshift
                                 + new Camera(
-                                        oPanel1.PanelCamera.xshift,
-                                        oPanel1.PanelCamera.yshift,
-                                        oPanel1.PanelCamera.zoom()).projection0(oPanel1.PanelCamera.camera_pos)[1]) / oPanel1.PanelCamera.zoom();
+                                        pPanel1.PanelCamera.xshift,
+                                        pPanel1.PanelCamera.yshift,
+                                        pPanel1.PanelCamera.zoom()).projection0(pPanel1.PanelCamera.camera_pos)[1]) / pPanel1.PanelCamera.zoom();
 
                         terminal.execute(
                                 pszo + " ["
@@ -1790,17 +1790,17 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
             if (pPanel1.isTracked()) {
 
                 try {
-                    double magX = ((double) pPanel1.tracker_x() - oPanel1.PanelCamera.xshift
+                    double magX = ((double) pPanel1.tracker_x() - pPanel1.PanelCamera.xshift
                             + new Camera(
-                                    oPanel1.PanelCamera.xshift,
-                                    oPanel1.PanelCamera.yshift,
-                                    oPanel1.PanelCamera.zoom()).projection0(oPanel1.PanelCamera.camera_pos)[0]) / oPanel1.PanelCamera.zoom();
+                                    pPanel1.PanelCamera.xshift,
+                                    pPanel1.PanelCamera.yshift,
+                                    pPanel1.PanelCamera.zoom()).projection0(pPanel1.PanelCamera.camera_pos)[0]) / pPanel1.PanelCamera.zoom();
 
-                    double magY = ((double) pPanel1.tracker_y() - oPanel1.PanelCamera.yshift
+                    double magY = ((double) pPanel1.tracker_y() - pPanel1.PanelCamera.yshift
                             + new Camera(
-                                    oPanel1.PanelCamera.xshift,
-                                    oPanel1.PanelCamera.yshift,
-                                    oPanel1.PanelCamera.zoom()).projection0(oPanel1.PanelCamera.camera_pos)[1]) / oPanel1.PanelCamera.zoom();
+                                    pPanel1.PanelCamera.xshift,
+                                    pPanel1.PanelCamera.yshift,
+                                    pPanel1.PanelCamera.zoom()).projection0(pPanel1.PanelCamera.camera_pos)[1]) / pPanel1.PanelCamera.zoom();
 
                     terminal.execute(
                             pszo + " ["
@@ -1965,17 +1965,17 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
             if (pPanel1.isTracked()) {
 
                 try {
-                    double magX = ((double) pPanel1.tracker_x() - oPanel1.PanelCamera.xshift
+                    double magX = ((double) pPanel1.tracker_x() - pPanel1.PanelCamera.xshift
                             + new Camera(
-                                    oPanel1.PanelCamera.xshift,
-                                    oPanel1.PanelCamera.yshift,
-                                    oPanel1.PanelCamera.zoom()).projection0(oPanel1.PanelCamera.camera_pos)[0]) / oPanel1.PanelCamera.zoom();
+                                    pPanel1.PanelCamera.xshift,
+                                    pPanel1.PanelCamera.yshift,
+                                    pPanel1.PanelCamera.zoom()).projection0(pPanel1.PanelCamera.camera_pos)[0]) / pPanel1.PanelCamera.zoom();
 
-                    double magY = ((double) pPanel1.tracker_y() - oPanel1.PanelCamera.yshift
+                    double magY = ((double) pPanel1.tracker_y() - pPanel1.PanelCamera.yshift
                             + new Camera(
-                                    oPanel1.PanelCamera.xshift,
-                                    oPanel1.PanelCamera.yshift,
-                                    oPanel1.PanelCamera.zoom()).projection0(oPanel1.PanelCamera.camera_pos)[1]) / oPanel1.PanelCamera.zoom();
+                                    pPanel1.PanelCamera.xshift,
+                                    pPanel1.PanelCamera.yshift,
+                                    pPanel1.PanelCamera.zoom()).projection0(pPanel1.PanelCamera.camera_pos)[1]) / pPanel1.PanelCamera.zoom();
 
                     terminal.execute(
                             pszo + " ["
