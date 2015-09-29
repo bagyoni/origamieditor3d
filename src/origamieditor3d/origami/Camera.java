@@ -12,10 +12,10 @@
 // along with this program.  If not, see <http:// www.gnu.org/licenses/>.
 package origamieditor3d.origami;
 
-import java.util.ArrayList;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Polygon;
+import java.util.ArrayList;
 
 /**
  *
@@ -54,6 +54,7 @@ public class Camera {
         camera_dir[1] = camera_dir[1] / Origami.vector_length(zt) * zoom;
         camera_dir[2] = camera_dir[2] / Origami.vector_length(zt) * zoom;
     }
+
     public double[] camera_pos;
     public double[] camera_dir;
     public double[] axis_x;
@@ -69,7 +70,6 @@ public class Camera {
     public java.awt.image.BufferedImage texture;
 
     public double zoom() {
-
         return zoom;
     }
 
@@ -92,33 +92,36 @@ public class Camera {
         camera_dir[1] = camera_dir[1] / Origami.vector_length(zt) * zoom;
         camera_dir[2] = camera_dir[2] / Origami.vector_length(zt) * zoom;
     }
+
     protected byte orientation = 0;
 
     public double[] projection0(double[] point) {
 
         double konst = camera_pos[0] * camera_dir[0] + camera_pos[1] * camera_dir[1] + camera_pos[2] * camera_dir[2];
 
-        double[] iranyvek = camera_dir;
+        double[] dirvec = camera_dir;
         double X = point[0];
         double Y = point[1];
         double Z = point[2];
-        double U = iranyvek[0];
-        double V = iranyvek[1];
-        double W = iranyvek[2];
+        double U = dirvec[0];
+        double V = dirvec[1];
+        double W = dirvec[2];
         double A = camera_dir[0];
         double B = camera_dir[1];
         double C = camera_dir[2];
         double t = -(A * X + B * Y + C * Z - konst) / (A * U + B * V + C * W);
 
-        double[] talppont = {X + t * U, Y + t * V, Z + t * W};
-        double[] vissza0 = {talppont[0] * axis_x[0] + talppont[1] * axis_x[1] + talppont[2] * axis_x[2],
-            talppont[0] * axis_y[0] + talppont[1] * axis_y[1] + talppont[2] * axis_y[2]};
-        return vissza0;
+        double[] basepoint = {X + t * U, Y + t * V, Z + t * W};
+        double[] img = {basepoint[0] * axis_x[0] + basepoint[1] * axis_x[1] + basepoint[2] * axis_x[2],
+            basepoint[0] * axis_y[0] + basepoint[1] * axis_y[1] + basepoint[2] * axis_y[2]};
+        return img;
     }
 
     public double[] projection(double[] point) {
-        double[] vissza0 = {projection0(point)[0] - projection0(camera_pos)[0], projection0(point)[1] - projection0(camera_pos)[1]};
-        return vissza0;
+
+        double[] img = {projection0(point)[0] - projection0(camera_pos)[0],
+                projection0(point)[1] - projection0(camera_pos)[1]};
+        return img;
     }
 
     public void rotate(float x, float y) {
@@ -137,25 +140,37 @@ public class Camera {
         double sinphi = sinX;
         double cosphi = cosX;
 
-        double kepX = X * (cosphi + Cx * Cx * (1 - cosphi)) + Y * (Cx * Cy * (1 - cosphi) - Cz * sinphi) + Z * (Cx * Cz * (1 - cosphi) + Cy * sinphi);
-        double kepY = X * (Cy * Cx * (1 - cosphi) + Cz * sinphi) + Y * (cosphi + Cy * Cy * (1 - cosphi)) + Z * (Cy * Cz * (1 - cosphi) - Cx * sinphi);
-        double kepZ = X * (Cz * Cx * (1 - cosphi) - Cy * sinphi) + Y * (Cz * Cy * (1 - cosphi) + Cx * sinphi) + Z * (cosphi + Cz * Cz * (1 - cosphi));
+        double imgX = X * (cosphi + Cx * Cx * (1 - cosphi))
+                + Y * (Cx * Cy * (1 - cosphi) - Cz * sinphi)
+                + Z * (Cx * Cz * (1 - cosphi) + Cy * sinphi);
+        double imgY = X * (Cy * Cx * (1 - cosphi) + Cz * sinphi)
+                + Y * (cosphi + Cy * Cy * (1 - cosphi))
+                + Z * (Cy * Cz * (1 - cosphi) - Cx * sinphi);
+        double imgZ = X * (Cz * Cx * (1 - cosphi) - Cy * sinphi)
+                + Y * (Cz * Cy * (1 - cosphi) + Cx * sinphi)
+                + Z * (cosphi + Cz * Cz * (1 - cosphi));
 
-        camera_dir[0] = kepX;
-        camera_dir[1] = kepY;
-        camera_dir[2] = kepZ;
+        camera_dir[0] = imgX;
+        camera_dir[1] = imgY;
+        camera_dir[2] = imgZ;
 
         X = axis_x[0];
         Y = axis_x[1];
         Z = axis_x[2];
 
-        kepX = X * (cosphi + Cx * Cx * (1 - cosphi)) + Y * (Cx * Cy * (1 - cosphi) - Cz * sinphi) + Z * (Cx * Cz * (1 - cosphi) + Cy * sinphi);
-        kepY = X * (Cy * Cx * (1 - cosphi) + Cz * sinphi) + Y * (cosphi + Cy * Cy * (1 - cosphi)) + Z * (Cy * Cz * (1 - cosphi) - Cx * sinphi);
-        kepZ = X * (Cz * Cx * (1 - cosphi) - Cy * sinphi) + Y * (Cz * Cy * (1 - cosphi) + Cx * sinphi) + Z * (cosphi + Cz * Cz * (1 - cosphi));
+        imgX = X * (cosphi + Cx * Cx * (1 - cosphi))
+                + Y * (Cx * Cy * (1 - cosphi) - Cz * sinphi)
+                + Z * (Cx * Cz * (1 - cosphi) + Cy * sinphi);
+        imgY = X * (Cy * Cx * (1 - cosphi) + Cz * sinphi)
+                + Y * (cosphi + Cy * Cy * (1 - cosphi))
+                + Z * (Cy * Cz * (1 - cosphi) - Cx * sinphi);
+        imgZ = X * (Cz * Cx * (1 - cosphi) - Cy * sinphi)
+                + Y * (Cz * Cy * (1 - cosphi) + Cx * sinphi)
+                + Z * (cosphi + Cz * Cz * (1 - cosphi));
 
-        axis_x[0] = kepX / Origami.vector_length(new double[]{kepX, kepY, kepZ}) * zoom;
-        axis_x[1] = kepY / Origami.vector_length(new double[]{kepX, kepY, kepZ}) * zoom;
-        axis_x[2] = kepZ / Origami.vector_length(new double[]{kepX, kepY, kepZ}) * zoom;
+        axis_x[0] = imgX / Origami.vector_length(new double[]{imgX, imgY, imgZ}) * zoom;
+        axis_x[1] = imgY / Origami.vector_length(new double[]{imgX, imgY, imgZ}) * zoom;
+        axis_x[2] = imgZ / Origami.vector_length(new double[]{imgX, imgY, imgZ}) * zoom;
 
         double sinY = Math.sin(y * Math.PI / 180);
         double cosY = Math.cos(y * Math.PI / 180);
@@ -171,25 +186,37 @@ public class Camera {
         sinphi = sinY;
         cosphi = cosY;
 
-        kepX = X * (cosphi + Cx * Cx * (1 - cosphi)) + Y * (Cx * Cy * (1 - cosphi) - Cz * sinphi) + Z * (Cx * Cz * (1 - cosphi) + Cy * sinphi);
-        kepY = X * (Cy * Cx * (1 - cosphi) + Cz * sinphi) + Y * (cosphi + Cy * Cy * (1 - cosphi)) + Z * (Cy * Cz * (1 - cosphi) - Cx * sinphi);
-        kepZ = X * (Cz * Cx * (1 - cosphi) - Cy * sinphi) + Y * (Cz * Cy * (1 - cosphi) + Cx * sinphi) + Z * (cosphi + Cz * Cz * (1 - cosphi));
+        imgX = X * (cosphi + Cx * Cx * (1 - cosphi))
+                + Y * (Cx * Cy * (1 - cosphi) - Cz * sinphi)
+                + Z * (Cx * Cz * (1 - cosphi) + Cy * sinphi);
+        imgY = X * (Cy * Cx * (1 - cosphi) + Cz * sinphi)
+                + Y * (cosphi + Cy * Cy * (1 - cosphi))
+                + Z * (Cy * Cz * (1 - cosphi) - Cx * sinphi);
+        imgZ = X * (Cz * Cx * (1 - cosphi) - Cy * sinphi)
+                + Y * (Cz * Cy * (1 - cosphi) + Cx * sinphi)
+                + Z * (cosphi + Cz * Cz * (1 - cosphi));
 
-        camera_dir[0] = kepX / Origami.vector_length(new double[]{kepX, kepY, kepZ});
-        camera_dir[1] = kepY / Origami.vector_length(new double[]{kepX, kepY, kepZ});
-        camera_dir[2] = kepZ / Origami.vector_length(new double[]{kepX, kepY, kepZ});
+        camera_dir[0] = imgX / Origami.vector_length(new double[]{imgX, imgY, imgZ});
+        camera_dir[1] = imgY / Origami.vector_length(new double[]{imgX, imgY, imgZ});
+        camera_dir[2] = imgZ / Origami.vector_length(new double[]{imgX, imgY, imgZ});
 
         X = axis_y[0];
         Y = axis_y[1];
         Z = axis_y[2];
 
-        kepX = X * (cosphi + Cx * Cx * (1 - cosphi)) + Y * (Cx * Cy * (1 - cosphi) - Cz * sinphi) + Z * (Cx * Cz * (1 - cosphi) + Cy * sinphi);
-        kepY = X * (Cy * Cx * (1 - cosphi) + Cz * sinphi) + Y * (cosphi + Cy * Cy * (1 - cosphi)) + Z * (Cy * Cz * (1 - cosphi) - Cx * sinphi);
-        kepZ = X * (Cz * Cx * (1 - cosphi) - Cy * sinphi) + Y * (Cz * Cy * (1 - cosphi) + Cx * sinphi) + Z * (cosphi + Cz * Cz * (1 - cosphi));
+        imgX = X * (cosphi + Cx * Cx * (1 - cosphi))
+                + Y * (Cx * Cy * (1 - cosphi) - Cz * sinphi)
+                + Z * (Cx * Cz * (1 - cosphi) + Cy * sinphi);
+        imgY = X * (Cy * Cx * (1 - cosphi) + Cz * sinphi)
+                + Y * (cosphi + Cy * Cy * (1 - cosphi))
+                + Z * (Cy * Cz * (1 - cosphi) - Cx * sinphi);
+        imgZ = X * (Cz * Cx * (1 - cosphi) - Cy * sinphi)
+                + Y * (Cz * Cy * (1 - cosphi) + Cx * sinphi)
+                + Z * (cosphi + Cz * Cz * (1 - cosphi));
 
-        axis_y[0] = kepX / Origami.vector_length(new double[]{kepX, kepY, kepZ}) * zoom;
-        axis_y[1] = kepY / Origami.vector_length(new double[]{kepX, kepY, kepZ}) * zoom;
-        axis_y[2] = kepZ / Origami.vector_length(new double[]{kepX, kepY, kepZ}) * zoom;
+        axis_y[0] = imgX / Origami.vector_length(new double[]{imgX, imgY, imgZ}) * zoom;
+        axis_y[1] = imgY / Origami.vector_length(new double[]{imgX, imgY, imgZ}) * zoom;
+        axis_y[2] = imgZ / Origami.vector_length(new double[]{imgX, imgY, imgZ}) * zoom;
     }
 
     public java.util.List<int[]> alignmentPoints(Origami origami, int... denoms) {
@@ -429,7 +456,6 @@ public class Camera {
     }
 
     public boolean isDrawable(int polygonIndex, Origami origami) {
-
         return origami.isStrictlyNonDegenerate(polygonIndex);
     }
 
@@ -499,7 +525,7 @@ public class Camera {
                 }
 
                 double[] grad_dir = Origami.vector_product(normalvek, Origami.vector_product(normalvek, camera_dir));
-                
+
                 double konst = close[0] * camera_dir[0] + close[1] * camera_dir[1] + close[2] * camera_dir[2];
 
                 double X = far[0];
@@ -512,7 +538,7 @@ public class Camera {
                 double B = camera_dir[1];
                 double C = camera_dir[2];
                 double t = -(A * X + B * Y + C * Z - konst) / (A * U + B * V + C * W);
-                
+
                 close = new double[]{X + t * U, Y + t * V, Z + t * W};
 
                 double dclose = Origami.scalar_product(Origami.vector(close, camera_pos), camera_dir) / Math.max(origami.circumscribedSquareSize() * Math.sqrt(2) / 2, 1);

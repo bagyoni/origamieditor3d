@@ -24,13 +24,6 @@ import java.util.Arrays;
  */
 public class OrigamiIO {
 
-    final static private double[][] Origins = {
-        {0, 0, 0},
-        {400, 0, 0},
-        {0, 400, 0},
-        {0, 0, 400}
-    };
-
     static public void write_gen2(Origami origami, String filename) throws Exception {
 
         if (!(origami instanceof OrigamiGen2)) {
@@ -92,7 +85,7 @@ public class OrigamiIO {
             str.close();
             origamieditor3d.compression.LZW.compress(new File(filename + "~"), new File(filename));
             ori.delete();
-            
+
         } catch (Exception ex) {
             throw OrigamiException.H005;
         }
@@ -161,7 +154,7 @@ public class OrigamiIO {
             throw OrigamiException.H002;
         }
     }
-    
+
     static public Origami read_gen2(java.io.ByteArrayInputStream ori) throws Exception {
 
         try {
@@ -233,7 +226,7 @@ public class OrigamiIO {
 
                     int[] block = new int[16];
                     int i=-1;
-                    
+
                     block[++i] = str.read();
                     block[++i] = str.read();
                     block[++i] = str.read();
@@ -245,20 +238,20 @@ public class OrigamiIO {
                         block[++i] = str.read();
                         block[++i] = str.read();
                         block[++i] = str.read();
-                        
+
                         block[++i] = str.read();
                         block[++i] = str.read();
                         block[++i] = str.read();
                         block[++i] = str.read();
-                        
+
                         block[++i] = str.read();
                         block[++i] = str.read();
                         block[++i] = str.read();
                         block[++i] = str.read();
-                        
+
                         origami.addCommand(block.clone());
                         i = -1;
-                        
+
                         block[++i] = str.read();
                         block[++i] = str.read();
                         block[++i] = str.read();
@@ -346,32 +339,32 @@ public class OrigamiIO {
 
                     int[] block = new int[16];
                     int i=-1;
-                    
+
                     block[++i] = str.read();
                     block[++i] = str.read();
                     block[++i] = str.read();
                     block[++i] = str.read();
-                    int header = (((((block[0] << 8) + block[1]) << 8) + block[2]) << 8) + block[3]; 
+                    int header = (((((block[0] << 8) + block[1]) << 8) + block[2]) << 8) + block[3];
                     while (header != 0x0A454f46) {
 
                         block[++i] = str.read();
                         block[++i] = str.read();
                         block[++i] = str.read();
                         block[++i] = str.read();
-                        
+
                         block[++i] = str.read();
                         block[++i] = str.read();
                         block[++i] = str.read();
                         block[++i] = str.read();
-                        
+
                         block[++i] = str.read();
                         block[++i] = str.read();
                         block[++i] = str.read();
                         block[++i] = str.read();
-                        
-                        origami.addCommand(block);
+
+                        origami.addCommand(block.clone());
                         i = -1;
-                        
+
                         block[++i] = str.read();
                         block[++i] = str.read();
                         block[++i] = str.read();

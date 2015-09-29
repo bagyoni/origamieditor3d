@@ -15,12 +15,14 @@ package origamieditor3d;
 import java.awt.Color;
 import java.awt.Desktop;
 import java.awt.event.ActionEvent;
+
 import origamieditor3d.origami.Camera;
-import origamieditor3d.origami.OrigamiScriptTerminal;
 import origamieditor3d.origami.Origami;
 import origamieditor3d.origami.OrigamiIO;
-import origamieditor3d.resources.Dictionary;
+import origamieditor3d.origami.OrigamiScriptTerminal;
 import origamieditor3d.resources.BaseFolds;
+import origamieditor3d.resources.Dictionary;
+import origamieditor3d.resources.Instructor;
 import origamieditor3d.resources.Models;
 
 /**
@@ -42,16 +44,16 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
     private boolean alwaysInMiddle;
     private boolean neusisOn;
     private int foldNumber;
-    final private String oPanel1_tip1 = Dictionary.getString("tooltip1");
-    final private String oPanel1_tip2 = Dictionary.getString("tooltip2");
-    final private String oPanel1_tip3 = Dictionary.getString("tooltip3");
-    final private String pPanel1_tip1 = Dictionary.getString("tooltip4");
-    final private String pPanel1_tip2 = Dictionary.getString("tooltip5");
-    final private String pPanel1_tip3 = Dictionary.getString("tooltip6");
-    final private String pPanel1_tip4 = Dictionary.getString("tooltip7");
-    final private String pPanel1_tip5 = Dictionary.getString("tooltip8");
-    private String fajlnev;
-    final private javax.swing.JFrame beallitasok;
+    private String oPanel1_tip1;
+    private String oPanel1_tip2;
+    private String oPanel1_tip3;
+    private String pPanel1_tip1;
+    private String pPanel1_tip2;
+    private String pPanel1_tip3;
+    private String pPanel1_tip4;
+    private String pPanel1_tip5;
+    private String filename;
+    final private javax.swing.JFrame settings;
     final private javax.swing.JDialog timeline;
     private javax.swing.JFileChooser chooser;
     private javax.swing.JFileChooser save;
@@ -72,9 +74,9 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
 
     private enum ControlState {
 
-        KESZENLET, LOCKED, VONALZO1, VONALZO2, SZOG,
-        ILLESZTES0, ILLESZTES1, ILLESZTES2, ILLESZTES3, ILLESZTES_SZOG,
-        AFFIN_ALTER, SZOGFELEZO
+        STANDBY, LOCKED, LINER1, LINER2, LINER_ROT,
+        TRI0, TRI1, TRI2, TRI3, TRI_ROT,
+        PLANETHRU, ANGLE_BISECT
     }
 
     @SuppressWarnings("empty-statement")
@@ -82,6 +84,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
 
         setIconImage(java.awt.Toolkit.getDefaultToolkit().getImage(getClass().getClassLoader().getResource("res/icon.png")));
 
+        //Look for an update
         try {
             java.util.Scanner inf = new java.util.Scanner(
                     new java.net.URL("http://origamieditor3d.sourceforge.net/info.txt").openStream());
@@ -97,15 +100,37 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                     System.exit(0);
                 }
             }
+            inf.close();
         } catch (Exception ex) {
         }
 
         initComponents();
 
+        //Redirect standard output to the terminal log
+        java.io.OutputStream sysout = new java.io.OutputStream() {
+
+            java.io.ByteArrayOutputStream bytes = new java.io.ByteArrayOutputStream();
+            @Override
+            public void write(int ch) {
+
+                bytes.write(ch);
+                if (ch == 10) {
+
+                    terminal_log.append(bytes.toString());
+                    bytes.reset();
+                }
+            }
+        };
+        System.setOut(new java.io.PrintStream(sysout));
+
+        ui_file_sample.getPopupMenu().setLayout(new java.awt.GridLayout(0, 2));
+
         final BaseFolds bases = new BaseFolds();
         final java.util.ArrayList<String> basenames = bases.names();
 
+        //Load example model entries into the menu
         for (int i = 0; i < basenames.size(); i++) {
+
             final int ind = i;
             final javax.swing.JMenuItem baseitem = new javax.swing.JMenuItem(Dictionary.getString(basenames.get(i)));
             baseitem.addActionListener(new java.awt.event.ActionListener() {
@@ -118,7 +143,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                             return;
                         }
                     }
-                    fajlnev = null;
+                    filename = null;
                     try (java.io.InputStream fis = bases.getFile(basenames.get(ind))) {
 
                         java.util.ArrayList<Byte> bytesb = new java.util.ArrayList<>();
@@ -152,6 +177,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                         scroll_angle = 0;
                         defaultify();
                         saved = true;
+                        setTitle("Origami Editor 3D");
                     } catch (Exception ex) {
                         javax.swing.JOptionPane.showMessageDialog(OrigamiEditorUI.this, Dictionary.getString("h005"));
                     }
@@ -179,7 +205,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                             return;
                         }
                     }
-                    fajlnev = null;
+                    filename = null;
                     try (java.io.InputStream fis = models.getFile(modnames.get(ind))) {
 
                         java.util.ArrayList<Byte> bytesb = new java.util.ArrayList<>();
@@ -213,6 +239,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                         scroll_angle = 0;
                         defaultify();
                         saved = true;
+                        setTitle("Origami Editor 3D");
                     } catch (Exception ex) {
                         javax.swing.JOptionPane.showMessageDialog(OrigamiEditorUI.this, Dictionary.getString("h005"));
                     }
@@ -226,56 +253,12 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
             ui_file_sample.add(modelitem);
         }
 
-        ui_file.setText(Dictionary.getString("file"));
-        ui_file_new.setText(Dictionary.getString("new"));
-        ui_file_new_square.setText(Dictionary.getString("newsquare"));
-        ui_file_new_a4.setText(Dictionary.getString("newa4"));
-        ui_file_new_hexagonal.setText(Dictionary.getString("newhex"));
-        ui_file_new_dollar.setText(Dictionary.getString("newdollar"));
-        ui_file_new_bases.setText(Dictionary.getString("bases"));
-        ui_file_sample.setText(Dictionary.getString("samples"));
-        ui_file_open.setText(Dictionary.getString("open"));
-        ui_file_save.setText(Dictionary.getString("save"));
-        ui_file_saveas.setText(Dictionary.getString("saveas"));
-        ui_file_export.setText(Dictionary.getString("export"));
-        ui_file_export_topdf.setText(Dictionary.getString("exportpdf"));
-        ui_file_export_toopenctm.setText(Dictionary.getString("exportctm"));
-        ui_file_export_togif.setText(Dictionary.getString("exportgif"));
-        ui_file_export_togif_revolving.setText(Dictionary.getString("revolving-gif"));
-        ui_file_export_togif_folding.setText(Dictionary.getString("folding-gif"));
-        ui_file_export_toself.setText(Dictionary.getString("exportjar"));
-        ui_file_export_crease.setText(Dictionary.getString("exportpng"));
-        ui_file_properties.setText(Dictionary.getString("properties"));
-        ui_edit.setText(Dictionary.getString("edit"));
-        ui_edit_undo.setText(Dictionary.getString("undo"));
-        ui_edit_redo.setText(Dictionary.getString("redo"));
-        ui_edit_plane.setText(Dictionary.getString("planethrough"));
-        ui_edit_angle.setText(Dictionary.getString("anglebisector"));
-        ui_edit_neusis.setText(Dictionary.getString("neusis"));
-        ui_snap_label.setText(Dictionary.getString("fineness"));
-        ui_view.setText(Dictionary.getString("view"));
-        ui_view_paper.setText(Dictionary.getString("papertex"));
-        ui_view_paper_image.setText(Dictionary.getString("teximage"));
-        ui_view_paper_gradient.setText(Dictionary.getString("texgradient"));
-        ui_view_paper_plain.setText(Dictionary.getString("texplain"));
-        ui_view_paper_none.setText(Dictionary.getString("texnone"));
-        ui_view_show.setText(Dictionary.getString("showprev"));
-        ui_view_zoom.setText(Dictionary.getString("zoomonscroll"));
-        ui_view_best.setText(Dictionary.getString("bestfit"));
-        ui_view_options.setText(Dictionary.getString("options"));
-        ui_view_timeline.setText(Dictionary.getString("timeline"));
-        ui_help.setText(Dictionary.getString("help"));
-        ui_help_about.setText(Dictionary.getString("about"));
-        ui_tutorials.setText(Dictionary.getString("tutorials"));
-        ui_tutorials_internet.setText(Dictionary.getString("tutorial_videos"));
-        jTabbedPane1.setTitleAt(0, Dictionary.getString("editor"));
-        jTabbedPane1.setTitleAt(1, Dictionary.getString("scripting"));
-        oPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(Dictionary.getString("3dview")));
-        pPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(Dictionary.getString("creasepat")));
-
+        relabel();
+        Instructor.getString("awaken");
         setTitle("Origami Editor 3D");
         setLocationRelativeTo(null);
 
+        //Confirmation dialog on closing
         addWindowListener(new java.awt.event.WindowAdapter() {
             @Override
             public void windowClosing(java.awt.event.WindowEvent e) {
@@ -285,12 +268,13 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                         return;
                     }
                 }
-                beallitasok.dispose();
+                settings.dispose();
                 timeline.dispose();
                 OrigamiEditorUI.this.dispose();
                 System.exit(0);
             }
         });
+
         saved = true;
         mouseX = null;
         mouseY = null;
@@ -299,7 +283,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         liner1Y = null;
         liner2X = null;
         liner2Y = null;
-        EditorState = (SecondaryState = ControlState.KESZENLET);
+        EditorState = (SecondaryState = ControlState.STANDBY);
         alignment_radius = 100;
         zoomOnScroll = true;
         alwaysInMiddle = true;
@@ -339,23 +323,23 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         pPanel1.setMinimumSize(new java.awt.Dimension(100, 100));
         this.setMinimumSize(new java.awt.Dimension(200, 200));
 
-        fajlnev = null;
+        filename = null;
+        tex = null;
 
-        //color chooser init
+        //initialize options menu
         final javax.swing.JColorChooser paletta = new javax.swing.JColorChooser(new java.awt.Color(Camera.paper_front_color));
-        //options init
-        beallitasok = new javax.swing.JFrame(Dictionary.getString("options"));
-        beallitasok.setIconImage(getIconImage());
+        settings = new javax.swing.JFrame(Dictionary.getString("options"));
+        settings.setIconImage(getIconImage());
         java.awt.GridBagConstraints c;
-        beallitasok.setDefaultCloseOperation(javax.swing.JFrame.DISPOSE_ON_CLOSE);
-        beallitasok.getContentPane().setLayout(new java.awt.GridBagLayout());
+        settings.setDefaultCloseOperation(javax.swing.JFrame.DISPOSE_ON_CLOSE);
+        settings.getContentPane().setLayout(new java.awt.GridBagLayout());
         c = new java.awt.GridBagConstraints();
         c.fill = java.awt.GridBagConstraints.HORIZONTAL;
         c.weightx = 0;
         c.gridx = 0;
         c.gridy = 0;
         c.anchor = java.awt.GridBagConstraints.NORTH;
-        beallitasok.getContentPane().add(new javax.swing.JLabel(Dictionary.getString("radius")), c);
+        settings.getContentPane().add(new javax.swing.JLabel(Dictionary.getString("radius")), c);
         final javax.swing.JSlider igazitasCsuszka = new javax.swing.JSlider();
         igazitasCsuszka.setMinimum(5);
         igazitasCsuszka.setMaximum(20);
@@ -368,14 +352,14 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         c.gridx = 1;
         c.gridy = 0;
         c.anchor = java.awt.GridBagConstraints.CENTER;
-        beallitasok.getContentPane().add(igazitasCsuszka, c);
+        settings.getContentPane().add(igazitasCsuszka, c);
         c = new java.awt.GridBagConstraints();
         c.fill = java.awt.GridBagConstraints.HORIZONTAL;
         c.weightx = 0.5;
         c.gridx = 0;
         c.gridy = 1;
         javax.swing.JLabel cimke2 = new javax.swing.JLabel(Dictionary.getString("papercolor"));
-        beallitasok.getContentPane().add(cimke2, c);
+        settings.getContentPane().add(cimke2, c);
         paletta.setPreviewPanel(new javax.swing.JPanel());
         c = new java.awt.GridBagConstraints();
         c.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -384,7 +368,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         c.gridy = 2;
         c.gridwidth = 2;
         c.gridheight = 2;
-        beallitasok.getContentPane().add(paletta, c);
+        settings.getContentPane().add(paletta, c);
         javax.swing.JButton ok = new javax.swing.JButton();
         ok.setText("OK");
         ok.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -394,7 +378,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                 alignment_radius = igazitasCsuszka.getValue() * igazitasCsuszka.getValue();
                 oPanel1.setFrontColor(paletta.getColor().getRGB());
                 oPanel1.repaint();
-                beallitasok.dispose();
+                settings.dispose();
             }
         });
         c = new java.awt.GridBagConstraints();
@@ -404,34 +388,27 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         c.gridy = 4;
         c.gridwidth = 1;
         c.gridheight = 1;
-        beallitasok.getContentPane().add(ok, c);
-        beallitasok.setMinimumSize(
+        settings.getContentPane().add(ok, c);
+        settings.setMinimumSize(
                 new java.awt.Dimension(
                         paletta.getMinimumSize().width,
                         paletta.getMinimumSize().height + igazitasCsuszka.getMinimumSize().height + ok.getMinimumSize().height + cimke2.getMinimumSize().height + 30));
-        beallitasok.setResizable(false);
-        beallitasok.setLocationRelativeTo(null);
-        beallitasok.pack();
+        settings.setResizable(false);
+        settings.setLocationRelativeTo(null);
+        settings.pack();
 
+        //initialize file chooser(s)
         try {
             chooser = new javax.swing.JFileChooser();
-            //texture dialog init
             texture_open = chooser;
-            //open dialog init
             open = chooser;
-            //save dialog init
             save = chooser;
-            //ctm dialog init
             ctm_export = chooser;
-            //pdf dialog init
             pdf_export = chooser;
-            //gif dialog init
             gif_export = chooser;
-            //jar dialog init
             jar_export = chooser;
-            //png dialog init
             png_export = chooser;
-            
+
         } catch (Exception ex) {
             ui_file_open.addActionListener(new java.awt.event.ActionListener() {
 
@@ -504,9 +481,8 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                 }
             });
         }
-        //texture init
-        tex = null;
-        //timeline init
+
+        //initialize timeline
         timeline = new javax.swing.JDialog(this, Dictionary.getString("timeline"));
         timeline.setDefaultCloseOperation(javax.swing.JFrame.DISPOSE_ON_CLOSE);
         timeSlider = new javax.swing.JSlider();
@@ -542,7 +518,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                     }
                 }
                 if (terminal.TerminalOrigami.history().size() == timeSlider.getValue()) {
-                    EditorState = ControlState.KESZENLET;
+                    EditorState = ControlState.STANDBY;
                 }
                 if (alwaysInMiddle) {
                     oPanel1.PanelCamera.adjust(terminal.TerminalOrigami);
@@ -563,6 +539,8 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         timeline.setLocation(getLocation().x, getLocation().y + getHeight());
         timeline.setVisible(true);
         changeListenerShutUp = false;
+
+        //initialize folding options popup menu
         foldingops = new javax.swing.JPopupMenu();
         final javax.swing.JMenuItem reflect = new javax.swing.JMenuItem(Dictionary.getString("reflect"));
         reflect.addActionListener(new java.awt.event.ActionListener() {
@@ -589,6 +567,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         foldingops.add(rotate);
         foldingops.add(cut);
 
+        //initialize snap fineness
         alignOn = ui_snap_1.isSelected();
         if (ui_snap_2.isSelected()) {
             snap2 = 2;
@@ -607,13 +586,91 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         }
 
         ui_rightbar.setLayout(new java.awt.GridLayout(1, 3));
-        ui_select.setText(Dictionary.getString("target"));
-        ui_plane.setText(Dictionary.getString("planethrough"));
-        ui_angle.setText(Dictionary.getString("angle-bisector"));
         ui_select.setSelected(true);
         ui_plane.setSelected(false);
         ui_angle.setSelected(false);
         targetOn = true;
+
+        //Load language entries into menu
+        final java.util.ResourceBundle locales = java.util.ResourceBundle.getBundle("locales");
+        java.util.Set<String> locnames = locales.keySet();
+        for (final String locname : locnames) {
+
+            final javax.swing.JMenuItem locitem = new javax.swing.JMenuItem(locname);
+            locitem.addActionListener(new java.awt.event.ActionListener() {
+                @Override
+                public void actionPerformed(java.awt.event.ActionEvent evt) {
+                    try {
+                        terminal.execute(locales.getString(locname));
+                        relabel();
+                    } catch (Exception ex) {
+                    }
+                }
+            });
+            ui_help_lang.add(locitem);
+        }
+    }
+
+    private void relabel() {
+
+        ui_file.setText(Dictionary.getString("file"));
+        ui_file_new.setText(Dictionary.getString("new"));
+        ui_file_new_square.setText(Dictionary.getString("newsquare"));
+        ui_file_new_a4.setText(Dictionary.getString("newa4"));
+        ui_file_new_hexagonal.setText(Dictionary.getString("newhex"));
+        ui_file_new_dollar.setText(Dictionary.getString("newdollar"));
+        ui_file_new_bases.setText(Dictionary.getString("bases"));
+        ui_file_sample.setText(Dictionary.getString("samples"));
+        ui_file_open.setText(Dictionary.getString("open"));
+        ui_file_save.setText(Dictionary.getString("save"));
+        ui_file_saveas.setText(Dictionary.getString("saveas"));
+        ui_file_export.setText(Dictionary.getString("export"));
+        ui_file_export_topdf.setText(Dictionary.getString("exportpdf"));
+        ui_file_export_toopenctm.setText(Dictionary.getString("exportctm"));
+        ui_file_export_togif.setText(Dictionary.getString("exportgif"));
+        ui_file_export_togif_revolving.setText(Dictionary.getString("revolving-gif"));
+        ui_file_export_togif_folding.setText(Dictionary.getString("folding-gif"));
+        ui_file_export_toself.setText(Dictionary.getString("exportjar"));
+        ui_file_export_crease.setText(Dictionary.getString("exportpng"));
+        ui_file_properties.setText(Dictionary.getString("properties"));
+        ui_edit.setText(Dictionary.getString("edit"));
+        ui_edit_undo.setText(Dictionary.getString("undo"));
+        ui_edit_redo.setText(Dictionary.getString("redo"));
+        ui_edit_plane.setText(Dictionary.getString("planethrough"));
+        ui_edit_angle.setText(Dictionary.getString("anglebisector"));
+        ui_edit_neusis.setText(Dictionary.getString("neusis"));
+        ui_snap_label.setText(Dictionary.getString("fineness"));
+        ui_view.setText(Dictionary.getString("view"));
+        ui_view_paper.setText(Dictionary.getString("papertex"));
+        ui_view_paper_image.setText(Dictionary.getString("teximage"));
+        ui_view_paper_gradient.setText(Dictionary.getString("texgradient"));
+        ui_view_paper_plain.setText(Dictionary.getString("texplain"));
+        ui_view_paper_none.setText(Dictionary.getString("texnone"));
+        ui_view_show.setText(Dictionary.getString("showprev"));
+        ui_view_zoom.setText(Dictionary.getString("zoomonscroll"));
+        ui_view_best.setText(Dictionary.getString("bestfit"));
+        ui_view_options.setText(Dictionary.getString("options"));
+        ui_view_timeline.setText(Dictionary.getString("timeline"));
+        ui_help.setText(Dictionary.getString("help"));
+        ui_help_about.setText(Dictionary.getString("about"));
+        ui_help_tutorials.setText(Dictionary.getString("tutorials"));
+        ui_help_lang.setText(Dictionary.getString("language"));
+        jTabbedPane1.setTitleAt(0, Dictionary.getString("editor"));
+        jTabbedPane1.setTitleAt(1, Dictionary.getString("scripting"));
+        oPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(Dictionary.getString("3dview")));
+        pPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(Dictionary.getString("creasepat")));
+        ui_select.setText(Dictionary.getString("target"));
+        ui_plane.setText(Dictionary.getString("planethrough"));
+        ui_angle.setText(Dictionary.getString("angle-bisector"));
+
+        oPanel1_tip1 = Dictionary.getString("tooltip1");
+        oPanel1_tip2 = Dictionary.getString("tooltip2");
+        oPanel1_tip3 = Dictionary.getString("tooltip3");
+        pPanel1_tip1 = Dictionary.getString("tooltip4");
+        pPanel1_tip2 = Dictionary.getString("tooltip5");
+        pPanel1_tip3 = Dictionary.getString("tooltip6");
+        pPanel1_tip4 = Dictionary.getString("tooltip7");
+        pPanel1_tip5 = Dictionary.getString("tooltip8");
     }
 
     /**
@@ -643,7 +700,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         ui_snap_4 = new javax.swing.JToggleButton();
         jSplitPane2 = new javax.swing.JSplitPane();
         jScrollPane3 = new javax.swing.JScrollPane();
-        jTextArea3 = new javax.swing.JTextArea();
+        terminal_log = new javax.swing.JTextArea();
         jTextField1 = new javax.swing.JTextField();
         jMenuBar1 = new javax.swing.JMenuBar();
         ui_file = new javax.swing.JMenu();
@@ -690,10 +747,10 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         ui_view_options = new javax.swing.JMenuItem();
         ui_view_timeline = new javax.swing.JMenuItem();
         ui_help = new javax.swing.JMenu();
+        ui_help_tutorials = new javax.swing.JMenuItem();
+        ui_help_lang = new javax.swing.JMenu();
         jMenuItem1 = new javax.swing.JMenuItem();
         ui_help_about = new javax.swing.JMenuItem();
-        ui_tutorials = new javax.swing.JMenu();
-        ui_tutorials_internet = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
         getContentPane().setLayout(new java.awt.GridLayout(1, 0));
@@ -704,6 +761,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         ui_editor.setEnabled(false);
         ui_editor.setPreferredSize(new java.awt.Dimension(802, 429));
         ui_editor.addComponentListener(new java.awt.event.ComponentAdapter() {
+            @Override
             public void componentResized(java.awt.event.ComponentEvent evt) {
                 ui_editorComponentResized(evt);
             }
@@ -714,6 +772,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         ui_panels.setResizeWeight(0.5);
         ui_panels.setEnabled(false);
         ui_panels.addComponentListener(new java.awt.event.ComponentAdapter() {
+            @Override
             public void componentResized(java.awt.event.ComponentEvent evt) {
                 ui_panelsComponentResized(evt);
             }
@@ -723,27 +782,33 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         oPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("3D View"));
         oPanel1.setPreferredSize(new java.awt.Dimension(400, 400));
         oPanel1.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
+            @Override
             public void mouseMoved(java.awt.event.MouseEvent evt) {
                 oPanel1MouseMoved(evt);
             }
+            @Override
             public void mouseDragged(java.awt.event.MouseEvent evt) {
                 oPanel1MouseDragged(evt);
             }
         });
         oPanel1.addMouseWheelListener(new java.awt.event.MouseWheelListener() {
+            @Override
             public void mouseWheelMoved(java.awt.event.MouseWheelEvent evt) {
                 oPanel1MouseWheelMoved(evt);
             }
         });
         oPanel1.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
             public void mousePressed(java.awt.event.MouseEvent evt) {
                 oPanel1MousePressed(evt);
             }
+            @Override
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 oPanel1MouseClicked(evt);
             }
         });
         oPanel1.addComponentListener(new java.awt.event.ComponentAdapter() {
+            @Override
             public void componentResized(java.awt.event.ComponentEvent evt) {
                 oPanel1ComponentResized(evt);
             }
@@ -754,11 +819,13 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         pPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Crease Pattern"));
         pPanel1.setPreferredSize(new java.awt.Dimension(400, 400));
         pPanel1.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 pPanel1MouseClicked(evt);
             }
         });
         pPanel1.addComponentListener(new java.awt.event.ComponentAdapter() {
+            @Override
             public void componentResized(java.awt.event.ComponentEvent evt) {
                 pPanel1ComponentResized(evt);
             }
@@ -772,6 +839,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         ui_toolbars.setResizeWeight(0.5);
         ui_toolbars.setMinimumSize(new java.awt.Dimension(142, 35));
         ui_toolbars.addComponentListener(new java.awt.event.ComponentAdapter() {
+            @Override
             public void componentResized(java.awt.event.ComponentEvent evt) {
                 ui_toolbarsComponentResized(evt);
             }
@@ -795,6 +863,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         ui_select.setMinimumSize(new java.awt.Dimension(69, 33));
         ui_select.setPreferredSize(new java.awt.Dimension(69, 33));
         ui_select.addActionListener(new java.awt.event.ActionListener() {
+            @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 ui_selectActionPerformed(evt);
             }
@@ -811,6 +880,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         ui_plane.setMinimumSize(new java.awt.Dimension(126, 33));
         ui_plane.setPreferredSize(new java.awt.Dimension(126, 33));
         ui_plane.addActionListener(new java.awt.event.ActionListener() {
+            @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 ui_planeActionPerformed(evt);
             }
@@ -827,6 +897,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         ui_angle.setMinimumSize(new java.awt.Dimension(133, 33));
         ui_angle.setPreferredSize(new java.awt.Dimension(133, 33));
         ui_angle.addActionListener(new java.awt.event.ActionListener() {
+            @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 ui_angleActionPerformed(evt);
             }
@@ -862,6 +933,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         ui_snap_1.setPreferredSize(new java.awt.Dimension(33, 33));
         ui_snap_1.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         ui_snap_1.addActionListener(new java.awt.event.ActionListener() {
+            @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 ui_snap_1ActionPerformed(evt);
             }
@@ -878,6 +950,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         ui_snap_2.setPreferredSize(new java.awt.Dimension(33, 33));
         ui_snap_2.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         ui_snap_2.addActionListener(new java.awt.event.ActionListener() {
+            @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 ui_snap_2ActionPerformed(evt);
             }
@@ -893,6 +966,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         ui_snap_3.setPreferredSize(new java.awt.Dimension(33, 33));
         ui_snap_3.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         ui_snap_3.addActionListener(new java.awt.event.ActionListener() {
+            @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 ui_snap_3ActionPerformed(evt);
             }
@@ -908,6 +982,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         ui_snap_4.setPreferredSize(new java.awt.Dimension(33, 33));
         ui_snap_4.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         ui_snap_4.addActionListener(new java.awt.event.ActionListener() {
+            @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 ui_snap_4ActionPerformed(evt);
             }
@@ -924,16 +999,18 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         jSplitPane2.setResizeWeight(1.0);
         jSplitPane2.setEnabled(false);
 
-        jTextArea3.setEditable(false);
-        jTextArea3.setColumns(20);
-        jTextArea3.setRows(5);
-        jTextArea3.setDisabledTextColor(new java.awt.Color(0, 0, 0));
-        jScrollPane3.setViewportView(jTextArea3);
+        terminal_log.setEditable(false);
+        terminal_log.setColumns(20);
+        terminal_log.setForeground(new java.awt.Color(102, 102, 102));
+        terminal_log.setRows(5);
+        terminal_log.setDisabledTextColor(new java.awt.Color(102, 102, 102));
+        jScrollPane3.setViewportView(terminal_log);
 
         jSplitPane2.setTopComponent(jScrollPane3);
 
         jTextField1.setMaximumSize(new java.awt.Dimension(2147483647, 20));
         jTextField1.addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
             public void keyTyped(java.awt.event.KeyEvent evt) {
                 jTextField1KeyTyped(evt);
             }
@@ -951,6 +1028,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
 
         ui_file_new_square.setText("Square origami");
         ui_file_new_square.addActionListener(new java.awt.event.ActionListener() {
+            @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 ui_file_new_squareActionPerformed(evt);
             }
@@ -959,6 +1037,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
 
         ui_file_new_a4.setText("A4 origami");
         ui_file_new_a4.addActionListener(new java.awt.event.ActionListener() {
+            @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 ui_file_new_a4ActionPerformed(evt);
             }
@@ -967,6 +1046,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
 
         ui_file_new_hexagonal.setText("Hexagonal origami");
         ui_file_new_hexagonal.addActionListener(new java.awt.event.ActionListener() {
+            @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 ui_file_new_hexagonalActionPerformed(evt);
             }
@@ -975,6 +1055,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
 
         ui_file_new_dollar.setText("Dollar bill origami");
         ui_file_new_dollar.addActionListener(new java.awt.event.ActionListener() {
+            @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 ui_file_new_dollarActionPerformed(evt);
             }
@@ -994,6 +1075,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         ui_file_open.setIcon(javax.swing.UIManager.getIcon("FileView.directoryIcon"));
         ui_file_open.setText("Open...");
         ui_file_open.addActionListener(new java.awt.event.ActionListener() {
+            @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 ui_file_openActionPerformed(evt);
             }
@@ -1004,6 +1086,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         ui_file_save.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
         ui_file_save.setText("Save");
         ui_file_save.addActionListener(new java.awt.event.ActionListener() {
+            @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 ui_file_saveActionPerformed(evt);
             }
@@ -1013,6 +1096,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         ui_file_saveas.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.SHIFT_MASK | java.awt.event.InputEvent.CTRL_MASK));
         ui_file_saveas.setText("Save As...");
         ui_file_saveas.addActionListener(new java.awt.event.ActionListener() {
+            @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 ui_file_saveasActionPerformed(evt);
             }
@@ -1023,6 +1107,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
 
         ui_file_export_topdf.setText("To PDF...");
         ui_file_export_topdf.addActionListener(new java.awt.event.ActionListener() {
+            @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 ui_file_export_topdfActionPerformed(evt);
             }
@@ -1031,6 +1116,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
 
         ui_file_export_toopenctm.setText("To OpenCTM 3D File...");
         ui_file_export_toopenctm.addActionListener(new java.awt.event.ActionListener() {
+            @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 ui_file_export_toopenctmActionPerformed(evt);
             }
@@ -1041,6 +1127,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
 
         ui_file_export_togif_revolving.setText("Revolving animation...");
         ui_file_export_togif_revolving.addActionListener(new java.awt.event.ActionListener() {
+            @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 ui_file_export_togif_revolvingActionPerformed(evt);
             }
@@ -1049,6 +1136,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
 
         ui_file_export_togif_folding.setText("Folding process...");
         ui_file_export_togif_folding.addActionListener(new java.awt.event.ActionListener() {
+            @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 ui_file_export_togif_foldingActionPerformed(evt);
             }
@@ -1059,6 +1147,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
 
         ui_file_export_toself.setText("To self-displaying ORI...");
         ui_file_export_toself.addActionListener(new java.awt.event.ActionListener() {
+            @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 ui_file_export_toselfActionPerformed(evt);
             }
@@ -1067,6 +1156,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
 
         ui_file_export_crease.setText("Crease pattern to PNG...");
         ui_file_export_crease.addActionListener(new java.awt.event.ActionListener() {
+            @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 ui_file_export_creaseActionPerformed(evt);
             }
@@ -1078,6 +1168,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
 
         ui_file_properties.setText("Properties");
         ui_file_properties.addActionListener(new java.awt.event.ActionListener() {
+            @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 ui_file_propertiesActionPerformed(evt);
             }
@@ -1091,6 +1182,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         ui_edit_undo.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Z, java.awt.event.InputEvent.CTRL_MASK));
         ui_edit_undo.setText("Undo");
         ui_edit_undo.addActionListener(new java.awt.event.ActionListener() {
+            @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 ui_edit_undoActionPerformed(evt);
             }
@@ -1100,6 +1192,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         ui_edit_redo.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Y, java.awt.event.InputEvent.CTRL_MASK));
         ui_edit_redo.setText("Redo");
         ui_edit_redo.addActionListener(new java.awt.event.ActionListener() {
+            @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 ui_edit_redoActionPerformed(evt);
             }
@@ -1110,6 +1203,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         ui_edit_plane.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_3, java.awt.event.InputEvent.CTRL_MASK));
         ui_edit_plane.setText("Plane through 3 points");
         ui_edit_plane.addActionListener(new java.awt.event.ActionListener() {
+            @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 ui_edit_planeActionPerformed(evt);
             }
@@ -1119,6 +1213,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         ui_edit_angle.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_2, java.awt.event.InputEvent.CTRL_MASK));
         ui_edit_angle.setText("Angle bisector");
         ui_edit_angle.addActionListener(new java.awt.event.ActionListener() {
+            @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 ui_edit_angleActionPerformed(evt);
             }
@@ -1129,6 +1224,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         ui_edit_neusis.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_N, java.awt.event.InputEvent.CTRL_MASK));
         ui_edit_neusis.setText("Neusis Mode");
         ui_edit_neusis.addActionListener(new java.awt.event.ActionListener() {
+            @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 ui_edit_neusisActionPerformed(evt);
             }
@@ -1143,6 +1239,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
 
         ui_view_paper_image.setText("Image");
         ui_view_paper_image.addActionListener(new java.awt.event.ActionListener() {
+            @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 ui_view_paper_imageActionPerformed(evt);
             }
@@ -1152,6 +1249,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         ui_view_paper_gradient.setSelected(true);
         ui_view_paper_gradient.setText("Gradient");
         ui_view_paper_gradient.addActionListener(new java.awt.event.ActionListener() {
+            @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 ui_view_paper_gradientActionPerformed(evt);
             }
@@ -1160,6 +1258,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
 
         ui_view_paper_plain.setText("Plain");
         ui_view_paper_plain.addActionListener(new java.awt.event.ActionListener() {
+            @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 ui_view_paper_plainActionPerformed(evt);
             }
@@ -1168,6 +1267,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
 
         ui_view_paper_none.setText("None");
         ui_view_paper_none.addActionListener(new java.awt.event.ActionListener() {
+            @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 ui_view_paper_noneActionPerformed(evt);
             }
@@ -1179,6 +1279,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         ui_view_show.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_P, java.awt.event.InputEvent.CTRL_MASK));
         ui_view_show.setText("Show preview");
         ui_view_show.addActionListener(new java.awt.event.ActionListener() {
+            @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 ui_view_showActionPerformed(evt);
             }
@@ -1189,6 +1290,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         ui_view_zoom.setSelected(true);
         ui_view_zoom.setText("Zoom on scroll");
         ui_view_zoom.addActionListener(new java.awt.event.ActionListener() {
+            @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 ui_view_zoomActionPerformed(evt);
             }
@@ -1198,6 +1300,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         ui_view_best.setSelected(true);
         ui_view_best.setText("Always in the middle");
         ui_view_best.addActionListener(new java.awt.event.ActionListener() {
+            @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 ui_view_bestActionPerformed(evt);
             }
@@ -1207,6 +1310,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
 
         ui_view_options.setText("Options");
         ui_view_options.addActionListener(new java.awt.event.ActionListener() {
+            @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 ui_view_optionsActionPerformed(evt);
             }
@@ -1215,6 +1319,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
 
         ui_view_timeline.setText("Timeline");
         ui_view_timeline.addActionListener(new java.awt.event.ActionListener() {
+            @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 ui_view_timelineActionPerformed(evt);
             }
@@ -1225,8 +1330,21 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
 
         ui_help.setText("Help");
 
+        ui_help_tutorials.setText("Tutorials");
+        ui_help_tutorials.addActionListener(new java.awt.event.ActionListener() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ui_help_tutorialsActionPerformed(evt);
+            }
+        });
+        ui_help.add(ui_help_tutorials);
+
+        ui_help_lang.setText("Language");
+        ui_help.add(ui_help_lang);
+
         jMenuItem1.setText("The OrigamiScript documentation");
         jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
+            @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jMenuItem1ActionPerformed(evt);
             }
@@ -1235,6 +1353,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
 
         ui_help_about.setText("About");
         ui_help_about.addActionListener(new java.awt.event.ActionListener() {
+            @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 ui_help_aboutActionPerformed(evt);
             }
@@ -1242,18 +1361,6 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         ui_help.add(ui_help_about);
 
         jMenuBar1.add(ui_help);
-
-        ui_tutorials.setText("Tutorials");
-
-        ui_tutorials_internet.setText("On the Internet");
-        ui_tutorials_internet.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                ui_tutorials_internetActionPerformed(evt);
-            }
-        });
-        ui_tutorials.add(ui_tutorials_internet);
-
-        jMenuBar1.add(ui_tutorials);
 
         setJMenuBar(jMenuBar1);
 
@@ -1271,15 +1378,16 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
     //
     private void oPanel1MouseDragged(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_oPanel1MouseDragged
 
-        if (EditorState == ControlState.KESZENLET
-                || EditorState == ControlState.ILLESZTES0
-                || EditorState == ControlState.ILLESZTES1
-                || EditorState == ControlState.ILLESZTES2
-                || EditorState == ControlState.ILLESZTES3
+        if (EditorState == ControlState.STANDBY
+                || EditorState == ControlState.TRI0
+                || EditorState == ControlState.TRI1
+                || EditorState == ControlState.TRI2
+                || EditorState == ControlState.TRI3
                 || EditorState == ControlState.LOCKED) {
 
             oPanel1.resetAlignmentPoint();
-            oPanel1.PanelCamera.rotate((mouseX - evt.getX()) / (float) oPanel1.PanelCamera.zoom() / 2, (evt.getY() - mouseY) / (float) oPanel1.PanelCamera.zoom() / 2);
+            oPanel1.PanelCamera.rotate((mouseX - evt.getX()) / (float) oPanel1.PanelCamera.zoom() / 2,
+                                    (evt.getY() - mouseY) / (float) oPanel1.PanelCamera.zoom() / 2);
             oPanel1.repaint();
             mouseX = evt.getX();
             mouseY = evt.getY();
@@ -1329,19 +1437,19 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                         pPanel1.PanelCamera.setZoom(0.8 * Math.min(pPanel1.getWidth(), pPanel1.getHeight()) / terminal.TerminalOrigami.circumscribedSquareSize());
                     }
 
-                    jTextArea3.setText(jTextArea3.getText() + OrigamiScriptTerminal.obfuscate(jTextField1.getText()) + (char) 10);
+                    System.out.println(OrigamiScriptTerminal.obfuscate(jTextField1.getText()));
                     jTextField1.setText(null);
                 } catch (Exception exc) {
 
-                    jTextArea3.setText(jTextArea3.getText() + exc.getMessage() + (char) 10);
+                    System.out.println(exc.getMessage());
                     jTextField1.setText(null);
                 }
             } else {
 
                 jTextField1.setText(null);
-                jTextArea3.setText("");
+                terminal_log.setText("");
                 for (String sor : terminal.history()) {
-                    jTextArea3.setText(jTextArea3.getText() + (char) 10 + sor);
+                    System.out.println(sor);
                 }
             }
             foldNumber = terminal.TerminalOrigami.history_pointer();
@@ -1378,8 +1486,8 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                 oPanel1.repaint();
                 pPanel1.setToolTipText(pPanel1_tip1);
                 oPanel1.setToolTipText(oPanel1_tip1);
-                EditorState = ControlState.KESZENLET;
-            } else if (EditorState == ControlState.ILLESZTES1) {
+                EditorState = ControlState.STANDBY;
+            } else if (EditorState == ControlState.TRI1) {
 
                 pPanel1.grabTriangleAt(0);
                 pPanel1.tiltTriangleTo(null, (Integer[]) null);
@@ -1387,11 +1495,11 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                 oPanel1.grabTriangleAt(0);
                 oPanel1.tiltTriangleTo(pPanel1.PanelCamera, (Integer[]) null);
                 oPanel1.grabTriangleAt(0);
-                EditorState = ControlState.ILLESZTES0;
+                EditorState = ControlState.TRI0;
                 pPanel1.setToolTipText(pPanel1_tip3);
                 pPanel1.repaint();
                 oPanel1.repaint();
-            } else if (EditorState == ControlState.ILLESZTES2) {
+            } else if (EditorState == ControlState.TRI2) {
 
                 pPanel1.grabTriangleAt(1);
                 pPanel1.tiltTriangleTo(null, (Integer[]) null);
@@ -1399,11 +1507,11 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                 oPanel1.grabTriangleAt(1);
                 oPanel1.tiltTriangleTo(pPanel1.PanelCamera, (Integer[]) null);
                 oPanel1.grabTriangleAt(1);
-                EditorState = ControlState.ILLESZTES1;
+                EditorState = ControlState.TRI1;
                 pPanel1.setToolTipText(pPanel1_tip4);
                 pPanel1.repaint();
                 oPanel1.repaint();
-            } else if (EditorState == ControlState.ILLESZTES3) {
+            } else if (EditorState == ControlState.TRI3) {
 
                 pPanel1.grabTriangleAt(2);
                 pPanel1.tiltTriangleTo(null, (Integer[]) null);
@@ -1411,7 +1519,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                 oPanel1.grabTriangleAt(2);
                 oPanel1.tiltTriangleTo(pPanel1.PanelCamera, (Integer[]) null);
                 oPanel1.grabTriangleAt(2);
-                EditorState = ControlState.ILLESZTES2;
+                EditorState = ControlState.TRI2;
                 pPanel1.setToolTipText(pPanel1_tip5);
                 oPanel1.setToolTipText(oPanel1_tip1);
                 pPanel1.repaint();
@@ -1423,7 +1531,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                 oPanel1.repaint();
                 pPanel1.setToolTipText(pPanel1_tip1);
                 oPanel1.setToolTipText(oPanel1_tip1);
-                EditorState = ControlState.KESZENLET;
+                EditorState = ControlState.STANDBY;
             }
         } else if (targetOn) {
 
@@ -1432,7 +1540,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
             pPanel1.repaint();
             oPanel1.repaint();
             pPanel1.setToolTipText(pPanel1_tip2);
-        } else if (EditorState == ControlState.ILLESZTES0) {
+        } else if (EditorState == ControlState.TRI0) {
 
             if (alignOn) {
                 int[] ig = LaposIgazitas(evt.getX(), evt.getY(), alignment_radius);
@@ -1445,8 +1553,8 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
             pPanel1.repaint();
             oPanel1.repaint();
             pPanel1.setToolTipText(pPanel1_tip4);
-            EditorState = ControlState.ILLESZTES1;
-        } else if (EditorState == ControlState.ILLESZTES1) {
+            EditorState = ControlState.TRI1;
+        } else if (EditorState == ControlState.TRI1) {
 
             if (alignOn) {
                 int[] ig = LaposIgazitas(evt.getX(), evt.getY(), alignment_radius);
@@ -1459,8 +1567,8 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
             pPanel1.repaint();
             oPanel1.repaint();
             pPanel1.setToolTipText(pPanel1_tip5);
-            EditorState = ControlState.ILLESZTES2;
-        } else if (EditorState == ControlState.ILLESZTES2 || EditorState == ControlState.ILLESZTES3) {
+            EditorState = ControlState.TRI2;
+        } else if (EditorState == ControlState.TRI2 || EditorState == ControlState.TRI3) {
 
             if (alignOn) {
                 int[] ig = LaposIgazitas(evt.getX(), evt.getY(), alignment_radius);
@@ -1472,7 +1580,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
             }
             pPanel1.repaint();
             oPanel1.repaint();
-            EditorState = ControlState.ILLESZTES3;
+            EditorState = ControlState.TRI3;
         }
         foldNumber = terminal.TerminalOrigami.history_pointer();
         changeListenerShutUp = true;
@@ -1488,18 +1596,18 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
 
         if (evt.getButton() == java.awt.event.MouseEvent.BUTTON1) {
 
-            if (EditorState == ControlState.KESZENLET
-                    || EditorState == ControlState.ILLESZTES0
-                    || EditorState == ControlState.ILLESZTES1
-                    || EditorState == ControlState.ILLESZTES2
-                    || EditorState == ControlState.ILLESZTES3) {
+            if (EditorState == ControlState.STANDBY
+                    || EditorState == ControlState.TRI0
+                    || EditorState == ControlState.TRI1
+                    || EditorState == ControlState.TRI2
+                    || EditorState == ControlState.TRI3) {
 
                 if (terminal.TerminalOrigami.circumscribedSquareSize() > 0) {
                     oPanel1.PanelCamera.setZoom(0.8 * Math.min(oPanel1.getWidth(), oPanel1.getHeight()) / terminal.TerminalOrigami.circumscribedSquareSize());
                 }
                 oPanel1.PanelCamera.nextOrthogonalView();
                 oPanel1.repaint();
-            } else if (EditorState == ControlState.SZOG) {
+            } else if (EditorState == ControlState.LINER_ROT) {
 
                 double pontX = ((double) liner2X - oPanel1.PanelCamera.xshift) / oPanel1.PanelCamera.zoom();
                 double pontY = ((double) liner2Y - oPanel1.PanelCamera.yshift) / oPanel1.PanelCamera.zoom();
@@ -1579,13 +1687,13 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                 oPanel1.hideProtractor();
                 defaultify();
                 saved = false;
-            } else if (EditorState == ControlState.ILLESZTES_SZOG) {
+            } else if (EditorState == ControlState.TRI_ROT) {
 
                 String pszo = "";
-                if (SecondaryState == ControlState.AFFIN_ALTER) {
+                if (SecondaryState == ControlState.PLANETHRU) {
                     pszo = "planethrough";
                 }
-                if (SecondaryState == ControlState.SZOGFELEZO) {
+                if (SecondaryState == ControlState.ANGLE_BISECT) {
                     pszo = "angle-bisector";
                 }
                 if (pPanel1.isTracked()) {
@@ -1663,31 +1771,31 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                 }
                 defaultify();
             }
-        } else if (EditorState == ControlState.KESZENLET) {
+        } else if (EditorState == ControlState.STANDBY) {
 
             liner1X = evt.getX();
             liner1Y = evt.getY();
             if (alignOn) {
                 Igazit1(alignment_radius);
             }
-            EditorState = ControlState.VONALZO1;
+            EditorState = ControlState.LINER1;
             oPanel1.setToolTipText(oPanel1_tip2);
             javax.swing.ToolTipManager.sharedInstance().mouseMoved(
                     new java.awt.event.MouseEvent(
                             oPanel1, 0, System.currentTimeMillis(), 0, evt.getX(), evt.getY(), 0, false));
-        } else if (EditorState == ControlState.VONALZO1) {
+        } else if (EditorState == ControlState.LINER1) {
 
             liner2X = evt.getX();
             liner2Y = evt.getY();
             if (alignOn) {
                 Igazit2(alignment_radius);
             }
-            EditorState = ControlState.VONALZO2;
+            EditorState = ControlState.LINER2;
             oPanel1.setToolTipText(null);
 
             foldingops.show(oPanel1, evt.getX(), evt.getY());
 
-        } else if (EditorState == ControlState.VONALZO2 || EditorState == ControlState.ILLESZTES3) {
+        } else if (EditorState == ControlState.LINER2 || EditorState == ControlState.TRI3) {
             foldingops.show(oPanel1, evt.getX(), evt.getY());
         } else {
             if (alwaysInMiddle) {
@@ -1707,7 +1815,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
 
     private void foldingops_reflect_actionPerformed(java.awt.event.ActionEvent evt) {
 
-        if (EditorState == ControlState.VONALZO2) {
+        if (EditorState == ControlState.LINER2) {
 
             double pontX = ((double) liner2X - oPanel1.PanelCamera.xshift) / oPanel1.PanelCamera.zoom();
             double pontY = ((double) liner2Y - oPanel1.PanelCamera.yshift) / oPanel1.PanelCamera.zoom();
@@ -1756,7 +1864,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                             + "reflect");
                     oPanel1.update(terminal.TerminalOrigami);
                 } catch (Exception exc) {
-                    jTextArea3.setText(jTextArea3.getText() + (char) 10 + exc);
+                    terminal_log.setText(terminal_log.getText() + (char) 10 + exc);
                 }
                 if (alwaysInMiddle) {
                     oPanel1.PanelCamera.adjust(terminal.TerminalOrigami);
@@ -1778,13 +1886,13 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
             }
             defaultify();
             saved = false;
-        } else if (EditorState == ControlState.ILLESZTES3) {
+        } else if (EditorState == ControlState.TRI3) {
 
             String pszo = "";
-            if (SecondaryState == ControlState.AFFIN_ALTER) {
+            if (SecondaryState == ControlState.PLANETHRU) {
                 pszo = "planethrough";
             }
-            if (SecondaryState == ControlState.SZOGFELEZO) {
+            if (SecondaryState == ControlState.ANGLE_BISECT) {
                 pszo = "angle-bisector";
             }
             if (pPanel1.isTracked()) {
@@ -1865,15 +1973,15 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
 
     private void foldingops_rotate_actionPerformed(java.awt.event.ActionEvent evt) {
 
-        if (EditorState == ControlState.VONALZO2) {
+        if (EditorState == ControlState.LINER2) {
 
-            EditorState = ControlState.SZOG;
+            EditorState = ControlState.LINER_ROT;
             scroll_angle = 0;
             oPanel1.displayProtractor(scroll_angle);
             oPanel1.repaint();
-        } else if (EditorState == ControlState.ILLESZTES3) {
+        } else if (EditorState == ControlState.TRI3) {
 
-            EditorState = ControlState.ILLESZTES_SZOG;
+            EditorState = ControlState.TRI_ROT;
             scroll_angle = 0;
             oPanel1.displayProtractor(scroll_angle);
             oPanel1.repaint();
@@ -1882,7 +1990,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
 
     private void foldingops_cut_actionPerformed(java.awt.event.ActionEvent evt) {
 
-        if (EditorState == ControlState.VONALZO2) {
+        if (EditorState == ControlState.LINER2) {
 
             double pontX = ((double) liner2X - oPanel1.PanelCamera.xshift) / oPanel1.PanelCamera.zoom();
             double pontY = ((double) liner2Y - oPanel1.PanelCamera.yshift) / oPanel1.PanelCamera.zoom();
@@ -1931,7 +2039,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                             + "cut");
                     oPanel1.update(terminal.TerminalOrigami);
                 } catch (Exception exc) {
-                    jTextArea3.setText(jTextArea3.getText() + (char) 10 + exc);
+                    terminal_log.setText(terminal_log.getText() + (char) 10 + exc);
                 }
                 if (alwaysInMiddle) {
                     oPanel1.PanelCamera.adjust(terminal.TerminalOrigami);
@@ -1953,13 +2061,13 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
             }
             defaultify();
             saved = false;
-        } else if (EditorState == ControlState.ILLESZTES3) {
+        } else if (EditorState == ControlState.TRI3) {
 
             String pszo = "";
-            if (SecondaryState == ControlState.AFFIN_ALTER) {
+            if (SecondaryState == ControlState.PLANETHRU) {
                 pszo = "planethrough";
             }
-            if (SecondaryState == ControlState.SZOGFELEZO) {
+            if (SecondaryState == ControlState.ANGLE_BISECT) {
                 pszo = "angle-bisector";
             }
             if (pPanel1.isTracked()) {
@@ -2021,7 +2129,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                     javax.swing.JOptionPane.showMessageDialog(this, ex.getMessage().replace('/', (char) 10), "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
                 }
             }
-            EditorState = ControlState.KESZENLET;
+            EditorState = ControlState.STANDBY;
             if (alwaysInMiddle) {
                 oPanel1.PanelCamera.adjust(terminal.TerminalOrigami);
             }
@@ -2044,7 +2152,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
     //
     private void oPanel1MouseMoved(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_oPanel1MouseMoved
 
-        if (EditorState == ControlState.KESZENLET && alignOn) {
+        if (EditorState == ControlState.STANDBY && alignOn) {
 
             liner1X = evt.getX();
             liner1Y = evt.getY();
@@ -2054,7 +2162,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
             } else {
                 oPanel1.resetAlignmentPoint();
             }
-        } else if (EditorState == ControlState.VONALZO1) {
+        } else if (EditorState == ControlState.LINER1) {
 
             liner2X = evt.getX();
             liner2Y = evt.getY();
@@ -2069,7 +2177,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
             oPanel1.linerOn(null, liner1X, liner1Y, liner2X, liner2Y);
             pPanel1.linerOn(oPanel1.PanelCamera, liner1X, liner1Y, liner2X, liner2Y);
             pPanel1.repaint();
-        } else if (EditorState == ControlState.SZOG || EditorState == ControlState.ILLESZTES_SZOG) {
+        } else if (EditorState == ControlState.LINER_ROT || EditorState == ControlState.TRI_ROT) {
 
             if (evt.getX() != oPanel1.getWidth() / 2 || evt.getY() != oPanel1.getHeight() / 2) {
 
@@ -2091,7 +2199,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         pdf_export.resetChoosableFileFilters();
         pdf_export.setAcceptAllFileFilterUsed(false);
         pdf_export.addChoosableFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(Dictionary.getString("pdf"), "pdf"));
-            
+
         if (pdf_export.showSaveDialog(this) == javax.swing.JFileChooser.APPROVE_OPTION) {
 
             if (new java.io.File(pdf_export.getSelectedFile().getPath().endsWith(".pdf")
@@ -2105,7 +2213,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
             if (!chooser.getSelectedFile().getName().matches("[\\w\\.]+")) {
                 javax.swing.JOptionPane.showMessageDialog(null, Dictionary.getString("noword"), Dictionary.getString("warning"), javax.swing.JOptionPane.WARNING_MESSAGE);
             }
-            
+
             try {
 
                 final javax.swing.JDialog exporting = new javax.swing.JDialog(this);
@@ -2207,10 +2315,10 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
     //
     private void oPanel1MouseWheelMoved(java.awt.event.MouseWheelEvent evt) {//GEN-FIRST:event_oPanel1MouseWheelMoved
 
-        if (EditorState != ControlState.VONALZO1
-                && EditorState != ControlState.VONALZO2
-                && EditorState != ControlState.SZOG
-                && EditorState != ControlState.ILLESZTES_SZOG) {
+        if (EditorState != ControlState.LINER1
+                && EditorState != ControlState.LINER2
+                && EditorState != ControlState.LINER_ROT
+                && EditorState != ControlState.TRI_ROT) {
 
             if (zoomOnScroll
                     && oPanel1.PanelCamera.zoom() - 0.1 * evt.getWheelRotation() <= Camera.maximal_zoom
@@ -2236,7 +2344,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                     ? save.getSelectedFile().getPath()
                     : save.getSelectedFile().getPath() + ".ori").exists()) {
                 if (javax.swing.JOptionPane.showConfirmDialog(null, Dictionary.getString("overwrite"), Dictionary.getString("question"), javax.swing.JOptionPane.YES_NO_OPTION) == javax.swing.JOptionPane.NO_OPTION) {
-                    
+
                     ui_file_saveasActionPerformed(evt);
                     return;
                 }
@@ -2251,7 +2359,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                     pPanel1.update(terminal.TerminalOrigami);
                     defaultify();
                     scroll_angle = 0;
-                    fajlnev = save.getSelectedFile().getPath();
+                    filename = save.getSelectedFile().getPath();
                     setTitle(save.getSelectedFile().getName() + " - Origami Editor 3D");
                     saved = true;
                 } catch (Exception ex) {
@@ -2271,13 +2379,13 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         ctm_export.resetChoosableFileFilters();
         ctm_export.setAcceptAllFileFilterUsed(false);
         ctm_export.addChoosableFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(Dictionary.getString("ctm"), "ctm"));
-            
+
         if (ctm_export.showSaveDialog(this) == javax.swing.JFileChooser.APPROVE_OPTION) {
             if (new java.io.File(ctm_export.getSelectedFile().getPath().endsWith(".ctm")
                     ? ctm_export.getSelectedFile().getPath()
                     : ctm_export.getSelectedFile().getPath() + ".ctm").exists()) {
                 if (javax.swing.JOptionPane.showConfirmDialog(null, Dictionary.getString("overwrite"), Dictionary.getString("question"), javax.swing.JOptionPane.YES_NO_OPTION) == javax.swing.JOptionPane.NO_OPTION) {
-                    
+
                     ui_file_export_toopenctmActionPerformed(evt);
                     return;
                 }
@@ -2285,7 +2393,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
             if (!chooser.getSelectedFile().getName().matches("[\\w\\.]+")) {
                 javax.swing.JOptionPane.showMessageDialog(null, Dictionary.getString("noword"), Dictionary.getString("warning"), javax.swing.JOptionPane.WARNING_MESSAGE);
             }
-            
+
             try {
                 terminal.execute("filename [" + ctm_export.getSelectedFile().getPath()
                         + (ctm_export.getSelectedFile().getPath().endsWith(".ctm") ? "] export-ctm" : ".ctm] export-ctm"), OrigamiScriptTerminal.Access.ROOT);
@@ -2313,12 +2421,12 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                 return;
             }
         }
-        
+
         open.resetChoosableFileFilters();
         open.setAcceptAllFileFilterUsed(false);
         open.addChoosableFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(Dictionary.getString("ori"), "ori"));
         open.addChoosableFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(Dictionary.getString("txt"), "txt"));
-        
+
         if (open.showOpenDialog(this) == javax.swing.JFileChooser.APPROVE_OPTION) {
 
             if (open.getFileFilter() == open.getChoosableFileFilters()[0]) {
@@ -2342,7 +2450,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                     oPanel1.PanelCamera.setOrthogonalView(0);
                     scroll_angle = 0;
                     defaultify();
-                    fajlnev = open.getSelectedFile().getPath();
+                    filename = open.getSelectedFile().getPath();
                     setTitle(open.getSelectedFile().getName() + " - Origami Editor 3D");
                     saved = true;
                 } catch (Exception ex) {
@@ -2436,7 +2544,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         }
         try {
 
-            fajlnev = null;
+            filename = null;
             terminal.execute("paper hexagon new");
 
             oPanel1.update(terminal.TerminalOrigami);
@@ -2478,7 +2586,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         }
         try {
 
-            fajlnev = null;
+            filename = null;
             terminal.execute("paper square new");
 
             oPanel1.update(terminal.TerminalOrigami);
@@ -2519,7 +2627,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         }
         try {
 
-            fajlnev = null;
+            filename = null;
             terminal.execute("paper a4 new");
 
             oPanel1.update(terminal.TerminalOrigami);
@@ -2560,7 +2668,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         }
         try {
 
-            fajlnev = null;
+            filename = null;
             terminal.execute("paper usd new");
 
             oPanel1.update(terminal.TerminalOrigami);
@@ -2592,7 +2700,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
     //  OPTIONS MENU / BEÁLLÍTÁSOK MENÜ
     //
     private void ui_view_optionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ui_view_optionsActionPerformed
-        beallitasok.setVisible(true);
+        settings.setVisible(true);
     }//GEN-LAST:event_ui_view_optionsActionPerformed
 
     private void ui_edit_angleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ui_edit_angleActionPerformed
@@ -2647,8 +2755,9 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                     while (inf.hasNextLine()) {
                         text += inf.nextLine() + (char) 10;
                     }
-                    jTextArea3.setText(text);
-                    jTextArea3.setCaretPosition(0);
+                    inf.close();
+                    terminal_log.setText(text);
+                    terminal_log.setCaretPosition(0);
                     jTabbedPane1.setSelectedIndex(1);
                     javax.swing.SwingUtilities.getWindowAncestor(html).dispose();
                 }
@@ -2666,13 +2775,13 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         save.setAcceptAllFileFilterUsed(false);
         save.addChoosableFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(Dictionary.getString("ori"), "ori"));
 
-        if (fajlnev == null) {
+        if (filename == null) {
             if (save.showSaveDialog(this) == javax.swing.JFileChooser.APPROVE_OPTION) {
                 if (new java.io.File(save.getSelectedFile().getPath().endsWith(".ori")
                         ? save.getSelectedFile().getPath()
                         : save.getSelectedFile().getPath() + ".ori").exists()) {
                     if (javax.swing.JOptionPane.showConfirmDialog(null, Dictionary.getString("overwrite"), Dictionary.getString("question"), javax.swing.JOptionPane.YES_NO_OPTION) == javax.swing.JOptionPane.NO_OPTION) {
-                        
+
                         ui_file_saveActionPerformed(evt);
                         return;
                     }
@@ -2687,7 +2796,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                         pPanel1.update(terminal.TerminalOrigami);
                         defaultify();
                         scroll_angle = 0;
-                        fajlnev = save.getSelectedFile().getPath();
+                        filename = save.getSelectedFile().getPath();
                         setTitle(save.getSelectedFile().getName() + " - Origami Editor 3D");
                         saved = true;
                     } catch (Exception ex) {
@@ -2699,7 +2808,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
             }
         } else {
             try {
-                terminal.execute("filename [" + fajlnev + (fajlnev.endsWith(".ori") ? "] export-ori" : ".ori] export-ori"), OrigamiScriptTerminal.Access.ROOT);
+                terminal.execute("filename [" + filename + (filename.endsWith(".ori") ? "] export-ori" : ".ori] export-ori"), OrigamiScriptTerminal.Access.ROOT);
                 oPanel1.update(terminal.TerminalOrigami);
                 pPanel1.update(terminal.TerminalOrigami);
                 defaultify();
@@ -2775,7 +2884,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         texture_open.resetChoosableFileFilters();
         texture_open.setAcceptAllFileFilterUsed(false);
         texture_open.addChoosableFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(Dictionary.getString("img"), javax.imageio.ImageIO.getReaderFormatNames()));
-            
+
         ui_view_paper_image.setSelected(false);
         if (tex == null) {
 
@@ -2898,13 +3007,14 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
     //  TUTORIALS / TUTORIALOK
     //
     @SuppressWarnings("empty-statement")
-    private void ui_tutorials_internetActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ui_tutorials_internetActionPerformed
+    private void ui_help_tutorialsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ui_help_tutorialsActionPerformed
 
         try {
             java.util.Scanner inf = new java.util.Scanner(
                     new java.net.URL("http://origamieditor3d.sourceforge.net/info.txt").openStream());
             String line;
             while (!(line = inf.nextLine()).startsWith("tutorials_link"));
+            inf.close();
             String url = line.substring(line.indexOf("\"") + 1, line.lastIndexOf("\""));
             Desktop.getDesktop().browse(new java.net.URI(url));
         } catch (Exception ex) {
@@ -2914,7 +3024,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                 javax.swing.JOptionPane.showMessageDialog(this, Dictionary.getString("tutorials-fail"));
             }
         }
-    }//GEN-LAST:event_ui_tutorials_internetActionPerformed
+    }//GEN-LAST:event_ui_help_tutorialsActionPerformed
 
     //
     //  DOCUMENTATION / DOKUMENTÁCIÓ
@@ -2965,18 +3075,18 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         gif_export.resetChoosableFileFilters();
         gif_export.setAcceptAllFileFilterUsed(false);
         gif_export.addChoosableFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(Dictionary.getString("gif"), "gif"));
-            
+
         if (gif_export.showSaveDialog(this) == javax.swing.JFileChooser.APPROVE_OPTION) {
             if (new java.io.File(gif_export.getSelectedFile().getPath().endsWith(".gif")
                     ? gif_export.getSelectedFile().getPath()
                     : gif_export.getSelectedFile().getPath() + ".gif").exists()) {
                 if (javax.swing.JOptionPane.showConfirmDialog(null, Dictionary.getString("overwrite"), Dictionary.getString("question"), javax.swing.JOptionPane.YES_NO_OPTION) == javax.swing.JOptionPane.NO_OPTION) {
-                    
+
                     ui_file_export_togif_revolvingActionPerformed(evt);
                     return;
                 }
             }
-            
+
             try {
 
                 final javax.swing.JDialog exporting = new javax.swing.JDialog(this);
@@ -3049,18 +3159,18 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         gif_export.resetChoosableFileFilters();
         gif_export.setAcceptAllFileFilterUsed(false);
         gif_export.addChoosableFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(Dictionary.getString("gif"), "gif"));
-        
+
         if (gif_export.showSaveDialog(this) == javax.swing.JFileChooser.APPROVE_OPTION) {
             if (new java.io.File(gif_export.getSelectedFile().getPath().endsWith(".gif")
                     ? gif_export.getSelectedFile().getPath()
                     : gif_export.getSelectedFile().getPath() + ".gif").exists()) {
                 if (javax.swing.JOptionPane.showConfirmDialog(null, Dictionary.getString("overwrite"), Dictionary.getString("question"), javax.swing.JOptionPane.YES_NO_OPTION) == javax.swing.JOptionPane.NO_OPTION) {
-                    
+
                     ui_file_export_togif_foldingActionPerformed(evt);
                     return;
                 }
             }
-            
+
             try {
 
                 final javax.swing.JDialog exporting = new javax.swing.JDialog(this);
@@ -3138,12 +3248,12 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                     ? png_export.getSelectedFile().getPath()
                     : png_export.getSelectedFile().getPath() + ".png").exists()) {
                 if (javax.swing.JOptionPane.showConfirmDialog(null, Dictionary.getString("overwrite"), Dictionary.getString("question"), javax.swing.JOptionPane.YES_NO_OPTION) == javax.swing.JOptionPane.NO_OPTION) {
-                    
+
                     ui_file_export_creaseActionPerformed(evt);
                     return;
                 }
             }
-            
+
             try {
                 terminal.execute("filename [" + png_export.getSelectedFile().getPath()
                         + (png_export.getSelectedFile().getPath().endsWith(".png") ? "] export-png" : ".png] export-png"),
@@ -3198,8 +3308,8 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         oPanel1.repaint();
         pPanel1.repaint();
 
-        EditorState = ControlState.ILLESZTES0;
-        SecondaryState = ControlState.AFFIN_ALTER;
+        EditorState = ControlState.TRI0;
+        SecondaryState = ControlState.PLANETHRU;
         pPanel1.setLinerMode(BasicEditing.LinerMode.Planethrough);
         pPanel1.setToolTipText(pPanel1_tip3);
         oPanel1.setToolTipText(oPanel1_tip3);
@@ -3224,8 +3334,8 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         oPanel1.repaint();
         pPanel1.repaint();
 
-        EditorState = ControlState.ILLESZTES0;
-        SecondaryState = ControlState.SZOGFELEZO;
+        EditorState = ControlState.TRI0;
+        SecondaryState = ControlState.ANGLE_BISECT;
         pPanel1.setLinerMode(BasicEditing.LinerMode.Angle_bisector);
         pPanel1.setToolTipText(pPanel1_tip3);
         oPanel1.setToolTipText(oPanel1_tip3);
@@ -3331,7 +3441,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         properties.setResizable(false);
         properties.pack();
         properties.setLocationRelativeTo(this);
-        
+
         final Thread difth = new Thread(new Runnable() {
 
             @Override
@@ -3366,18 +3476,18 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                 properties.pack();
             }
         });
-        
+
         properties.addWindowListener(new java.awt.event.WindowAdapter() {
             @Override
             public void windowClosed(java.awt.event.WindowEvent evt) {
-                
+
                 difth.stop();
                 super.windowClosed(evt);
             }
         });
-        
+
         properties.setVisible(true);
-        
+
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -3394,18 +3504,18 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         jar_export.resetChoosableFileFilters();
         jar_export.setAcceptAllFileFilterUsed(false);
         jar_export.addChoosableFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(Dictionary.getString("ori.jar"), "ori.jar"));
-            
+
         if (jar_export.showSaveDialog(this) == javax.swing.JFileChooser.APPROVE_OPTION) {
             if (new java.io.File(jar_export.getSelectedFile().getPath().endsWith(".ori.jar")
                     ? jar_export.getSelectedFile().getPath()
                     : jar_export.getSelectedFile().getPath() + ".ori.jar").exists()) {
                 if (javax.swing.JOptionPane.showConfirmDialog(null, Dictionary.getString("overwrite"), Dictionary.getString("question"), javax.swing.JOptionPane.YES_NO_OPTION) == javax.swing.JOptionPane.NO_OPTION) {
-                    
+
                     ui_file_export_toselfActionPerformed(evt);
                     return;
                 }
             }
-            
+
             try {
                 terminal.execute("filename [" + jar_export.getSelectedFile().getPath()
                         + (jar_export.getSelectedFile().getPath().endsWith(".ori.jar") ? "] export-jar" : ".ori.jar] export-jar"),
@@ -3537,7 +3647,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
     private javax.swing.JPopupMenu.Separator jSeparator6;
     private javax.swing.JSplitPane jSplitPane2;
     private javax.swing.JTabbedPane jTabbedPane1;
-    private javax.swing.JTextArea jTextArea3;
+    private javax.swing.JTextArea terminal_log;
     private javax.swing.JTextField jTextField1;
     private origamieditor3d.OrigamiPanel oPanel1;
     private origamieditor3d.PaperPanel pPanel1;
@@ -3571,6 +3681,8 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
     private javax.swing.JMenuItem ui_file_saveas;
     private javax.swing.JMenu ui_help;
     private javax.swing.JMenuItem ui_help_about;
+    private javax.swing.JMenu ui_help_lang;
+    private javax.swing.JMenuItem ui_help_tutorials;
     private javax.swing.JToolBar ui_leftbar;
     private javax.swing.JSplitPane ui_panels;
     private javax.swing.JToggleButton ui_plane;
@@ -3583,8 +3695,6 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
     private javax.swing.JLabel ui_snap_label;
     private javax.swing.JToolBar.Separator ui_snap_separator;
     private javax.swing.JSplitPane ui_toolbars;
-    private javax.swing.JMenu ui_tutorials;
-    private javax.swing.JMenuItem ui_tutorials_internet;
     private javax.swing.JMenu ui_view;
     private javax.swing.JCheckBoxMenuItem ui_view_best;
     private javax.swing.JMenuItem ui_view_options;
@@ -3600,7 +3710,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
 
     private void defaultify() {
 
-        EditorState = (SecondaryState = ControlState.KESZENLET);
+        EditorState = (SecondaryState = ControlState.STANDBY);
         targetOn = true;
         ui_select.setSelected(true);
         ui_plane.setSelected(false);

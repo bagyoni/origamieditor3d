@@ -26,6 +26,9 @@ import java.util.HashMap;
  */
 public class Origami {
 
+    public @interface FoldingOperation {
+    }
+
     /**
      * Creates a new origami model.
      * <br>
@@ -79,9 +82,10 @@ public class Origami {
         }
         reset();
     }
-    
+
+    @SuppressWarnings("unchecked")
     public Origami(Origami origami) {
-        
+
         papertype = origami.papertype;
         corners = origami.corners;
         history = (ArrayList<double[]>)origami.history.clone();
@@ -138,7 +142,7 @@ public class Origami {
      * <br>
      * The polygons themselves do not have any particular order.
      *
-     * @return As described in the above.
+     * @return As described above.
      */
     public ArrayList<ArrayList<Integer>> polygons() {
         return polygons;
@@ -163,7 +167,7 @@ public class Origami {
      * private use</b>, although it may be replaced by a more straightforward
      * and human-readable format in later versions.
      *
-     * @return As described in the above.
+     * @return Do not mind.
      */
     public ArrayList<double[]> history() {
         return history;
@@ -174,9 +178,9 @@ public class Origami {
     public int history_pointer() {
         return history_pointer;
     }
-    
+
     protected ArrayList<int[]> history_stream = new ArrayList<>();
-    
+
     public ArrayList<int[]> history_stream() {
         return history_stream;
     }
@@ -294,12 +298,10 @@ public class Origami {
     protected PaperType papertype = PaperType.Square;
 
     /**
-     * Returns the paper type of this origami. The {@link #reset() reset} method
-     * will initialize the {@link #vertices() vertices} and
-     * {@link #polygons() polygons} of this origami depending partly on this
-     * value.
+     * Returns the paper type of this origami. The  value of this field will be
+     * taken into account by the {@link #reset() reset} method.
      *
-     * @return As described in the above.
+     * @return As described above.
      * @see PaperType
      */
     public PaperType papertype() {
@@ -315,7 +317,7 @@ public class Origami {
      * reset} method will initialize the {@link #vertices() vertices} and the
      * {@link #vertices2d() vertices2d} lists as copies of this list.
      *
-     * @return As described in the above.
+     * @return As described above.
      */
     public ArrayList<double[]> corners() {
         return corners;
@@ -400,17 +402,17 @@ public class Origami {
         polygons.remove(polygonIndex);
         polygons_size--;
     }
-    
+
     protected void addCommand(int commandID, double[] ppoint, double[] pnormal, int polygonIndex, int phi) {
-        
+
         int[] cblock = commandBlock(commandID, ppoint, pnormal, polygonIndex, phi);
         addCommand(cblock);
     }
-    
+
     protected void addCommand(int[] cblock) {
-        
+
         int i=-1;
-        
+
         int header = cblock[++i];
         header <<= 8;
         header += cblock[++i];
@@ -418,7 +420,7 @@ public class Origami {
         header += cblock[++i];
         header <<= 8;
         header += cblock[++i];
-        
+
         short Xint, Yint, Zint;
         int Xfrac, Yfrac, Zfrac;
 
@@ -455,16 +457,15 @@ public class Origami {
         siknv[1] = Y;
         siknv[2] = Z;
 
-        //térfélválasztás
+        //choosing the appropriate half space
         if (((header >>> 24) - ((header >>> 24) % 32)) / 32 == 1) {
-
             siknv = new double[]{-siknv[0], -siknv[1], -siknv[2]};
         }
 
         double[] command;
         if ((header >>> 24) % 8 == 1) {
 
-            //ref. fold
+            //reflection fold
             command = new double[7];
             command[0] = 1;
         } else if ((header >>> 24) % 8 == 2) {
@@ -481,7 +482,7 @@ public class Origami {
             command[7] = -(header >>> 16) % 256;
         } else if ((header >>> 24) % 8 == 4) {
 
-            //partial ref. fold
+            //partial reflection fold
             command = new double[8];
             command[0] = 3;
             command[7] = (header % 65536);
@@ -527,9 +528,9 @@ public class Origami {
         history.add(command);
         history_stream.add(cblock);
     }
-    
+
     protected int[] commandBlock(int commandID, double[] ppoint, double[] pnormal, int polygonIndex, int phi) {
-        
+
         double max_d = -1;
         int used_origin = 0;
         int used_hemispace = 0;
@@ -630,7 +631,7 @@ public class Origami {
         int Zt = (int) Math.round((Math.abs(pjoint[2] - Ze)) * 256 * 256);
 
         int[] cblock = {
-        
+
             //header
             (0xFF & (used_hemispace * 32 + used_origin * 8 + parancsazon)),
             (0xFF & (phi)),
@@ -970,11 +971,11 @@ public class Origami {
 
     /**
      * Performs a {@link #cutPolygon(double[], double[], int) cutPolygon} with
-     * the specified plane on every polygon's index in this origami's {@link
+     * the specified plane and every polygon's index in this origami's {@link
      * #polygons() polygons}, and reflects some of the {@link #vertices()
-     * vertices} over the plane. Every vertex that is on the same side of the
-     * plane as where the specified normal vector is pointing to will be
-     * reflected over the plane.
+     * vertices} over the plane. The vertices located on the same side of the
+     * plane as where the specified normal vector is pointing to will be the
+     * ones reflected over the plane.
      *
      * @param ppoint An array containing the 3-dimensional coordinates of a
      * point the plane goes through as {@code double}s.
@@ -1022,17 +1023,15 @@ public class Origami {
 
     /**
      * Performs a {@link #cutPolygon(double[], double[], int) cutPolygon} with
-     * the specified plane on every polygon's index in this origami's {@link
+     * the specified plane and every polygon's index in this origami's {@link
      * #polygons() polygons}, and if the intersection of the plane and the
      * origami is a non-degenerate line, rotates some of the {@link #vertices()
-     * vertices} around that line by the specified angle. Otherwise, it calls
-     * {@link #undo(int) undo}{@code (1)} to reset this origami to its last
-     * valid state, but only if the specified angle is not zero.
+     * vertices} around that line by the specified angle.
      * <br>
-     * In the first case, every vertex that is on the same side of the plane as
-     * where the specified normal vector is pointing to will be rotated around
-     * the line. As there is no well-defined 'clockwise' direction in a
-     * 3-dimensional space, the rotation's direction will be decided on a whim.
+     * In this case, every vertex located on the same side of the plane as where
+     * the specified normal vector is pointing to will be rotated around the
+     * line. As there is no exclusive 'clockwise' direction in a 3-dimensional
+     * space, the rotation's direction will be decided on a whim.
      *
      * @param ppoint An array containing the 3-dimensional coordinates of a
      * point the plane goes through as {@code double}s.
@@ -1130,14 +1129,14 @@ public class Origami {
     }
 
     /**
-     * Performs a {@link #cutPolygon(double[], double[], int) cutPolygon} with
-     * the specified plane on every polygon's index in this origami's {@link
-     * #polygons() polygons}, and reflects some of the {@link #vertices()
-     * vertices} over the plane. The elements of the {@link #polygons()
-     * polygons} list whose zero-based indices appear in the
-     * {@link Origami#polygonSelect(double[], double[], int) polygonSelect} of
-     * the specified plane and polygon index will have all their vertices
-     * reflected over the plane.
+     * Passes the arguments in the same order to the
+     * {@link Origami#polygonSelect(double[], double[], int) polygonSelect}
+     * method, and reflects every {@link #polygons() polygon} listed therein
+     * over the specified plane.
+     * <br>
+     * Reunites previously
+     * {@link Origami#cutPolygon(double[], double[], int) split} polygons if
+     * possible.
      *
      * @param ppoint An array containing the 3-dimensional coordinates of a
      * point the plane goes through as {@code double}s.
@@ -1199,6 +1198,26 @@ public class Origami {
         shrink(polygonIndex);
     }
 
+    /**
+     * Passes the arguments in the same order to the
+     * {@link Origami#polygonSelect(double[], double[], int) polygonSelect}
+     * method, and if the resulting family of {@link #polygons() polygons}
+     * intersects the specified plane in a non-degenerate line, rotates these
+     * polygons by the specified angle around the line. As there is no exclusive
+     * 'clockwise' direction in a 3-dimensional space, the rotation's direction
+     * will be decided on a whim.
+     * <br>
+     * Reunites previously
+     * {@link Origami#cutPolygon(double[], double[], int) split} polygons if
+     * possible.
+     *
+     * @param ppoint An array containing the 3-dimensional coordinates of a
+     * point the plane goes through as {@code double}s.
+     * @param pnormal An array containing the 3-dimensional coordinates the
+     * plane's normalvector as {@code double}s.
+     * @param polygonIndex The index of the polygon to include in
+     * {@link Origami#polygonSelect(double[], double[], int) polygonSelect}.
+     */
     protected void internalRotationFold(double[] ppoint, double[] pnormal, int phi, int polygonIndex) {
 
         ArrayList<Integer> kijeloles = polygonSelect(ppoint, pnormal, polygonIndex);
@@ -1361,6 +1380,7 @@ public class Origami {
         shrink(polygonIndex);
     }
 
+    @FoldingOperation
     public void reflectionFold(double[] ppoint, double[] pnormal) {
 
         history.subList(history_pointer, history.size()).clear();
@@ -1370,15 +1390,7 @@ public class Origami {
         history_pointer++;
     }
 
-    public void rotationFold(double[] ppoint, double[] pnormal, int phi) {
-
-        history.subList(history_pointer, history.size()).clear();
-        history_stream.subList(history_pointer, history_stream.size()).clear();
-        addCommand(2, ppoint, pnormal, 0, phi);
-        execute(history_pointer, 1);
-        history_pointer++;
-    }
-
+    @FoldingOperation
     public void reflectionFold(double[] ppoint, double[] pnormal, int polygonIndex) {
 
         history.subList(history_pointer, history.size()).clear();
@@ -1388,6 +1400,17 @@ public class Origami {
         history_pointer++;
     }
 
+    @FoldingOperation
+    public void rotationFold(double[] ppoint, double[] pnormal, int phi) {
+
+        history.subList(history_pointer, history.size()).clear();
+        history_stream.subList(history_pointer, history_stream.size()).clear();
+        addCommand(2, ppoint, pnormal, 0, phi);
+        execute(history_pointer, 1);
+        history_pointer++;
+    }
+
+    @FoldingOperation
     public void rotationFold(double[] ppoint, double[] pnormal, int phi, int polygonIndex) {
 
         history.subList(history_pointer, history.size()).clear();
@@ -1397,6 +1420,7 @@ public class Origami {
         history_pointer++;
     }
 
+    @FoldingOperation
     public void crease(double[] ppoint, double[] pnormal) {
 
         history.subList(history_pointer, history.size()).clear();
@@ -1406,6 +1430,7 @@ public class Origami {
         history_pointer++;
     }
 
+    @FoldingOperation
     public void mutilation(double[] ppoint, double[] pnormal) {
 
         history.subList(history_pointer, history.size()).clear();
@@ -1415,6 +1440,7 @@ public class Origami {
         history_pointer++;
     }
 
+    @FoldingOperation
     public void mutilation(double[] ppoint, double[] pnormal, int polygonIndex) {
 
         history.subList(history_pointer, history.size()).clear();
@@ -1807,7 +1833,7 @@ public class Origami {
      *
      * @param polygon An {@link ArrayList} whose each element is an array
      * containing the 2-dimensional coordinates of a point.
-     * @return As described in the above.
+     * @return As described above.
      * @since 2013-10-12
      */
     static private boolean isConvex(ArrayList<double[]> polygon) {
@@ -1842,7 +1868,7 @@ public class Origami {
      * Returns the size of the smallest orthogonal square all the {@link
      * #corners() corners} of this origami can fit in.
      *
-     * @return As described in the above.
+     * @return As described above.
      * @since 2013-10-31
      */
     public double circumscribedSquareSize() {
@@ -1853,7 +1879,7 @@ public class Origami {
      * Returns the difference of the largest and the smallest first coordinate
      * occuring within the {@link #corners() corners} list.
      *
-     * @return As described in the above.
+     * @return As described above.
      */
     public double paperWidth() {
 
@@ -1876,7 +1902,7 @@ public class Origami {
      * Returns the difference of the largest and the smallest second coordinate
      * occuring within the {@link #corners() corners} list.
      *
-     * @return As described in the above.
+     * @return As described above.
      */
     public double paperHeight() {
 

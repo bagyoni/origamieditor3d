@@ -21,18 +21,24 @@ public class Dictionary {
     static private java.util.ResourceBundle messages;
     
     static {
-        try {
-            messages = java.util.ResourceBundle.getBundle("language", new java.util.Locale(System.getProperty("user.language"), System.getProperty("user.country")));
-        } catch (Exception ex) {
-            messages = java.util.ResourceBundle.getBundle("language", new java.util.Locale("en", "US"));
-        }
+        setLocale(new java.util.Locale(System.getProperty("user.language"), System.getProperty("user.country")));
     }
     
-    public static String getString(String key) {
+    static public String getString(String key) {
         try {
             return messages.getString(key);
         } catch (Exception ex) {
             return key;
+        }
+    }
+    
+    static public void setLocale(java.util.Locale locale) {
+        if (new Dictionary().getClass().getResource("/language" + "_" + locale.getLanguage() + ".properties") != null) {
+            messages = java.util.ResourceBundle.getBundle("language", locale);
+            System.out.println("User language set to " + locale.getDisplayName(java.util.Locale.ENGLISH));
+        } else {
+            messages = java.util.ResourceBundle.getBundle("language", new java.util.Locale("en", "US"));
+            System.out.println("Could not set user language to " + locale.getDisplayName(java.util.Locale.ENGLISH));
         }
     }
 }

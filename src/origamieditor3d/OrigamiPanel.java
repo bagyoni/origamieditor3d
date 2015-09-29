@@ -131,7 +131,7 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
         }
         trackerOn = true;
     }
-    
+
     @Override
     public void resetTracker() {
 
@@ -144,7 +144,7 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
     public void setLinerMode(LinerMode mode) {
         linerMode = mode;
     }
-    
+
     @Override
     public void tiltTriangleTo(Camera refkamera, Integer... xy) {
 
@@ -163,10 +163,10 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
         liner_grab_index++;
         liner_grab_index %= 3;
     }
-    
+
     @Override
     public void resetTriangle() {
-        
+
         liner_grab_index = 0;
         liner_triangle[0] = null;
         liner_triangle[1] = null;
@@ -200,11 +200,11 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
     public void resetBeacons() {
         beacons = null;
     }
-    
+
     public void displayProtractor(int angle) {
         protractor_angle = angle;
     }
-    
+
     public void hideProtractor() {
         protractor_angle = null;
     }
@@ -226,7 +226,7 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
     public void setFrontColor(int rgb) {
         paper_front_color = rgb;
     }
-    
+
     public int getFrontColor() {
         return paper_front_color;
     }
@@ -276,7 +276,7 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
                 case UV:
                     PanelCamera.drawTexture(g, this.getWidth(), this.getHeight());
                     break;
-                    
+
                 case GRADIENT:
                     PanelCamera.drawGradient(g, paper_front_color, PanelOrigami);
                     PanelCamera.drawEdges(g, new Color(0, 0, 0, .5f), PanelOrigami);
@@ -361,10 +361,10 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
             g.drawLine(x - 5, y, x + 5, y);
             g.drawLine(x, y - 5, x, y + 5);
         }
-        
+
         g.setColor(Color.magenta);
         ((java.awt.Graphics2D)g).setStroke(new java.awt.BasicStroke(2));
-        
+
         if (liner_triangle[0] != null) {
             int x = (int) (PanelCamera.projection(liner_triangle[0])[0]) + PanelCamera.xshift;
             int y = (int) (PanelCamera.projection(liner_triangle[0])[1]) + PanelCamera.yshift;
@@ -384,25 +384,25 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
             g.drawLine(x - 3, y - 3, x + 3, y + 3);
         }
         ((java.awt.Graphics2D)g).setStroke(new java.awt.BasicStroke(1));
-        
+
         if (protractor_angle != null) {
             drawProtractor(g, protractor_angle);
         }
     }
-    
+
     private void drawProtractor(Graphics g, int angle) {
-        
+
         angle -= 90;
         while (angle < 0) {
             angle += 360;
         }
-        
+
         int width = getWidth();
         int height = getHeight();
         int diam = Math.min(width, height)/2;
         g.setColor(new Color(255, 255, 255, 170));
         g.fillRect(0, 0, width, height);
-        
+
         g.setColor(Color.red);
         g.drawLine(
                 (int)(width/2 + Math.cos(angle*Math.PI/180)*diam/2),
@@ -410,12 +410,12 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
                 (int)(width/2),
                 (int)(height/2)
         );
-        
+
         g.setColor(Color.black);
         g.drawOval((width-diam)/2, (height-diam)/2, diam, diam);
-        
+
         for (int i=0; i<360; i+=5) {
-            
+
             int notch = i % 180 == 0 ? diam/6 : i % 90 == 0 ? diam/8 : i % 45 == 0 ? diam/10 : diam/14;
             g.drawLine(
                     (int)(width/2 + Math.cos(i*Math.PI/180)*diam/2),
@@ -423,7 +423,7 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
                     (int)(width/2 + Math.cos(i*Math.PI/180)*(diam/2-notch)),
                     (int)(height/2 + Math.sin(i*Math.PI/180)*(diam/2-notch))
             );
-            
+
         }
         g.setFont(g.getFont().deriveFont(12.0f));
         g.drawString("0°", width/2-5, (height-diam)/2-5);
@@ -433,7 +433,7 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
 
         if (angle % 90 != 0) {
             g.drawString(
-                    (angle < 90 ? angle + 90 : angle - 270) + "°", 
+                    (angle < 90 ? angle + 90 : angle - 270) + "°",
                     (int)(width/2 + Math.cos(angle*Math.PI/180)*diam/2 + (angle > 90 && angle < 270 ? -30 : 10)),
                     (int)(height/2 + Math.sin(angle*Math.PI/180)*diam/2) + (angle < 180 ? 15 : -5));
         }

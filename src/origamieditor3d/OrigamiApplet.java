@@ -17,17 +17,19 @@ package origamieditor3d;
  * @author Attila Bágyoni (ba-sz-at@users.sourceforge.net)
  */
 public class OrigamiApplet extends java.applet.Applet {
-    
+
+    final static private long serialVersionUID = 1L;
+
     @Override
     public void init() {
-        
+
         final java.awt.Button launch = new java.awt.Button("Launch Origami Editor 3D now!");
         launch.setPreferredSize(new java.awt.Dimension(getWidth(), getHeight()));
         launch.addActionListener(new java.awt.event.ActionListener() {
 
             @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                
+
                 try {
                     new OrigamiEditorUI().setVisible(true);
                 }

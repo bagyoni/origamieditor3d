@@ -18,6 +18,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+
 import origamieditor3d.OrigamiEditorUI;
 import origamieditor3d.resources.Instructor;
 
@@ -34,7 +35,7 @@ public class Export {
     final static public int page_height = 842;
     final static public int figure_frame = 200;
 
-    static public int exportCTM(Origami origami, String filename, java.awt.image.BufferedImage texture) {
+    static public void exportCTM(Origami origami, String filename, java.awt.image.BufferedImage texture) throws Exception {
 
         try {
 
@@ -295,18 +296,16 @@ public class Export {
             FileOutputStream str = new FileOutputStream(ctm);
 
             str.write(bajtok);
+            System.out.println(str.getChannel().position() + " bytes written to " + filename);
             str.close();
             kamera.unadjust(origami);
 
-            return 1;
-
         } catch (IOException exc) {
-
-            return 0;
+            throw OrigamiException.H005;
         }
     }
 
-    static public int exportPDF(Origami origami, String filename, String title) {
+    static public void exportPDF(Origami origami, String filename, String title) throws Exception {
 
         try {
 
@@ -1410,16 +1409,15 @@ public class Export {
             fajl += "%%EOF";
 
             str.write(fajl.getBytes(Charset.forName("UTF-8")));
+            System.out.println(str.getChannel().position() + " bytes written to " + filename);
             str.close();
-            return 1;
 
         } catch (Exception exc) {
-            exc.printStackTrace();
-            return 0;
+            throw OrigamiException.H005;
         }
     }
 
-    static public int exportGIF(Origami origami, Camera refcam, int color, int width, int height, String filename) {
+    static public void exportGIF(Origami origami, Camera refcam, int color, int width, int height, String filename) throws Exception {
 
         try (FileOutputStream fos = new FileOutputStream(filename)) {
 
@@ -1513,7 +1511,6 @@ public class Export {
 
                 fos.write(0x07);
 
-                byte[] bimg = new byte[width * height];
                 for (int y = 0; y < height; y++) {
 
                     fos.write(width / 2 + 1);
@@ -1545,14 +1542,15 @@ public class Export {
             }
 
             fos.write(0x3B);
+            System.out.println(fos.getChannel().position() + " bytes written to " + filename);
             fos.close();
-            return 1;
+
         } catch (Exception ex) {
-            return 0;
+            throw OrigamiException.H005;
         }
     }
 
-    static public int exportRevolvingGIF(Origami origami, Camera refcam, int color, int width, int height, String filename) {
+    static public void exportRevolvingGIF(Origami origami, Camera refcam, int color, int width, int height, String filename) throws Exception {
 
         try (FileOutputStream fos = new FileOutputStream(filename)) {
 
@@ -1645,7 +1643,6 @@ public class Export {
 
                 fos.write(0x07);
 
-                byte[] bimg = new byte[width * height];
                 for (int y = 0; y < height; y++) {
 
                     fos.write(width / 2 + 1);
@@ -1677,14 +1674,15 @@ public class Export {
             }
 
             fos.write(0x3B);
+            System.out.println(fos.getChannel().position() + " bytes written to " + filename);
             fos.close();
-            return 1;
+
         } catch (Exception ex) {
-            return 0;
+            throw OrigamiException.H005;
         }
     }
 
-    static public int exportPNG(Origami origami, String filename) {
+    static public void exportPNG(Origami origami, String filename) throws Exception {
 
         try {
 
@@ -1698,17 +1696,15 @@ public class Export {
             g.clearRect(0, 0, (int) origami.paperWidth(), (int) origami.paperHeight());
             new Camera((int) origami.paperWidth() / 2, (int) origami.paperHeight() / 2, 1).drawCreasePattern(g, Color.BLACK, origami);
 
-            if (javax.imageio.ImageIO.write(img, "png", png)) {
-                return 1;
-            } else {
-                return 0;
+            if (!javax.imageio.ImageIO.write(img, "png", png)) {
+                throw OrigamiException.H005;
             }
         } catch (Exception ex) {
-            return 0;
+            throw OrigamiException.H005;
         }
     }
 
-    static public int exportJAR(Origami origami, String filename) {
+    static public void exportJAR(Origami origami, String filename) throws Exception {
 
         try {
 
@@ -1771,15 +1767,18 @@ public class Export {
 
             zos.closeEntry();
             zos.close();
+            System.out.println(fos.getChannel().position() + " bytes written to " + filename);
             fos.close();
             is.close();
             jar.close();
 
+            System.out.print("Cleaning up... ");
             tempOri.delete();
             tempJar.delete();
-            return 1;
+            System.out.println("done");
+
         } catch (Exception ex) {
-            return 0;
+            throw OrigamiException.H005;
         }
     }
 }

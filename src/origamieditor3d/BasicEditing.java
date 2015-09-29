@@ -23,18 +23,18 @@ public interface BasicEditing {
     public enum LinerMode {
         Normal, Neusis, Planethrough, Angle_bisector
     }
-    
+
     public void update(Origami origami);
     public void reset();
-    
+
     public boolean isTracked();
     public void setTracker(Camera refcam, int x, int y);
     public void resetTracker();
-    
+
     public void setLinerMode(LinerMode mode);
     public void linerOn(Camera refcam, int x1, int y1, int x2, int y2);
     public void linerOff();
-    
+
     public void tiltTriangleTo(Camera refcam, Integer... xy);
     public void resetTriangle();
     public void grabTriangleAt(int vertIndex);
