@@ -679,8 +679,8 @@ public class Export {
 
                     if (Origami.scalar_product(regiVaszonNV, kamera.camera_dir) < 0 && !ForgatasIndexek.contains(i)) {
 
-                        kamera.camera_dir = Origami.vector(Origami.nullvektor, kamera.camera_dir);
-                        kamera.axis_x = Origami.vector(Origami.nullvektor, kamera.axis_x);
+                        kamera.camera_dir = Origami.vector(Origami.nullvector, kamera.camera_dir);
+                        kamera.axis_x = Origami.vector(Origami.nullvector, kamera.axis_x);
                     }
 
                     switch ((objindex - (int) Math.ceil((double) cellak_szama / 6)) % 6) {
@@ -1037,8 +1037,8 @@ public class Export {
 
                     if (Origami.scalar_product(regiVaszonNV, kamera.camera_dir) < 0 && !ForgatasIndexek.contains(i)) {
 
-                        kamera.camera_dir = Origami.vector(Origami.nullvektor, kamera.camera_dir);
-                        kamera.axis_x = Origami.vector(Origami.nullvektor, kamera.axis_x);
+                        kamera.camera_dir = Origami.vector(Origami.nullvector, kamera.camera_dir);
+                        kamera.axis_x = Origami.vector(Origami.nullvector, kamera.axis_x);
                     }
 
                     switch ((int) origami1.history().get(i)[0]) {

@@ -18,9 +18,9 @@ import java.util.ArrayList;
  * This is the first patch to the {@link Origami} class.
  * It resolves a serious bug in the
  * {@link Origami#cutPolygon(double[], double[], int) cutPolygon} method that
- * allowed contiguous polygons to overlap in the paper space and, as a
- * consequence, be torn apart in the origami space.
- * 
+ * allowed contiguous polygons to overlap in the paper space and, in turn,
+ * get torn apart in the origami space.
+ *
  * @author Attila Bágyoni (ba-sz-at@users.sourceforge.net)
  */
 public class OrigamiGen2 extends Origami {
@@ -32,16 +32,16 @@ public class OrigamiGen2 extends Origami {
     public OrigamiGen2(ArrayList<double[]> corners) throws Exception {
     	super(corners);
     }
-    
+
     public OrigamiGen2(Origami origami) throws Exception {
     	super(origami);
     }
-    
+
     @Override
     public int generation() {
         return 2;
     }
-    
+
     @Override
     protected boolean cutPolygon(double[] ppoint, double[] pnormal, int polygonIndex) {
 
@@ -109,11 +109,11 @@ public class OrigamiGen2 extends Origami {
                             ujsokszog1.add(vertices_size - 1);
                             ujsokszog2.add(vertices_size - 1);
                             cutpolygon_nodes.add(new int[]{polygons.get(polygonIndex).get(i), polygons.get(polygonIndex).get(j), vertices_size - 1});
-                            
+
                             for (int ii = 0; ii < border.size(); ii++) {
                                 if (border.get(ii).equals(polygons.get(polygonIndex).get(i))) {
                                     if (border.get((ii + 1) % border.size()).equals(polygons.get(polygonIndex).get(j))) {
-                                        
+
                                         border.add(ii + 1, vertices_size - 1);
                                         break;
                                     }
@@ -132,11 +132,11 @@ public class OrigamiGen2 extends Origami {
         }
         return false;
     }
-    
+
     @Override
     @SuppressWarnings("unchecked")
     public OrigamiGen2 clone() {
-        
+
         OrigamiGen2 copy = new OrigamiGen2(papertype);
         copy.corners = (ArrayList<double[]>) corners.clone();
         copy.history = (ArrayList<double[]>) history.clone();

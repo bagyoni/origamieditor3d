@@ -38,21 +38,6 @@ public class Camera {
         xshift = x;
         yshift = y;
         this.zoom = zoom;
-
-        double[] xt = axis_x.clone();
-        axis_x[0] = axis_x[0] / Origami.vector_length(xt) * zoom;
-        axis_x[1] = axis_x[1] / Origami.vector_length(xt) * zoom;
-        axis_x[2] = axis_x[2] / Origami.vector_length(xt) * zoom;
-
-        double[] yt = axis_y.clone();
-        axis_y[0] = axis_y[0] / Origami.vector_length(yt) * zoom;
-        axis_y[1] = axis_y[1] / Origami.vector_length(yt) * zoom;
-        axis_y[2] = axis_y[2] / Origami.vector_length(yt) * zoom;
-
-        double[] zt = camera_dir.clone();
-        camera_dir[0] = camera_dir[0] / Origami.vector_length(zt) * zoom;
-        camera_dir[1] = camera_dir[1] / Origami.vector_length(zt) * zoom;
-        camera_dir[2] = camera_dir[2] / Origami.vector_length(zt) * zoom;
     }
 
     public double[] camera_pos;
@@ -74,30 +59,16 @@ public class Camera {
     }
 
     public void setZoom(double value) {
-
         zoom = value;
-
-        double[] xt = axis_x.clone();
-        axis_x[0] = axis_x[0] / Origami.vector_length(xt) * zoom;
-        axis_x[1] = axis_x[1] / Origami.vector_length(xt) * zoom;
-        axis_x[2] = axis_x[2] / Origami.vector_length(xt) * zoom;
-
-        double[] yt = axis_y.clone();
-        axis_y[0] = axis_y[0] / Origami.vector_length(yt) * zoom;
-        axis_y[1] = axis_y[1] / Origami.vector_length(yt) * zoom;
-        axis_y[2] = axis_y[2] / Origami.vector_length(yt) * zoom;
-
-        double[] zt = camera_dir.clone();
-        camera_dir[0] = camera_dir[0] / Origami.vector_length(zt) * zoom;
-        camera_dir[1] = camera_dir[1] / Origami.vector_length(zt) * zoom;
-        camera_dir[2] = camera_dir[2] / Origami.vector_length(zt) * zoom;
     }
 
     protected byte orientation = 0;
 
     public double[] projection0(double[] point) {
 
-        double konst = camera_pos[0] * camera_dir[0] + camera_pos[1] * camera_dir[1] + camera_pos[2] * camera_dir[2];
+        double konst = camera_pos[0] * camera_dir[0] * zoom
+                + camera_pos[1] * camera_dir[1] * zoom
+                + camera_pos[2] * camera_dir[2] * zoom;
 
         double[] dirvec = camera_dir;
         double X = point[0];
@@ -112,8 +83,8 @@ public class Camera {
         double t = -(A * X + B * Y + C * Z - konst) / (A * U + B * V + C * W);
 
         double[] basepoint = {X + t * U, Y + t * V, Z + t * W};
-        double[] img = {basepoint[0] * axis_x[0] + basepoint[1] * axis_x[1] + basepoint[2] * axis_x[2],
-            basepoint[0] * axis_y[0] + basepoint[1] * axis_y[1] + basepoint[2] * axis_y[2]};
+        double[] img = {basepoint[0] * axis_x[0] * zoom + basepoint[1] * axis_x[1] * zoom + basepoint[2] * axis_x[2] * zoom,
+            basepoint[0] * axis_y[0] * zoom + basepoint[1] * axis_y[1] * zoom + basepoint[2] * axis_y[2] * zoom};
         return img;
     }
 
@@ -168,9 +139,9 @@ public class Camera {
                 + Y * (Cz * Cy * (1 - cosphi) + Cx * sinphi)
                 + Z * (cosphi + Cz * Cz * (1 - cosphi));
 
-        axis_x[0] = imgX / Origami.vector_length(new double[]{imgX, imgY, imgZ}) * zoom;
-        axis_x[1] = imgY / Origami.vector_length(new double[]{imgX, imgY, imgZ}) * zoom;
-        axis_x[2] = imgZ / Origami.vector_length(new double[]{imgX, imgY, imgZ}) * zoom;
+        axis_x[0] = imgX / Origami.vector_length(new double[]{imgX, imgY, imgZ});
+        axis_x[1] = imgY / Origami.vector_length(new double[]{imgX, imgY, imgZ});
+        axis_x[2] = imgZ / Origami.vector_length(new double[]{imgX, imgY, imgZ});
 
         double sinY = Math.sin(y * Math.PI / 180);
         double cosY = Math.cos(y * Math.PI / 180);
@@ -214,9 +185,9 @@ public class Camera {
                 + Y * (Cz * Cy * (1 - cosphi) + Cx * sinphi)
                 + Z * (cosphi + Cz * Cz * (1 - cosphi));
 
-        axis_y[0] = imgX / Origami.vector_length(new double[]{imgX, imgY, imgZ}) * zoom;
-        axis_y[1] = imgY / Origami.vector_length(new double[]{imgX, imgY, imgZ}) * zoom;
-        axis_y[2] = imgZ / Origami.vector_length(new double[]{imgX, imgY, imgZ}) * zoom;
+        axis_y[0] = imgX / Origami.vector_length(new double[]{imgX, imgY, imgZ});
+        axis_y[1] = imgY / Origami.vector_length(new double[]{imgX, imgY, imgZ});
+        axis_y[2] = imgZ / Origami.vector_length(new double[]{imgX, imgY, imgZ});
     }
 
     public java.util.List<int[]> alignmentPoints(Origami origami, int... denoms) {
@@ -319,45 +290,45 @@ public class Camera {
 
             if (isDrawable(i, origami)) {
 
-                Polygon ut = new Polygon();
+                Polygon edges = new Polygon();
 
                 for (int ii = 0; ii < origami.polygons().get(i).size(); ii++) {
 
-                    ut.addPoint((short) (projection(origami.vertices().get(origami.polygons().get(i).get(ii)))[0]) + xshift,
+                    edges.addPoint((short) (projection(origami.vertices().get(origami.polygons().get(i).get(ii)))[0]) + xshift,
                             (short) (projection(origami.vertices().get(origami.polygons().get(i).get(ii)))[1]) + yshift);
                 }
-                canvas.drawPolygon(ut);
+                canvas.drawPolygon(edges);
             }
         }
     }
 
     public String drawEdges(int x, int y, Origami origami) {
 
-        String ki = "1 w ";
+        String edges = "1 w ";
 
         for (int i = 0; i < origami.polygons_size(); i++) {
 
             if (isDrawable(i, origami)) {
 
-                ki += Integer.toString((int) (projection(origami.vertices().get(origami.polygons().get(i).get(0)))[0]) + x);
-                ki += " ";
-                ki += Integer.toString((int) (projection(origami.vertices().get(origami.polygons().get(i).get(0)))[1]) + y);
-                ki += " m ";
+                edges += Integer.toString((int) (projection(origami.vertices().get(origami.polygons().get(i).get(0)))[0]) + x);
+                edges += " ";
+                edges += Integer.toString((int) (projection(origami.vertices().get(origami.polygons().get(i).get(0)))[1]) + y);
+                edges += " m ";
 
                 for (int ii = 1; ii < origami.polygons().get(i).size(); ii++) {
-                    ki += Integer.toString((int) (projection(origami.vertices().get(origami.polygons().get(i).get(ii)))[0]) + x);
-                    ki += " ";
-                    ki += Integer.toString((int) (projection(origami.vertices().get(origami.polygons().get(i).get(ii)))[1]) + y);
-                    ki += " l ";
+                    edges += Integer.toString((int) (projection(origami.vertices().get(origami.polygons().get(i).get(ii)))[0]) + x);
+                    edges += " ";
+                    edges += Integer.toString((int) (projection(origami.vertices().get(origami.polygons().get(i).get(ii)))[1]) + y);
+                    edges += " l ";
                 }
-                ki += Integer.toString((int) (projection(origami.vertices().get(origami.polygons().get(i).get(0)))[0]) + x);
-                ki += " ";
-                ki += Integer.toString((int) (projection(origami.vertices().get(origami.polygons().get(i).get(0)))[1]) + y);
-                ki += " l S ";
+                edges += Integer.toString((int) (projection(origami.vertices().get(origami.polygons().get(i).get(0)))[0]) + x);
+                edges += " ";
+                edges += Integer.toString((int) (projection(origami.vertices().get(origami.polygons().get(i).get(0)))[1]) + y);
+                edges += " l S ";
             }
         }
 
-        return ki;
+        return edges;
     }
 
     public void drawPreview(Graphics canvas, Color color, Origami origami, double[] ppoint, double[] pnormal) {
@@ -368,12 +339,12 @@ public class Camera {
         double[] yt = axis_y;
 
         double konst = ppoint[0] * pnormal[0] + ppoint[1] * pnormal[1] + ppoint[2] * pnormal[2];
-        double[] talppont;
+        double[] basepoint;
         double X, Y, Z, t;
-        double[] iranyvek = pnormal;
-        double U = iranyvek[0];
-        double V = iranyvek[1];
-        double W = iranyvek[2];
+        double[] dirvec = pnormal;
+        double U = dirvec[0];
+        double V = dirvec[1];
+        double W = dirvec[2];
         double A = pnormal[0];
         double B = pnormal[1];
         double C = pnormal[2];
@@ -382,41 +353,41 @@ public class Camera {
         Y = camera_pos[1];
         Z = camera_pos[2];
         t = -(A * X + B * Y + C * Z - konst) / (A * U + B * V + C * W);
-        talppont = new double[]{X + t * U, Y + t * V, Z + t * W};
+        basepoint = new double[]{X + t * U, Y + t * V, Z + t * W};
         camera_pos = new double[]{
-            talppont[0] + Origami.vector(talppont, camera_pos)[0],
-            talppont[1] + Origami.vector(talppont, camera_pos)[1],
-            talppont[2] + Origami.vector(talppont, camera_pos)[2]};
+            basepoint[0] + Origami.vector(basepoint, camera_pos)[0],
+            basepoint[1] + Origami.vector(basepoint, camera_pos)[1],
+            basepoint[2] + Origami.vector(basepoint, camera_pos)[2]};
 
         X = camera_dir[0];
         Y = camera_dir[1];
         Z = camera_dir[2];
         t = -(A * X + B * Y + C * Z) / (A * U + B * V + C * W);
-        talppont = new double[]{X + t * U, Y + t * V, Z + t * W};
+        basepoint = new double[]{X + t * U, Y + t * V, Z + t * W};
         camera_dir = new double[]{
-            talppont[0] + Origami.vector(talppont, camera_dir)[0],
-            talppont[1] + Origami.vector(talppont, camera_dir)[1],
-            talppont[2] + Origami.vector(talppont, camera_dir)[2]};
+            basepoint[0] + Origami.vector(basepoint, camera_dir)[0],
+            basepoint[1] + Origami.vector(basepoint, camera_dir)[1],
+            basepoint[2] + Origami.vector(basepoint, camera_dir)[2]};
 
         X = axis_x[0];
         Y = axis_x[1];
         Z = axis_x[2];
         t = -(A * X + B * Y + C * Z) / (A * U + B * V + C * W);
-        talppont = new double[]{X + t * U, Y + t * V, Z + t * W};
+        basepoint = new double[]{X + t * U, Y + t * V, Z + t * W};
         axis_x = new double[]{
-            talppont[0] + Origami.vector(talppont, axis_x)[0],
-            talppont[1] + Origami.vector(talppont, axis_x)[1],
-            talppont[2] + Origami.vector(talppont, axis_x)[2]};
+            basepoint[0] + Origami.vector(basepoint, axis_x)[0],
+            basepoint[1] + Origami.vector(basepoint, axis_x)[1],
+            basepoint[2] + Origami.vector(basepoint, axis_x)[2]};
 
         X = axis_y[0];
         Y = axis_y[1];
         Z = axis_y[2];
         t = -(A * X + B * Y + C * Z) / (A * U + B * V + C * W);
-        talppont = new double[]{X + t * U, Y + t * V, Z + t * W};
+        basepoint = new double[]{X + t * U, Y + t * V, Z + t * W};
         axis_y = new double[]{
-            talppont[0] + Origami.vector(talppont, axis_y)[0],
-            talppont[1] + Origami.vector(talppont, axis_y)[1],
-            talppont[2] + Origami.vector(talppont, axis_y)[2]};
+            basepoint[0] + Origami.vector(basepoint, axis_y)[0],
+            basepoint[1] + Origami.vector(basepoint, axis_y)[1],
+            basepoint[2] + Origami.vector(basepoint, axis_y)[2]};
 
         drawEdges(canvas, color, origami);
         camera_pos = vpt;
@@ -427,32 +398,32 @@ public class Camera {
 
     public String drawSelection(int x, int y, double[] ppoint, double[] pnormal, int polygonIndex, Origami origami) {
 
-        String ki = "0.8 0.8 0.8 rg ";
+        String selection = "0.8 0.8 0.8 rg ";
 
         ArrayList<Integer> kijeloles = origami.polygonSelect(ppoint, pnormal, polygonIndex);
         for (int i : kijeloles) {
 
             if (isDrawable(i, origami)) {
 
-                ki += Integer.toString((int) (projection(origami.vertices().get(origami.polygons().get(i).get(0)))[0]) + x);
-                ki += " ";
-                ki += Integer.toString((int) (projection(origami.vertices().get(origami.polygons().get(i).get(0)))[1]) + y);
-                ki += " m ";
+                selection += Integer.toString((int) (projection(origami.vertices().get(origami.polygons().get(i).get(0)))[0]) + x);
+                selection += " ";
+                selection += Integer.toString((int) (projection(origami.vertices().get(origami.polygons().get(i).get(0)))[1]) + y);
+                selection += " m ";
 
                 for (int ii = 1; ii < origami.polygons().get(i).size(); ii++) {
-                    ki += Integer.toString((int) (projection(origami.vertices().get(origami.polygons().get(i).get(ii)))[0]) + x);
-                    ki += " ";
-                    ki += Integer.toString((int) (projection(origami.vertices().get(origami.polygons().get(i).get(ii)))[1]) + y);
-                    ki += " l ";
+                    selection += Integer.toString((int) (projection(origami.vertices().get(origami.polygons().get(i).get(ii)))[0]) + x);
+                    selection += " ";
+                    selection += Integer.toString((int) (projection(origami.vertices().get(origami.polygons().get(i).get(ii)))[1]) + y);
+                    selection += " l ";
                 }
-                ki += Integer.toString((int) (projection(origami.vertices().get(origami.polygons().get(i).get(0)))[0]) + x);
-                ki += " ";
-                ki += Integer.toString((int) (projection(origami.vertices().get(origami.polygons().get(i).get(0)))[1]) + y);
-                ki += " l f ";
+                selection += Integer.toString((int) (projection(origami.vertices().get(origami.polygons().get(i).get(0)))[0]) + x);
+                selection += " ";
+                selection += Integer.toString((int) (projection(origami.vertices().get(origami.polygons().get(i).get(0)))[1]) + y);
+                selection += " l f ";
             }
         }
 
-        return ki;
+        return selection;
     }
 
     public boolean isDrawable(int polygonIndex, Origami origami) {
@@ -463,22 +434,22 @@ public class Camera {
 
         if (origami.polygons().get(polygonIndex).size() > 2) {
 
-            double maxter = 0;
+            double maxarea = 0;
             for (int i = 0; i < origami.polygons().get(polygonIndex).size(); i++) {
 
                 int pont1ind = origami.polygons().get(polygonIndex).get(i);
                 int pont0ind = origami.polygons().get(polygonIndex).get((i + 1) % origami.polygons().get(polygonIndex).size());
                 int pont2ind = origami.polygons().get(polygonIndex).get((i + 2) % origami.polygons().get(polygonIndex).size());
-                double ter = Origami.vector_length(Origami.vector_product(Origami.vector(origami.vertices().get(pont1ind), origami.vertices().get(pont0ind)),
+                double area = Origami.vector_length(Origami.vector_product(Origami.vector(origami.vertices().get(pont1ind), origami.vertices().get(pont0ind)),
                         Origami.vector(origami.vertices().get(pont2ind), origami.vertices().get(pont0ind))));
-                if (ter > maxter) {
-                    maxter = ter;
+                if (area > maxarea) {
+                    maxarea = area;
                     ref[1] = pont1ind;
                     ref[2] = pont2ind;
                     ref[0] = pont0ind;
                 }
             }
-            if (maxter > 1) {
+            if (maxarea > 1) {
                 return true;
             }
         }
@@ -919,45 +890,45 @@ public class Camera {
             case 0:
                 camera_dir[0] = 0;
                 camera_dir[1] = 0;
-                camera_dir[2] = 1 * zoom;
-                axis_x[0] = 1 * zoom;
+                camera_dir[2] = 1;
+                axis_x[0] = 1;
                 axis_x[1] = 0;
                 axis_x[2] = 0;
                 axis_y[0] = 0;
-                axis_y[1] = 1 * zoom;
+                axis_y[1] = 1;
                 axis_y[2] = 0;
                 break;
             case 1:
                 camera_dir[0] = 0;
-                camera_dir[1] = 1 * zoom;
+                camera_dir[1] = 1;
                 camera_dir[2] = 0;
-                axis_x[0] = 1 * zoom;
+                axis_x[0] = 1;
                 axis_x[1] = 0;
                 axis_x[2] = 0;
                 axis_y[0] = 0;
                 axis_y[1] = 0;
-                axis_y[2] = -1 * zoom;
+                axis_y[2] = -1;
                 break;
             case 2:
-                camera_dir[0] = -1 * zoom;
+                camera_dir[0] = -1;
                 camera_dir[1] = 0;
                 camera_dir[2] = 0;
                 axis_x[0] = 0;
                 axis_x[1] = 0;
-                axis_x[2] = 1 * zoom;
+                axis_x[2] = 1;
                 axis_y[0] = 0;
-                axis_y[1] = 1 * zoom;
+                axis_y[1] = 1;
                 axis_y[2] = 0;
                 break;
             default:
                 camera_dir[0] = 0;
                 camera_dir[1] = 0;
-                camera_dir[2] = 1 * zoom;
-                axis_x[0] = 1 * zoom;
+                camera_dir[2] = 1;
+                axis_x[0] = 1;
                 axis_x[1] = 0;
                 axis_x[2] = 0;
                 axis_y[0] = 0;
-                axis_y[1] = 1 * zoom;
+                axis_y[1] = 1;
                 axis_y[2] = 0;
                 break;
         }
@@ -972,45 +943,45 @@ public class Camera {
             case 0:
                 camera_dir[0] = 0;
                 camera_dir[1] = 0;
-                camera_dir[2] = 1 * zoom;
-                axis_x[0] = 1 * zoom;
+                camera_dir[2] = 1;
+                axis_x[0] = 1;
                 axis_x[1] = 0;
                 axis_x[2] = 0;
                 axis_y[0] = 0;
-                axis_y[1] = 1 * zoom;
+                axis_y[1] = 1;
                 axis_y[2] = 0;
                 break;
             case 1:
                 camera_dir[0] = 0;
-                camera_dir[1] = 1 * zoom;
+                camera_dir[1] = 1;
                 camera_dir[2] = 0;
-                axis_x[0] = 1 * zoom;
+                axis_x[0] = 1;
                 axis_x[1] = 0;
                 axis_x[2] = 0;
                 axis_y[0] = 0;
                 axis_y[1] = 0;
-                axis_y[2] = -1 * zoom;
+                axis_y[2] = -1;
                 break;
             case 2:
-                camera_dir[0] = -1 * zoom;
+                camera_dir[0] = -1;
                 camera_dir[1] = 0;
                 camera_dir[2] = 0;
                 axis_x[0] = 0;
                 axis_x[1] = 0;
-                axis_x[2] = 1 * zoom;
+                axis_x[2] = 1;
                 axis_y[0] = 0;
-                axis_y[1] = 1 * zoom;
+                axis_y[1] = 1;
                 axis_y[2] = 0;
                 break;
             default:
                 camera_dir[0] = 0;
                 camera_dir[1] = 0;
-                camera_dir[2] = 1 * zoom;
-                axis_x[0] = 1 * zoom;
+                camera_dir[2] = 1;
+                axis_x[0] = 1;
                 axis_x[1] = 0;
                 axis_x[2] = 0;
                 axis_y[0] = 0;
-                axis_y[1] = 1 * zoom;
+                axis_y[1] = 1;
                 axis_y[2] = 0;
                 break;
         }
@@ -1102,7 +1073,10 @@ public class Camera {
                 if (pont == null) {
                     break kiserlet;
                 }
+                double tmp = zoom;
+                zoom = 1;
                 double[] vet = projection(pont);
+                zoom = tmp;
                 short vetX = (short) (vet[0] + xshift);
                 short vetY = (short) (vet[1] + yshift);
                 if (vetX >= 0 && vetX < depth_buffer.length && vetY >= 0 && vetY < depth_buffer[0].length) {
@@ -1115,6 +1089,9 @@ public class Camera {
             } catch (Exception ex) {
             }
         }
-        canvas.drawImage(ki, 0, 0, null);
+        canvas.drawImage(ki,
+                (int)((1-zoom) * ki.getWidth() / 2), (int)((1-zoom) * ki.getHeight() / 2),
+                (int)(ki.getWidth() * zoom), (int)(ki.getHeight() * zoom),
+                null);
     }
 }

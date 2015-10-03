@@ -21,11 +21,12 @@ import java.util.ArrayList;
 public class OrigamiTracker {
 
     private Origami trackedOrigami;
-    
+
     @SuppressWarnings("unchecked")
     public OrigamiTracker(Origami origami, double[] tracker) throws Exception {
 
     	if (origami instanceof OrigamiGen2) {
+
     		trackedOrigami = new OrigamiGen2(origami){
 
     		    @Override
@@ -86,6 +87,7 @@ public class OrigamiTracker {
     		    }
     		};
     	} else {
+
     		trackedOrigami = new Origami(origami){
 
     		    @Override
@@ -146,7 +148,7 @@ public class OrigamiTracker {
     		    }
     		};
     	}
-    	
+
         trackerpont = trackedOrigami.vertices_size;
         trackedOrigami.history_pointer = origami.history_pointer;
         trackedOrigami.addVertex(new double[]{tracker[0], tracker[1], 0});
