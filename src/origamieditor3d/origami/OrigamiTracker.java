@@ -50,13 +50,13 @@ public class OrigamiTracker {
 
     		                if (tracker) {
 
-    		                    if (point_on_plane(ppoint, pnormal, vertices.get(trackerpont))) {
+    		                    if (Geometry.point_on_plane(ppoint, pnormal, vertices.get(trackerpont))) {
 
     		                        ArrayList<Integer> sokszog0 = polygons.get(polygonIndex);
     		                        sokszog0.add(trackerpont);
     		                        polygons.set(polygonIndex, sokszog0);
     		                    } else {
-    		                        if (scalar_product(vertices.get(trackerpont), pnormal) > scalar_product(ppoint, pnormal)) {
+    		                        if (Geometry.scalar_product(vertices.get(trackerpont), pnormal) > Geometry.scalar_product(ppoint, pnormal)) {
 
     		                            ArrayList<Integer> sokszog0 = polygons.get(polygonIndex);
     		                            sokszog0.add(trackerpont);
@@ -111,13 +111,13 @@ public class OrigamiTracker {
 
     		                if (tracker) {
 
-    		                    if (point_on_plane(ppoint, pnormal, vertices.get(trackerpont))) {
+    		                    if (Geometry.point_on_plane(ppoint, pnormal, vertices.get(trackerpont))) {
 
     		                        ArrayList<Integer> sokszog0 = polygons.get(polygonIndex);
     		                        sokszog0.add(trackerpont);
     		                        polygons.set(polygonIndex, sokszog0);
     		                    } else {
-    		                        if (scalar_product(vertices.get(trackerpont), pnormal) > scalar_product(ppoint, pnormal)) {
+    		                        if (Geometry.scalar_product(vertices.get(trackerpont), pnormal) > Geometry.scalar_product(ppoint, pnormal)) {
 
     		                            ArrayList<Integer> sokszog0 = polygons.get(polygonIndex);
     		                            sokszog0.add(trackerpont);

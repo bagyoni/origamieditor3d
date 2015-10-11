@@ -579,12 +579,12 @@ public class OrigamiScriptTerminal {
                 throw OrigamiException.H007;
             }
 
-            if (Origami.vector_length(Origami.vector_product(
-                    Origami.vector(pt2, pt1), Origami.vector(pt3, pt1))) != 0d) {
+            if (Geometry.vector_length(Geometry.vector_product(
+                    Geometry.vector(pt2, pt1), Geometry.vector(pt3, pt1))) != 0d) {
 
                 ppoint = pt1;
-                pnormal = Origami.vector_product(Origami.vector(pt2, pt1),
-                        Origami.vector(pt3, pt1));
+                pnormal = Geometry.vector_product(Geometry.vector(pt2, pt1),
+                        Geometry.vector(pt3, pt1));
             } else {
                 throw OrigamiException.H008;
             }
@@ -645,11 +645,11 @@ public class OrigamiScriptTerminal {
                 throw OrigamiException.H007;
             }
             ppoint = pt2;
-            pnormal = Origami.vector(
-                    Origami.length_to_100(Origami.vector(pt1, pt2)),
-                    Origami.length_to_100(Origami.vector(pt3, pt2)));
+            pnormal = Geometry.vector(
+                    Geometry.length_to_100(Geometry.vector(pt1, pt2)),
+                    Geometry.length_to_100(Geometry.vector(pt3, pt2)));
 
-            if (Origami.vector_length(pnormal) == 0.) {
+            if (Geometry.vector_length(pnormal) == 0.) {
                 throw OrigamiException.H012;
             }
 

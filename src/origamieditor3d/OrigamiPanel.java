@@ -14,6 +14,7 @@ package origamieditor3d;
 
 import origamieditor3d.origami.OrigamiTracker;
 import origamieditor3d.origami.Camera;
+import origamieditor3d.origami.Geometry;
 import origamieditor3d.origami.Origami;
 import java.awt.Color;
 import java.awt.Graphics;
@@ -336,7 +337,7 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
                     this.PanelCamera.axis_x[2] / this.PanelCamera.zoom() * pont1X + this.PanelCamera.axis_y[2] / this.PanelCamera.zoom() * pont1Y + this.PanelCamera.camera_pos[2]
                 };
                 if (linerMode == LinerMode.Neusis) {
-                    vonalzoNV = Origami.vector(vonalzoPT, vonalzoPT1);
+                    vonalzoNV = Geometry.vector(vonalzoPT, vonalzoPT1);
                 }
 
                 PanelCamera.drawPreview(g, Color.green, PanelOrigami, vonalzoPT, vonalzoNV);

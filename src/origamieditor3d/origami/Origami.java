@@ -452,18 +452,18 @@ public class Origami {
         Zfrac += cblock[++i];
         double Z = Zint + Math.signum(Zint) * (double) Zfrac / 256 / 256;
 
-        double[] sikpont = new double[3];
-        double[] siknv = new double[3];
-        sikpont[0] = (double) X + Origins[(((header >>> 24) % 32) - ((header >>> 24) % 8)) / 8][0];
-        sikpont[1] = (double) Y + Origins[(((header >>> 24) % 32) - ((header >>> 24) % 8)) / 8][1];
-        sikpont[2] = (double) Z + Origins[(((header >>> 24) % 32) - ((header >>> 24) % 8)) / 8][2];
-        siknv[0] = X;
-        siknv[1] = Y;
-        siknv[2] = Z;
+        double[] ppoint = new double[3];
+        double[] pnormal = new double[3];
+        ppoint[0] = (double) X + Origins[(((header >>> 24) % 32) - ((header >>> 24) % 8)) / 8][0];
+        ppoint[1] = (double) Y + Origins[(((header >>> 24) % 32) - ((header >>> 24) % 8)) / 8][1];
+        ppoint[2] = (double) Z + Origins[(((header >>> 24) % 32) - ((header >>> 24) % 8)) / 8][2];
+        pnormal[0] = X;
+        pnormal[1] = Y;
+        pnormal[2] = Z;
 
         //choosing the appropriate half space
         if (((header >>> 24) - ((header >>> 24) % 32)) / 32 == 1) {
-            siknv = new double[]{-siknv[0], -siknv[1], -siknv[2]};
+            pnormal = new double[]{-pnormal[0], -pnormal[1], -pnormal[2]};
         }
 
         double[] command;
@@ -522,60 +522,47 @@ public class Origami {
             command[7] = (header % 65536);
         }
 
-        command[1] = sikpont[0];
-        command[2] = sikpont[1];
-        command[3] = sikpont[2];
-        command[4] = siknv[0];
-        command[5] = siknv[1];
-        command[6] = siknv[2];
+        command[1] = ppoint[0];
+        command[2] = ppoint[1];
+        command[3] = ppoint[2];
+        command[4] = pnormal[0];
+        command[5] = pnormal[1];
+        command[6] = pnormal[2];
 
         history.add(command);
         history_stream.add(cblock);
     }
 
-    protected int[] commandBlock(int commandID, double[] ppoint, double[] pnormal, int polygonIndex, int phi) {
+    protected int[] commandBlock(int foid, double[] ppoint, double[] pnormal, int polygonIndex, int phi) {
 
         double max_d = -1;
         int used_origin = 0;
         int used_hemispace = 0;
         double[] pjoint = new double[]{0, 0, 0};
-        double konst = ppoint[0] * pnormal[0] + ppoint[1] * pnormal[1] + ppoint[2] * pnormal[2];
 
         for (int ii = 0; ii < Origins.length; ii++) {
 
-            double[] iranyvek = pnormal;
-            double X = Origins[ii][0];
-            double Y = Origins[ii][1];
-            double Z = Origins[ii][2];
-            double U = iranyvek[0];
-            double V = iranyvek[1];
-            double W = iranyvek[2];
-            double A = pnormal[0];
-            double B = pnormal[1];
-            double C = pnormal[2];
-            double t = -(A * X + B * Y + C * Z - konst) / (A * U + B * V + C * W);
+            double[] basepoint = Geometry.line_plane_intersection(Origins[ii], pnormal, ppoint, pnormal);
+            if (Geometry.vector_length(Geometry.vector(basepoint, Origins[ii])) > max_d) {
 
-            double[] talppont = new double[]{X + t * U, Y + t * V, Z + t * W};
-            if (Origami.vector_length(Origami.vector(talppont, Origins[ii])) > max_d) {
-
-                pjoint = Origami.vector(talppont, Origins[ii]);
-                max_d = Origami.vector_length(pjoint);
+                pjoint = Geometry.vector(basepoint, Origins[ii]);
+                max_d = Geometry.vector_length(pjoint);
                 used_origin = ii;
             }
         }
 
         //inner: 1, outer: 0
-        if (Origami.scalar_product(pnormal, pjoint) < 0) {
+        if (Geometry.scalar_product(pnormal, pjoint) < 0) {
             used_hemispace = 1;
         }
 
-        int parancsazon = 0;
-        int mag = 65535;
+        int command = 0;
+        int poly_indx = 65535;
 
-        switch (commandID) {
+        switch (foid) {
 
             case 1:
-                parancsazon = 1;
+                command = 1;
                 break;
 
             case 2:
@@ -584,17 +571,17 @@ public class Origami {
                 }
                 phi %= 360;
                 if (phi <= 180) {
-                    parancsazon = 2;
+                    command = 2;
                 } else {
 
-                    parancsazon = 3;
+                    command = 3;
                     phi = 360 - phi;
                 }
                 break;
 
             case 3:
-                parancsazon = 4;
-                mag = polygonIndex;
+                command = 4;
+                poly_indx = polygonIndex;
                 break;
 
             case 4:
@@ -603,26 +590,26 @@ public class Origami {
                 }
                 phi %= 360;
                 if (phi <= 180) {
-                    parancsazon = 5;
+                    command = 5;
                 } else {
 
-                    parancsazon = 6;
+                    command = 6;
                     phi = 360 - phi;
                 }
-                mag = polygonIndex;
+                poly_indx = polygonIndex;
                 break;
 
             case 5:
-                parancsazon = 7;
+                command = 7;
                 break;
 
             case 6:
-                parancsazon = 0;
+                command = 0;
                 break;
 
             case 7:
-                parancsazon = 0;
-                mag = polygonIndex;
+                command = 0;
+                poly_indx = polygonIndex;
                 break;
         }
 
@@ -637,10 +624,10 @@ public class Origami {
         int[] cblock = {
 
             //header
-            (0xFF & (used_hemispace * 32 + used_origin * 8 + parancsazon)),
+            (0xFF & (used_hemispace * 32 + used_origin * 8 + command)),
             (0xFF & (phi)),
-            (0xFF & (mag >>> 8)),
-            (0xFF & (mag)),
+            (0xFF & (poly_indx >>> 8)),
+            (0xFF & (poly_indx)),
 
             //body
             (0xFF & (Xe >>> 8)),
@@ -661,99 +648,6 @@ public class Origami {
         return cblock;
     }
 
-    static public boolean plane_between_points(double[] ppoint, double[] pnormal, double[] A, double[] B) {
-
-        double konst = ppoint[0] * pnormal[0] + ppoint[1] * pnormal[1] + ppoint[2] * pnormal[2];
-        boolean innen = false, tul = false;
-
-        if ((A[0] * pnormal[0] + A[1] * pnormal[1] + A[2] * pnormal[2] - konst) / Math.sqrt(Math.max(scalar_product(pnormal, pnormal), 1)) > 0.00000001) {
-            innen = true;
-        }
-        if ((A[0] * pnormal[0] + A[1] * pnormal[1] + A[2] * pnormal[2] - konst) / Math.sqrt(Math.max(scalar_product(pnormal, pnormal), 1)) < -0.00000001) {
-            tul = true;
-        }
-        if ((B[0] * pnormal[0] + B[1] * pnormal[1] + B[2] * pnormal[2] - konst) / Math.sqrt(Math.max(scalar_product(pnormal, pnormal), 1)) > 0.00000001) {
-            innen = true;
-        }
-        if ((B[0] * pnormal[0] + B[1] * pnormal[1] + B[2] * pnormal[2] - konst) / Math.sqrt(Math.max(scalar_product(pnormal, pnormal), 1)) < -0.00000001) {
-            tul = true;
-        }
-
-        return innen && tul;
-    }
-
-    static public boolean point_on_plane(double[] ppoint, double[] pnormal, double[] A) {
-
-        double konst = ppoint[0] * pnormal[0] + ppoint[1] * pnormal[1] + ppoint[2] * pnormal[2];
-        return (Math.abs(A[0] * pnormal[0] + A[1] * pnormal[1] + A[2] * pnormal[2] - konst) / Math.sqrt(Math.max(scalar_product(pnormal, pnormal), 1)) < 1);
-    }
-    final static public double[] nullvector = new double[]{0, 0, 0};
-
-    static public double[] vector_product(double[] v1, double[] v2) {
-        return new double[]{(v1[1] * v2[2] - v1[2] * v2[1]), (v1[2] * v2[0] - v1[0] * v2[2]), (v1[0] * v2[1] - v1[1] * v2[0])};
-    }
-
-    static public double scalar_product(double[] v1, double[] v2) {
-        return v1[0] * v2[0] + v1[1] * v2[1] + v1[2] * v2[2];
-    }
-
-    static public double[] scalar_multip(double[] v, double lambda) {
-        return new double[]{v[0] * lambda, v[1] * lambda, v[2] * lambda};
-    }
-
-    static public double[] vector(double[] A, double[] B) {
-
-        if (A.length == 3 && B.length == 3) {
-
-            return new double[]{A[0] - B[0], A[1] - B[1], A[2] - B[2]};
-        }
-
-        return new double[]{A[0] - B[0], A[1] - B[1], 0};
-    }
-
-    static public double[] midpoint(double[] A, double[] B) {
-        return new double[]{(A[0] + B[0]) / 2, (A[1] + B[1]) / 2, (A[2] + B[2]) / 2};
-    }
-
-    static public double[] length_to_100(double[] v) {
-
-        double hossz = Math.sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]) * 0.01;
-        return new double[]{v[0] / hossz, v[1] / hossz, v[2] / hossz};
-    }
-
-    static public double vector_length(double[] v) {
-
-        double hossz = Math.sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
-        return hossz;
-    }
-
-    static public double angle(double[] v1, double[] v2) {
-
-        if (vector_length(v1) > 0 && vector_length(v2) > 0) {
-
-            double arg1 = Math.acos(v1[0] / vector_length(v1));
-            if (v1[1] < 0) {
-                arg1 = 2 * Math.PI - arg1;
-            }
-            double arg2 = Math.acos(v2[0] / vector_length(v2));
-            if (v2[1] < 0) {
-                arg2 = 2 * Math.PI - arg2;
-            }
-
-            double szog = arg1 - arg2;
-            while (szog < 0) {
-                szog += 2 * Math.PI;
-            }
-            while (szog > 2 * Math.PI) {
-                szog -= 2 * Math.PI;
-            }
-
-            return szog;
-
-        }
-        return 0;
-    }
-
     /**
      * Checks if the polygon at the specified index in the {@link #polygons()
      * polygons} list is at least one-dimensional, i. e. it has two vertices
@@ -766,8 +660,8 @@ public class Origami {
     public boolean isNonDegenerate(int polygonIndex) {
 
         if (polygons.get(polygonIndex).size() > 1) {
-            for (int pontazon : polygons.get(polygonIndex)) {
-                if (vector_length(vector(vertices.get(pontazon), vertices.get(polygons.get(polygonIndex).get(0)))) > 0) {
+            for (int p : polygons.get(polygonIndex)) {
+                if (Geometry.vector_length(Geometry.vector(vertices.get(p), vertices.get(polygons.get(polygonIndex).get(0)))) > 0) {
                     return true;
                 }
             }
@@ -779,11 +673,11 @@ public class Origami {
 
         if (polygons.get(polygonIndex).size() > 2) {
 
-            for (int pont1ind : polygons().get(polygonIndex)) {
-                for (int pont2ind : polygons().get(polygonIndex)) {
+            for (int point1ind : polygons().get(polygonIndex)) {
+                for (int point2ind : polygons().get(polygonIndex)) {
 
-                    if (vector_length(vector_product(vector(vertices().get(pont1ind), vertices().get(polygons().get(polygonIndex).get(0))),
-                            vector(vertices().get(pont2ind), vertices().get(polygons().get(polygonIndex).get(0))))) > 0) {
+                    if (Geometry.vector_length(Geometry.vector_product(Geometry.vector(vertices().get(point1ind), vertices().get(polygons().get(polygonIndex).get(0))),
+                            Geometry.vector(vertices().get(point2ind), vertices().get(polygons().get(polygonIndex).get(0))))) > 0) {
                         return true;
                     }
                 }
@@ -796,16 +690,16 @@ public class Origami {
 
         if (isNonDegenerate(polygonIndex)) {
 
-            boolean egyik = false, masik = false;
+            boolean inner = false, outer = false;
             for (int i = 0; i < polygons.get(polygonIndex).size(); i++) {
-                if (scalar_product(vertices.get(polygons.get(polygonIndex).get(i)), pnormal) / Math.sqrt(Math.max(scalar_product(pnormal, pnormal), 1))
-                        > scalar_product(ppoint, pnormal) / Math.sqrt(Math.max(scalar_product(pnormal, pnormal), 1)) + 0.00000001) {
-                    egyik = true;
-                } else if (scalar_product(vertices.get(polygons.get(polygonIndex).get(i)), pnormal) / Math.sqrt(Math.max(scalar_product(pnormal, pnormal), 1))
-                        < scalar_product(ppoint, pnormal) / Math.sqrt(Math.max(scalar_product(pnormal, pnormal), 1)) - 0.00000001) {
-                    masik = true;
+                if (Geometry.scalar_product(vertices.get(polygons.get(polygonIndex).get(i)), pnormal) / Math.sqrt(Math.max(Geometry.scalar_product(pnormal, pnormal), 1))
+                        > Geometry.scalar_product(ppoint, pnormal) / Math.sqrt(Math.max(Geometry.scalar_product(pnormal, pnormal), 1)) + 0.00000001) {
+                    inner = true;
+                } else if (Geometry.scalar_product(vertices.get(polygons.get(polygonIndex).get(i)), pnormal) / Math.sqrt(Math.max(Geometry.scalar_product(pnormal, pnormal), 1))
+                        < Geometry.scalar_product(ppoint, pnormal) / Math.sqrt(Math.max(Geometry.scalar_product(pnormal, pnormal), 1)) - 0.00000001) {
+                    outer = true;
                 }
-                if (egyik && masik) {
+                if (inner && outer) {
                     return true;
                 }
             }
@@ -841,66 +735,56 @@ public class Origami {
 
         if (isCut(ppoint, pnormal, polygonIndex)) {
 
-            ArrayList<Integer> ujsokszog1 = new ArrayList<>();
-            ArrayList<Integer> ujsokszog2 = new ArrayList<>();
+            ArrayList<Integer> newpoly1 = new ArrayList<>();
+            ArrayList<Integer> newpoly2 = new ArrayList<>();
 
             for (int i = 0; i < polygons.get(polygonIndex).size(); i++) {
 
                 int j = (i + 1) % polygons.get(polygonIndex).size();
-                if (point_on_plane(ppoint, pnormal, vertices.get(polygons.get(polygonIndex).get(i)))) {
+                if (Geometry.point_on_plane(ppoint, pnormal, vertices.get(polygons.get(polygonIndex).get(i)))) {
 
-                    ujsokszog1.add(polygons.get(polygonIndex).get(i));
-                    ujsokszog2.add(polygons.get(polygonIndex).get(i));
+                    newpoly1.add(polygons.get(polygonIndex).get(i));
+                    newpoly2.add(polygons.get(polygonIndex).get(i));
                 } else {
 
-                    if (scalar_product(vertices.get(polygons.get(polygonIndex).get(i)), pnormal) > scalar_product(ppoint, pnormal)) {
-                        ujsokszog1.add(polygons.get(polygonIndex).get(i));
+                    if (Geometry.scalar_product(vertices.get(polygons.get(polygonIndex).get(i)), pnormal) > Geometry.scalar_product(ppoint, pnormal)) {
+                        newpoly1.add(polygons.get(polygonIndex).get(i));
                     } else {
-                        ujsokszog2.add(polygons.get(polygonIndex).get(i));
+                        newpoly2.add(polygons.get(polygonIndex).get(i));
                     }
 
-                    if (plane_between_points(ppoint, pnormal, vertices.get(polygons.get(polygonIndex).get(i)), vertices.get(polygons.get(polygonIndex).get(j)))) {
+                    if (Geometry.plane_between_points(ppoint, pnormal, vertices.get(polygons.get(polygonIndex).get(i)), vertices.get(polygons.get(polygonIndex).get(j)))) {
 
                         freshcut:
                         {
                             for (int[] szakasz : cutpolygon_nodes) {
                                 if (szakasz[0] == polygons.get(polygonIndex).get(i) && szakasz[1] == polygons.get(polygonIndex).get(j)) {
-                                    ujsokszog1.add(szakasz[2]);
-                                    ujsokszog2.add(szakasz[2]);
+                                    newpoly1.add(szakasz[2]);
+                                    newpoly2.add(szakasz[2]);
                                     break freshcut;
                                 } else if (szakasz[0] == polygons.get(polygonIndex).get(j) && szakasz[1] == polygons.get(polygonIndex).get(i)) {
-                                    ujsokszog1.add(szakasz[2]);
-                                    ujsokszog2.add(szakasz[2]);
+                                    newpoly1.add(szakasz[2]);
+                                    newpoly2.add(szakasz[2]);
                                     break freshcut;
                                 }
                             }
-                            double D = ppoint[0] * pnormal[0] + ppoint[1] * pnormal[1] + ppoint[2] * pnormal[2];
 
-                            double[] iranyvek = vector(vertices.get(polygons.get(polygonIndex).get(i)), vertices.get(polygons.get(polygonIndex).get(j)));
-                            double X = vertices.get(polygons.get(polygonIndex).get(i))[0];
-                            double Y = vertices.get(polygons.get(polygonIndex).get(i))[1];
-                            double Z = vertices.get(polygons.get(polygonIndex).get(i))[2];
-                            double U = iranyvek[0];
-                            double V = iranyvek[1];
-                            double W = iranyvek[2];
-                            double A = pnormal[0];
-                            double B = pnormal[1];
-                            double C = pnormal[2];
-                            double t = -(A * X + B * Y + C * Z - D) / (A * U + B * V + C * W);
+                            double[] dirvec = Geometry.vector(vertices.get(polygons.get(polygonIndex).get(i)), vertices.get(polygons.get(polygonIndex).get(j)));
+                            double[] ipoint = vertices.get(polygons.get(polygonIndex).get(i));
 
-                            double[] metszet = new double[]{X + t * U, Y + t * V, Z + t * W};
-                            addVertex(metszet);
+                            double[] meet = Geometry.line_plane_intersection(ipoint, dirvec, ppoint, pnormal);
+                            addVertex(meet);
 
-                            double suly1 = vector_length(vector(metszet, vertices.get(polygons.get(polygonIndex).get(j))));
-                            double suly2 = vector_length(vector(metszet, vertices.get(polygons.get(polygonIndex).get(i))));
+                            double weight1 = Geometry.vector_length(Geometry.vector(meet, vertices.get(polygons.get(polygonIndex).get(j))));
+                            double weight2 = Geometry.vector_length(Geometry.vector(meet, vertices.get(polygons.get(polygonIndex).get(i))));
                             add2dVertex(new double[]{
-                                (vertices2d.get(polygons.get(polygonIndex).get(i))[0] * suly1 + vertices2d.get(polygons.get(polygonIndex).get(j))[0] * suly2) / (suly1 + suly2),
-                                (vertices2d.get(polygons.get(polygonIndex).get(i))[1] * suly1 + vertices2d.get(polygons.get(polygonIndex).get(j))[1] * suly2) / (suly1 + suly2),
+                                (vertices2d.get(polygons.get(polygonIndex).get(i))[0] * weight1 + vertices2d.get(polygons.get(polygonIndex).get(j))[0] * weight2) / (weight1 + weight2),
+                                (vertices2d.get(polygons.get(polygonIndex).get(i))[1] * weight1 + vertices2d.get(polygons.get(polygonIndex).get(j))[1] * weight2) / (weight1 + weight2),
                                 0
                             });
 
-                            ujsokszog1.add(vertices_size - 1);
-                            ujsokszog2.add(vertices_size - 1);
+                            newpoly1.add(vertices_size - 1);
+                            newpoly2.add(vertices_size - 1);
                             cutpolygon_nodes.add(new int[]{polygons.get(polygonIndex).get(i), polygons.get(polygonIndex).get(j), vertices_size - 1});
 
                             for (int ii = 0; ii < border.size(); ii++) {
@@ -919,8 +803,8 @@ public class Origami {
 
             cutpolygon_pairs.add(new int[]{polygonIndex, polygons.size()});
             last_cut_polygons.add(polygons.get(polygonIndex));
-            polygons.set(polygonIndex, ujsokszog1);
-            addPolygon(ujsokszog2);
+            polygons.set(polygonIndex, newpoly1);
+            addPolygon(newpoly2);
             return true;
         }
         return false;
@@ -928,20 +812,20 @@ public class Origami {
 
     public ArrayList<Integer> polygonSelect(double[] ppoint, double[] pnormal, int polygonIndex) {
 
-        ArrayList<Integer> kijeloles = new ArrayList<>();
-        kijeloles.add(polygonIndex);
-        for (int i = 0; i < kijeloles.size(); i++) {
+        ArrayList<Integer> selection = new ArrayList<>();
+        selection.add(polygonIndex);
+        for (int i = 0; i < selection.size(); i++) {
 
-            int tag = kijeloles.get(i);
+            int elem = selection.get(i);
             for (int ii = 0; ii < polygons_size; ii++) {
 
-                if (!kijeloles.contains(ii)) {
+                if (!selection.contains(ii)) {
 
-                    for (int tagpont : polygons.get(tag)) {
+                    for (int e_point : polygons.get(elem)) {
 
-                        if (polygons.get(ii).contains(tagpont)) {
-                            if (!point_on_plane(ppoint, pnormal, vertices.get(tagpont))) {
-                                kijeloles.add(ii);
+                        if (polygons.get(ii).contains(e_point)) {
+                            if (!Geometry.point_on_plane(ppoint, pnormal, vertices.get(e_point))) {
+                                selection.add(ii);
                                 break;
                             }
                         }
@@ -950,27 +834,27 @@ public class Origami {
             }
         }
 
-        return kijeloles;
+        return selection;
     }
 
     public double[] polygonCenter(int polygonIndex) {
 
-        double[] vissza = new double[]{Double.NaN, Double.NaN, Double.NaN};
+        double[] res = new double[]{Double.NaN, Double.NaN, Double.NaN};
         if (isNonDegenerate(polygonIndex)) {
 
-            vissza = new double[]{0d, 0d, 0d};
+            res = new double[]{0d, 0d, 0d};
             for (int ind : polygons.get(polygonIndex)) {
-                vissza = new double[]{vissza[0] + vertices.get(ind)[0], vissza[1] + vertices.get(ind)[1], vissza[2] + vertices.get(ind)[2]};
+                res = new double[]{res[0] + vertices.get(ind)[0], res[1] + vertices.get(ind)[1], res[2] + vertices.get(ind)[2]};
             }
 
             java.util.Random eltolas = new java.util.Random(polygonIndex);
-            vissza = new double[]{
-                vissza[0] / polygons.get(polygonIndex).size() + eltolas.nextDouble() * 10 - 5,
-                vissza[1] / polygons.get(polygonIndex).size() + eltolas.nextDouble() * 10 - 5,
-                vissza[2] / polygons.get(polygonIndex).size() + eltolas.nextDouble() * 10 - 5
+            res = new double[]{
+                res[0] / polygons.get(polygonIndex).size() + eltolas.nextDouble() * 10 - 5,
+                res[1] / polygons.get(polygonIndex).size() + eltolas.nextDouble() * 10 - 5,
+                res[2] / polygons.get(polygonIndex).size() + eltolas.nextDouble() * 10 - 5
             };
         }
-        return vissza;
+        return res;
     }
 
     /**
@@ -1005,24 +889,11 @@ public class Origami {
         double konst = ppoint[0] * pnormal[0] + ppoint[1] * pnormal[1] + ppoint[2] * pnormal[2];
         for (int i = 0; i < vertices_size; i++) {
 
-            double[] ipont = vertices.get(i);
-            if (ipont[0] * pnormal[0] + ipont[1] * pnormal[1] + ipont[2] * pnormal[2] - konst > 0) {
+            double[] ipoint = vertices.get(i);
+            if (ipoint[0] * pnormal[0] + ipoint[1] * pnormal[1] + ipoint[2] * pnormal[2] - konst > 0) {
 
-                double[] iranyvek = pnormal;
-                double X = ipont[0];
-                double Y = ipont[1];
-                double Z = ipont[2];
-                double U = iranyvek[0];
-                double V = iranyvek[1];
-                double W = iranyvek[2];
-                double A = pnormal[0];
-                double B = pnormal[1];
-                double C = pnormal[2];
-                double t = -(A * X + B * Y + C * Z - konst) / (A * U + B * V + C * W);
-
-                double[] talppont = new double[]{X + t * U, Y + t * V, Z + t * W};
-                double[] kep = new double[]{talppont[0] + vector(talppont, ipont)[0], talppont[1] + vector(talppont, ipont)[1], talppont[2] + vector(talppont, ipont)[2]};
-                vertices.set(i, kep);
+                double[] img = Geometry.reflection(ipoint, ppoint, pnormal);
+                vertices.set(i, img);
             }
         }
     }
@@ -1048,30 +919,15 @@ public class Origami {
 
         ArrayList<Integer> selection = polygonSelect(ppoint, pnormal, polygonIndex);
 
-        double konst = ppoint[0] * pnormal[0] + ppoint[1] * pnormal[1] + ppoint[2] * pnormal[2];
         for (int i = 0; i < vertices_size; i++) {
 
-            for (int tag : selection) {
+            for (int elem : selection) {
 
-                if (polygons.get(tag).contains(i)) {
+                if (polygons.get(elem).contains(i)) {
 
-                    double[] ipont = vertices.get(i);
-
-                    double[] iranyvek = pnormal;
-                    double X = ipont[0];
-                    double Y = ipont[1];
-                    double Z = ipont[2];
-                    double U = iranyvek[0];
-                    double V = iranyvek[1];
-                    double W = iranyvek[2];
-                    double A = pnormal[0];
-                    double B = pnormal[1];
-                    double C = pnormal[2];
-                    double t = -(A * X + B * Y + C * Z - konst) / (A * U + B * V + C * W);
-
-                    double[] talppont = new double[]{X + t * U, Y + t * V, Z + t * W};
-                    double[] kep = new double[]{talppont[0] + vector(talppont, ipont)[0], talppont[1] + vector(talppont, ipont)[1], talppont[2] + vector(talppont, ipont)[2]};
-                    vertices.set(i, kep);
+                    double[] ipoint = vertices.get(i);
+                    double[] img = Geometry.reflection(ipoint, ppoint, pnormal);
+                    vertices.set(i, img);
                     break;
                 }
             }
@@ -1084,10 +940,10 @@ public class Origami {
             }
         }
 
-        for (int[] par : cutpolygon_pairs) {
+        for (int[] pair : cutpolygon_pairs) {
 
-            if (!(selection.contains(par[0]) || selection.contains(par[1]))) {
-                polygons.set(par[1], new ArrayList<Integer>());
+            if (!(selection.contains(pair[0]) || selection.contains(pair[1]))) {
+                polygons.set(pair[1], new ArrayList<Integer>());
             }
         }
 
@@ -1138,36 +994,36 @@ public class Origami {
         for (int i = 0; i < vertices_size; i++) {
 
             double[] ipoint = vertices.get(i);
-            if (point_on_plane(ppoint, pnormal, ipoint)) {
+            if (Geometry.point_on_plane(ppoint, pnormal, ipoint)) {
                 foldingpoints.add(i);
             }
         }
 
         boolean collin = false;
-        int maspont = -1;
+        int farpoint = -1;
         double tavolsagmax = -1;
 
         if (foldingpoints.size() >= 2) {
 
-            for (int hp : foldingpoints) {
+            for (int fp : foldingpoints) {
 
-                if (vector_length(vector(vertices.get(hp), vertices.get(foldingpoints.get(0)))) > 0) {
+                if (Geometry.vector_length(Geometry.vector(vertices.get(fp), vertices.get(foldingpoints.get(0)))) > 0) {
 
                     collin = true;
-                    if (vector_length(vector(vertices.get(hp), vertices.get(foldingpoints.get(0)))) > tavolsagmax) {
+                    if (Geometry.vector_length(Geometry.vector(vertices.get(fp), vertices.get(foldingpoints.get(0)))) > tavolsagmax) {
 
-                        maspont = hp;
-                        tavolsagmax = vector_length(vector(vertices.get(hp), vertices.get(foldingpoints.get(0))));
+                        farpoint = fp;
+                        tavolsagmax = Geometry.vector_length(Geometry.vector(vertices.get(fp), vertices.get(foldingpoints.get(0))));
                     }
                 }
             }
         }
 
-        for (int i = 1; i < foldingpoints.size() && i != maspont; i++) {
+        for (int i = 1; i < foldingpoints.size() && i != farpoint; i++) {
 
-            if (vector_length(vector_product(vector(vertices.get(foldingpoints.get(0)), vertices.get(foldingpoints.get(i))),
-                    vector(vertices.get(maspont), vertices.get(foldingpoints.get(i)))))
-                    > vector_length(vector(vertices.get(foldingpoints.get(0)), vertices.get(maspont)))) {
+            if (Geometry.vector_length(Geometry.vector_product(Geometry.vector(vertices.get(foldingpoints.get(0)), vertices.get(foldingpoints.get(i))),
+                    Geometry.vector(vertices.get(farpoint), vertices.get(foldingpoints.get(i)))))
+                    > Geometry.vector_length(Geometry.vector(vertices.get(foldingpoints.get(0)), vertices.get(farpoint)))) {
 
                 collin = false;
                 break;
@@ -1176,32 +1032,17 @@ public class Origami {
 
         if (collin) {
 
-            double[] iranyvek = vector(vertices.get(foldingpoints.get(0)), vertices.get(maspont));
-            double Cx = iranyvek[0] / Math.pow(iranyvek[0] * iranyvek[0] + iranyvek[1] * iranyvek[1] + iranyvek[2] * iranyvek[2], 0.5);
-            double Cy = iranyvek[1] / Math.pow(iranyvek[0] * iranyvek[0] + iranyvek[1] * iranyvek[1] + iranyvek[2] * iranyvek[2], 0.5);
-            double Cz = iranyvek[2] / Math.pow(iranyvek[0] * iranyvek[0] + iranyvek[1] * iranyvek[1] + iranyvek[2] * iranyvek[2], 0.5);
+            double[] dirvec = Geometry.vector(vertices.get(foldingpoints.get(0)), vertices.get(farpoint));
             double sinphi = Math.sin((double) phi * Math.PI / 180);
             double cosphi = Math.cos((double) phi * Math.PI / 180);
 
             for (int i = 0; i < vertices_size; i++) {
 
-                double[] ipont = vertices.get(i);
-                if (ipont[0] * pnormal[0] + ipont[1] * pnormal[1] + ipont[2] * pnormal[2] - konst > 0) {
+                double[] ipoint = vertices.get(i);
+                if (ipoint[0] * pnormal[0] + ipoint[1] * pnormal[1] + ipoint[2] * pnormal[2] - konst > 0) {
 
-                    double X = ipont[0] - vertices.get(foldingpoints.get(0))[0];
-                    double Y = ipont[1] - vertices.get(foldingpoints.get(0))[1];
-                    double Z = ipont[2] - vertices.get(foldingpoints.get(0))[2];
-
-                    double kepX = X * (cosphi + Cx * Cx * (1 - cosphi)) + Y * (Cx * Cy * (1 - cosphi) - Cz * sinphi) + Z * (Cx * Cz * (1 - cosphi) + Cy * sinphi);
-                    double kepY = X * (Cy * Cx * (1 - cosphi) + Cz * sinphi) + Y * (cosphi + Cy * Cy * (1 - cosphi)) + Z * (Cy * Cz * (1 - cosphi) - Cx * sinphi);
-                    double kepZ = X * (Cz * Cx * (1 - cosphi) - Cy * sinphi) + Y * (Cz * Cy * (1 - cosphi) + Cx * sinphi) + Z * (cosphi + Cz * Cz * (1 - cosphi));
-
-                    double[] kep = new double[]{
-                        kepX + vertices.get(foldingpoints.get(0))[0],
-                        kepY + vertices.get(foldingpoints.get(0))[1],
-                        kepZ + vertices.get(foldingpoints.get(0))[2]
-                    };
-                    vertices.set(i, kep);
+                    double[] img = Geometry.rotation(ipoint, vertices.get(foldingpoints.get(0)), dirvec, sinphi, cosphi);
+                    vertices.set(i, img);
                 }
             }
             return 0;
@@ -1233,19 +1074,19 @@ public class Origami {
      */
     protected void internalRotationFold(double[] ppoint, double[] pnormal, int phi, int polygonIndex) {
 
-        ArrayList<Integer> kijeloles = polygonSelect(ppoint, pnormal, polygonIndex);
-        ArrayList<Integer> hajtopontok = new ArrayList<>();
+        ArrayList<Integer> selection = polygonSelect(ppoint, pnormal, polygonIndex);
+        ArrayList<Integer> foldingpoints = new ArrayList<>();
 
         for (int i = 0; i < vertices_size; i++) {
 
             double[] ipont = vertices.get(i);
-            if (point_on_plane(ppoint, pnormal, ipont)) {
+            if (Geometry.point_on_plane(ppoint, pnormal, ipont)) {
 
-                for (int tag : kijeloles) {
+                for (int elem : selection) {
 
-                    if (polygons.get(tag).contains(i)) {
+                    if (polygons.get(elem).contains(i)) {
 
-                        hajtopontok.add(i);
+                        foldingpoints.add(i);
                         break;
                     }
                 }
@@ -1253,30 +1094,30 @@ public class Origami {
         }
 
         boolean collin = false;
-        int maspont = -1;
-        double tavolsagmax = -1;
+        int farpoint = -1;
+        double dist_max = -1;
 
-        if (hajtopontok.size() >= 2) {
+        if (foldingpoints.size() >= 2) {
 
-            for (int hp : hajtopontok) {
+            for (int hp : foldingpoints) {
 
-                if (vector_length(vector(vertices.get(hp), vertices.get(hajtopontok.get(0)))) > 0) {
+                if (Geometry.vector_length(Geometry.vector(vertices.get(hp), vertices.get(foldingpoints.get(0)))) > 0) {
 
                     collin = true;
-                    if (vector_length(vector(vertices.get(hp), vertices.get(hajtopontok.get(0)))) > tavolsagmax) {
+                    if (Geometry.vector_length(Geometry.vector(vertices.get(hp), vertices.get(foldingpoints.get(0)))) > dist_max) {
 
-                        maspont = hp;
-                        tavolsagmax = vector_length(vector(vertices.get(hp), vertices.get(hajtopontok.get(0))));
+                        farpoint = hp;
+                        dist_max = Geometry.vector_length(Geometry.vector(vertices.get(hp), vertices.get(foldingpoints.get(0))));
                     }
                 }
             }
         }
 
-        for (int i = 1; i < hajtopontok.size() && i != maspont; i++) {
+        for (int i = 1; i < foldingpoints.size() && i != farpoint; i++) {
 
-            if (vector_length(vector_product(vector(vertices.get(hajtopontok.get(0)), vertices.get(hajtopontok.get(i))),
-                    vector(vertices.get(maspont), vertices.get(hajtopontok.get(i)))))
-                    > vector_length(vector(vertices.get(hajtopontok.get(0)), vertices.get(maspont)))) {
+            if (Geometry.vector_length(Geometry.vector_product(Geometry.vector(vertices.get(foldingpoints.get(0)), vertices.get(foldingpoints.get(i))),
+                    Geometry.vector(vertices.get(farpoint), vertices.get(foldingpoints.get(i)))))
+                    > Geometry.vector_length(Geometry.vector(vertices.get(foldingpoints.get(0)), vertices.get(farpoint)))) {
 
                 collin = false;
                 break;
@@ -1285,30 +1126,18 @@ public class Origami {
 
         if (collin) {
 
-            double[] iranyvek = vector(vertices.get(hajtopontok.get(0)), vertices.get(maspont));
-            double Cx = iranyvek[0] / Math.pow(iranyvek[0] * iranyvek[0] + iranyvek[1] * iranyvek[1] + iranyvek[2] * iranyvek[2], 0.5);
-            double Cy = iranyvek[1] / Math.pow(iranyvek[0] * iranyvek[0] + iranyvek[1] * iranyvek[1] + iranyvek[2] * iranyvek[2], 0.5);
-            double Cz = iranyvek[2] / Math.pow(iranyvek[0] * iranyvek[0] + iranyvek[1] * iranyvek[1] + iranyvek[2] * iranyvek[2], 0.5);
+            double[] dirvec = Geometry.vector(vertices.get(foldingpoints.get(0)), vertices.get(farpoint));
             double sinphi = Math.sin((double) phi * Math.PI / 180);
             double cosphi = Math.cos((double) phi * Math.PI / 180);
 
             for (int i = 0; i < vertices_size; i++) {
-                for (int tag : kijeloles) {
+                for (int tag : selection) {
 
                     if (polygons.get(tag).contains(i)) {
 
-                        double[] ipont = vertices.get(i);
-
-                        double X = ipont[0] - vertices.get(hajtopontok.get(0))[0];
-                        double Y = ipont[1] - vertices.get(hajtopontok.get(0))[1];
-                        double Z = ipont[2] - vertices.get(hajtopontok.get(0))[2];
-
-                        double kepX = X * (cosphi + Cx * Cx * (1 - cosphi)) + Y * (Cx * Cy * (1 - cosphi) - Cz * sinphi) + Z * (Cx * Cz * (1 - cosphi) + Cy * sinphi);
-                        double kepY = X * (Cy * Cx * (1 - cosphi) + Cz * sinphi) + Y * (cosphi + Cy * Cy * (1 - cosphi)) + Z * (Cy * Cz * (1 - cosphi) - Cx * sinphi);
-                        double kepZ = X * (Cz * Cx * (1 - cosphi) - Cy * sinphi) + Y * (Cz * Cy * (1 - cosphi) + Cx * sinphi) + Z * (cosphi + Cz * Cz * (1 - cosphi));
-
-                        double[] kep = new double[]{kepX + vertices.get(hajtopontok.get(0))[0], kepY + vertices.get(hajtopontok.get(0))[1], kepZ + vertices.get(hajtopontok.get(0))[2]};
-                        vertices.set(i, kep);
+                        double[] ipoint = vertices.get(i);
+                        double[] img = Geometry.rotation(ipoint, vertices.get(foldingpoints.get(0)), dirvec, sinphi, cosphi);
+                        vertices.set(i, img);
                         break;
                     }
                 }
@@ -1317,16 +1146,16 @@ public class Origami {
 
         for (int i = 0; i < cutpolygon_pairs.size(); i++) {
 
-            if (!(kijeloles.contains(cutpolygon_pairs.get(i)[0]) || kijeloles.contains(cutpolygon_pairs.get(i)[1]))) {
+            if (!(selection.contains(cutpolygon_pairs.get(i)[0]) || selection.contains(cutpolygon_pairs.get(i)[1]))) {
                 polygons.set(cutpolygon_pairs.get(i)[0], last_cut_polygons.get(i));
             }
 
         }
 
-        for (int[] par : cutpolygon_pairs) {
+        for (int[] pair : cutpolygon_pairs) {
 
-            if (!(kijeloles.contains(par[0]) || kijeloles.contains(par[1]))) {
-                polygons.set(par[1], new ArrayList<Integer>());
+            if (!(selection.contains(pair[0]) || selection.contains(pair[1]))) {
+                polygons.set(pair[1], new ArrayList<Integer>());
             }
         }
 
@@ -1363,12 +1192,12 @@ public class Origami {
             }
         }
 
-        double konst = scalar_product(ppoint, pnormal);
+        double konst = Geometry.scalar_product(ppoint, pnormal);
         for (int i = 0; i < polygons_size; i++) {
             for (int vert : polygons.get(i)) {
 
-                if (scalar_product(vertices.get(vert), pnormal) > konst
-                        && !point_on_plane(ppoint, pnormal, vertices.get(vert))) {
+                if (Geometry.scalar_product(vertices.get(vert), pnormal) > konst
+                        && !Geometry.point_on_plane(ppoint, pnormal, vertices.get(vert))) {
 
                     polygons.set(i, new ArrayList<Integer>());
                     break;
@@ -1396,13 +1225,13 @@ public class Origami {
     protected void internalMutilation(double[] ppoint, double[] pnormal, int polygonIndex) {
 
         ArrayList<Integer> selection = polygonSelect(ppoint, pnormal, polygonIndex);
-        double konst = scalar_product(ppoint, pnormal);
+        double konst = Geometry.scalar_product(ppoint, pnormal);
         for (int i : selection) {
 
             ArrayList<Integer> poly = polygons.get(i);
             //this is just double-checking; the code should work without it
             for (int vert : poly) {
-                if (scalar_product(vertices.get(vert), pnormal) > konst) {
+                if (Geometry.scalar_product(vertices.get(vert), pnormal) > konst) {
 
                     polygons.set(i, new ArrayList<Integer>());
                     break;
@@ -1873,14 +1702,14 @@ public class Origami {
 
             for (int i = 1; i < polygon.size(); i++) {
 
-                angles.add(angle(vector(polygon.get(i), center),
-                        vector(polygon.get(0), center)));
+                angles.add(Geometry.angle(Geometry.vector(polygon.get(i), center),
+                        Geometry.vector(polygon.get(0), center)));
             }
 
             while (ordered.size() < polygon.size()) {
 
                 double minangle = -1.0;
-                double[] minpoint = nullvector;
+                double[] minpoint = Geometry.nullvector;
                 int mindex = -1;
 
                 for (int i = 0; i < angles.size(); i++) {
@@ -1913,23 +1742,23 @@ public class Origami {
 
         if (polygon.size() > 3) {
 
-            if (angle(vector(polygon.get(polygon.size() - 1), polygon.get(0)),
-                    vector(polygon.get(1), polygon.get(0)))
+            if (Geometry.angle(Geometry.vector(polygon.get(polygon.size() - 1), polygon.get(0)),
+                    Geometry.vector(polygon.get(1), polygon.get(0)))
                     > Math.PI) {
                 return false;
             }
 
             for (int i = 1; i < polygon.size() - 1; i++) {
 
-                if (angle(vector(polygon.get(i - 1), polygon.get(i)),
-                        vector(polygon.get(i + 1), polygon.get(i)))
+                if (Geometry.angle(Geometry.vector(polygon.get(i - 1), polygon.get(i)),
+                        Geometry.vector(polygon.get(i + 1), polygon.get(i)))
                         > Math.PI) {
                     return false;
                 }
             }
 
-            if (angle(vector(polygon.get(polygon.size() - 2), polygon.get(polygon.size() - 1)),
-                    vector(polygon.get(0), polygon.get(polygon.size() - 1)))
+            if (Geometry.angle(Geometry.vector(polygon.get(polygon.size() - 2), polygon.get(polygon.size() - 1)),
+                    Geometry.vector(polygon.get(0), polygon.get(polygon.size() - 1)))
                     > Math.PI) {
                 return false;
             }
@@ -1995,6 +1824,7 @@ public class Origami {
     }
 
     final static private double[][] Origins = new double[][]{
+
         new double[]{0, 0, 0},
         new double[]{400, 0, 0},
         new double[]{0, 400, 0},
@@ -2002,14 +1832,14 @@ public class Origami {
     };
 
     /**
-     * Compresses the equation of the specified plane. After this compression,
-     * the plane's equation will fit in 12 bytes and be ready to be stored in
-     * ORI format without further loss of precision.
+     * Emulates the plane equation compression done by the
+     * {@link #commandBlock(int, double[], double[], int, int) commandBlock}
+     * method. Used for previewing.
      *
      * @param ppoint An array containing the 3-dimensional coordinates of a
      * point the plane goes through as {@code double}s.
      * @param pnormal An array containing the 3-dimensional coordinates the
-     * plane's normalvector as {@code double}s.
+     * plane's normal vector as {@code double}s.
      * @return An array containing the 3-dimensional coordinates of a point the
      * compressed plane goes through.
      * @see OrigamiIO#write_gen2(Origami, String)
@@ -2033,9 +1863,9 @@ public class Origami {
             double C = pnormal[2];
             double t = -(A * X + B * Y + C * Z - konst) / (A * U + B * V + C * W);
             double[] talppont = new double[]{X + t * U, Y + t * V, Z + t * W};
-            if (Origami.vector_length(Origami.vector(talppont, Origins[ii])) > max_tavolsag) {
-                sikpontnv = Origami.vector(talppont, Origins[ii]);
-                max_tavolsag = Origami.vector_length(sikpontnv);
+            if (Geometry.vector_length(Geometry.vector(talppont, Origins[ii])) > max_tavolsag) {
+                sikpontnv = Geometry.vector(talppont, Origins[ii]);
+                max_tavolsag = Geometry.vector_length(sikpontnv);
                 hasznalt_origo = ii;
             }
         }
@@ -2053,16 +1883,16 @@ public class Origami {
     }
 
     /**
-     * Compresses the equation of the specified plane. After this compression,
-     * the plane's equation will fit in 12 bytes and be ready to be stored in
-     * ORI format without further loss of precision.
+     * Emulates the plane equation compression done by the
+     * {@link #commandBlock(int, double[], double[], int, int) commandBlock}
+     * method. Used for previewing.
      *
      * @param ppoint An array containing the 3-dimensional coordinates of a
      * point the plane goes through as {@code double}s.
      * @param pnormal An array containing the 3-dimensional coordinates the
-     * plane's normalvector as {@code double}s.
+     * plane's normal vector as {@code double}s.
      * @return An array containing the 3-dimensional coordinates of the
-     * compressed plane's normalvector.
+     * compressed plane's normal vector.
      * @see OrigamiIO#write_gen2(Origami, String)
      */
     static protected double[] normalvectorRound(double[] ppoint, double[] pnormal) {
@@ -2083,13 +1913,13 @@ public class Origami {
             double C = pnormal[2];
             double t = -(A * X + B * Y + C * Z - konst) / (A * U + B * V + C * W);
             double[] talppont = new double[]{X + t * U, Y + t * V, Z + t * W};
-            if (Origami.vector_length(Origami.vector(talppont, origo)) > max_tavolsag) {
-                sikpontnv = Origami.vector(talppont, origo);
-                max_tavolsag = Origami.vector_length(sikpontnv);
+            if (Geometry.vector_length(Geometry.vector(talppont, origo)) > max_tavolsag) {
+                sikpontnv = Geometry.vector(talppont, origo);
+                max_tavolsag = Geometry.vector_length(sikpontnv);
             }
         }
         double elojel = 1;
-        if (Origami.scalar_product(pnormal, sikpontnv) < 0) {
+        if (Geometry.scalar_product(pnormal, sikpontnv) < 0) {
             elojel = -1;
         }
         int Xe = (int) sikpontnv[0];
@@ -2118,18 +1948,18 @@ public class Origami {
                 for (int i = 0; i < polygons.get(polygonIndex).size(); i++) {
 
                     int j = (i + 1) % polygons.get(polygonIndex).size();
-                    if (point_on_plane(ppoint1, pnormal1, vertices.get(polygons.get(polygonIndex).get(i)))) {
+                    if (Geometry.point_on_plane(ppoint1, pnormal1, vertices.get(polygons.get(polygonIndex).get(i)))) {
 
                         end = start;
                         start = vertices.get(polygons.get(polygonIndex).get(i));
                     } else {
 
-                        if (plane_between_points(ppoint1, pnormal1, vertices.get(polygons.get(polygonIndex).get(i)), vertices.get(polygons.get(polygonIndex).get(j)))
-                                && !point_on_plane(ppoint, pnormal, vertices.get(polygons.get(polygonIndex).get(j)))) {
+                        if (Geometry.plane_between_points(ppoint1, pnormal1, vertices.get(polygons.get(polygonIndex).get(i)), vertices.get(polygons.get(polygonIndex).get(j)))
+                                && !Geometry.point_on_plane(ppoint, pnormal, vertices.get(polygons.get(polygonIndex).get(j)))) {
 
                             double D = ppoint1[0] * pnormal1[0] + ppoint1[1] * pnormal1[1] + ppoint1[2] * pnormal1[2];
 
-                            double[] iranyvek = vector(vertices.get(polygons.get(polygonIndex).get(i)), vertices.get(polygons.get(polygonIndex).get(j)));
+                            double[] iranyvek = Geometry.vector(vertices.get(polygons.get(polygonIndex).get(i)), vertices.get(polygons.get(polygonIndex).get(j)));
                             double X = vertices.get(polygons.get(polygonIndex).get(i))[0];
                             double Y = vertices.get(polygons.get(polygonIndex).get(i))[1];
                             double Z = vertices.get(polygons.get(polygonIndex).get(i))[2];
@@ -2169,18 +1999,18 @@ public class Origami {
                 for (int i = 0; i < polygons.get(polygonIndex).size(); i++) {
 
                     int j = (i + 1) % polygons.get(polygonIndex).size();
-                    if (point_on_plane(ppoint1, pnormal1, vertices.get(polygons.get(polygonIndex).get(i)))) {
+                    if (Geometry.point_on_plane(ppoint1, pnormal1, vertices.get(polygons.get(polygonIndex).get(i)))) {
 
                         end = start;
                         start = vertices2d.get(polygons.get(polygonIndex).get(i));
                     } else {
 
-                        if (plane_between_points(ppoint1, pnormal1, vertices.get(polygons.get(polygonIndex).get(i)), vertices.get(polygons.get(polygonIndex).get(j)))
-                                && !point_on_plane(ppoint, pnormal, vertices.get(polygons.get(polygonIndex).get(j)))) {
+                        if (Geometry.plane_between_points(ppoint1, pnormal1, vertices.get(polygons.get(polygonIndex).get(i)), vertices.get(polygons.get(polygonIndex).get(j)))
+                                && !Geometry.point_on_plane(ppoint, pnormal, vertices.get(polygons.get(polygonIndex).get(j)))) {
 
                             double D = ppoint1[0] * pnormal1[0] + ppoint1[1] * pnormal1[1] + ppoint1[2] * pnormal1[2];
 
-                            double[] iranyvek = vector(vertices.get(polygons.get(polygonIndex).get(i)), vertices.get(polygons.get(polygonIndex).get(j)));
+                            double[] iranyvek = Geometry.vector(vertices.get(polygons.get(polygonIndex).get(i)), vertices.get(polygons.get(polygonIndex).get(j)));
                             double X = vertices.get(polygons.get(polygonIndex).get(i))[0];
                             double Y = vertices.get(polygons.get(polygonIndex).get(i))[1];
                             double Z = vertices.get(polygons.get(polygonIndex).get(i))[2];
@@ -2194,8 +2024,8 @@ public class Origami {
 
                             double[] metszet = new double[]{X + t * U, Y + t * V, Z + t * W};
 
-                            double suly1 = vector_length(vector(metszet, vertices.get(polygons.get(polygonIndex).get(j))));
-                            double suly2 = vector_length(vector(metszet, vertices.get(polygons.get(polygonIndex).get(i))));
+                            double suly1 = Geometry.vector_length(Geometry.vector(metszet, vertices.get(polygons.get(polygonIndex).get(j))));
+                            double suly2 = Geometry.vector_length(Geometry.vector(metszet, vertices.get(polygons.get(polygonIndex).get(i))));
                             end = start;
                             start = new double[]{
                                 (vertices2d.get(polygons.get(polygonIndex).get(i))[0] * suly1 + vertices2d.get(polygons.get(polygonIndex).get(j))[0] * suly2) / (suly1 + suly2),
@@ -2222,7 +2052,7 @@ public class Origami {
         for (int i = 0; i < polygons_size; i++) {
             for (int vert : polygons.get(i)) {
 
-                if (point_on_plane(ppoint, pnormal, vertices.get(vert))) {
+                if (Geometry.point_on_plane(ppoint, pnormal, vertices.get(vert))) {
 
                     if (!lines.contains(vert)) {
                         lines.add(vert);
@@ -2251,11 +2081,11 @@ public class Origami {
             double tavolsagmax = -1;
 
             for (int hp : lines) {
-                if (vector_length(vector(vertices.get(hp), vertices.get(lines.get(0)))) > 0) {
+                if (Geometry.vector_length(Geometry.vector(vertices.get(hp), vertices.get(lines.get(0)))) > 0) {
                     collin = true;
-                    if (vector_length(vector(vertices.get(hp), vertices.get(lines.get(0)))) > tavolsagmax) {
+                    if (Geometry.vector_length(Geometry.vector(vertices.get(hp), vertices.get(lines.get(0)))) > tavolsagmax) {
                         maspont = hp;
-                        tavolsagmax = vector_length(vector(vertices.get(hp), vertices.get(lines.get(0))));
+                        tavolsagmax = Geometry.vector_length(Geometry.vector(vertices.get(hp), vertices.get(lines.get(0))));
                     }
                 }
             }
@@ -2263,9 +2093,9 @@ public class Origami {
             if (collin) {
                 for (int ii = 1; ii < lines.size() && ii != maspont; ii++) {
 
-                    if (vector_length(vector_product(vector(vertices.get(lines.get(0)), vertices.get(lines.get(ii))),
-                            vector(vertices.get(maspont), vertices.get(lines.get(ii)))))
-                            > vector_length(vector(vertices.get(lines.get(0)), vertices.get(maspont)))) {
+                    if (Geometry.vector_length(Geometry.vector_product(Geometry.vector(vertices.get(lines.get(0)), vertices.get(lines.get(ii))),
+                            Geometry.vector(vertices.get(maspont), vertices.get(lines.get(ii)))))
+                            > Geometry.vector_length(Geometry.vector(vertices.get(lines.get(0)), vertices.get(maspont)))) {
 
                         collin = false;
                         break;
@@ -2301,7 +2131,7 @@ public class Origami {
         for (int spoly : polygonSelect(ppoint, pnormal, polygonIndex)) {
             for (int vert : polygons.get(spoly)) {
 
-                if (point_on_plane(ppoint, pnormal, vertices.get(vert))) {
+                if (Geometry.point_on_plane(ppoint, pnormal, vertices.get(vert))) {
                     line.add(vert);
                 }
             }
@@ -2315,11 +2145,11 @@ public class Origami {
         double tavolsagmax = -1;
 
         for (int hp : line) {
-            if (vector_length(vector(vertices.get(hp), vertices.get(line.get(0)))) > 0) {
+            if (Geometry.vector_length(Geometry.vector(vertices.get(hp), vertices.get(line.get(0)))) > 0) {
                 collin = true;
-                if (vector_length(vector(vertices.get(hp), vertices.get(line.get(0)))) > tavolsagmax) {
+                if (Geometry.vector_length(Geometry.vector(vertices.get(hp), vertices.get(line.get(0)))) > tavolsagmax) {
                     maspont = hp;
-                    tavolsagmax = vector_length(vector(vertices.get(hp), vertices.get(line.get(0))));
+                    tavolsagmax = Geometry.vector_length(Geometry.vector(vertices.get(hp), vertices.get(line.get(0))));
                 }
             }
         }
@@ -2327,9 +2157,9 @@ public class Origami {
         if (collin) {
             for (int ii = 1; ii < line.size() && ii != maspont; ii++) {
 
-                if (vector_length(vector_product(vector(vertices.get(line.get(0)), vertices.get(line.get(ii))),
-                        vector(vertices.get(maspont), vertices.get(line.get(ii)))))
-                        > vector_length(vector(vertices.get(line.get(0)), vertices.get(maspont)))) {
+                if (Geometry.vector_length(Geometry.vector_product(Geometry.vector(vertices.get(line.get(0)), vertices.get(line.get(ii))),
+                        Geometry.vector(vertices.get(maspont), vertices.get(line.get(ii)))))
+                        > Geometry.vector_length(Geometry.vector(vertices.get(line.get(0)), vertices.get(maspont)))) {
 
                     collin = false;
                     break;

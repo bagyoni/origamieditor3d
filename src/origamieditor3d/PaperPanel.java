@@ -13,6 +13,7 @@
 package origamieditor3d;
 
 import origamieditor3d.origami.Camera;
+import origamieditor3d.origami.Geometry;
 import origamieditor3d.origami.Origami;
 import java.awt.Color;
 import java.awt.Graphics;
@@ -132,7 +133,7 @@ public class PaperPanel extends JPanel implements BasicEditing {
             refcam.axis_x[2] / refcam.zoom() * pont1X + refcam.axis_y[2] / refcam.zoom() * pont1Y + refcam.camera_pos[2]
         };
         if (linerMode == LinerMode.Neusis) {
-            vonalzoNV = Origami.vector(vonalzoPT, vonalzoPT1);
+            vonalzoNV = Geometry.vector(vonalzoPT, vonalzoPT1);
         }
         liner_point = vonalzoPT;
         liner_normal = vonalzoNV;
@@ -174,21 +175,21 @@ public class PaperPanel extends JPanel implements BasicEditing {
                                 }).trackPoint();
 
                 if (linerMode == LinerMode.Planethrough) {
-                    if (Origami.vector_length(Origami.vector_product(
-                            Origami.vector(pt2, pt1), Origami.vector(pt3, pt1))) != 0d) {
+                    if (Geometry.vector_length(Geometry.vector_product(
+                            Geometry.vector(pt2, pt1), Geometry.vector(pt3, pt1))) != 0d) {
 
                         liner_point = pt1;
-                        liner_normal = Origami.vector_product(Origami.vector(pt2, pt1),
-                                Origami.vector(pt3, pt1));
+                        liner_normal = Geometry.vector_product(Geometry.vector(pt2, pt1),
+                                Geometry.vector(pt3, pt1));
                     } else {
                         linerOff();
                     }
                 } else if (linerMode == LinerMode.Angle_bisector) {
                     liner_point = pt2;
-                    liner_normal = Origami.vector(
-                            Origami.length_to_100(Origami.vector(pt1, pt2)),
-                            Origami.length_to_100(Origami.vector(pt3, pt2)));
-                    if (Origami.vector_length(liner_normal) == 0.) {
+                    liner_normal = Geometry.vector(
+                            Geometry.length_to_100(Geometry.vector(pt1, pt2)),
+                            Geometry.length_to_100(Geometry.vector(pt3, pt2)));
+                    if (Geometry.vector_length(liner_normal) == 0.) {
                         linerOff();
                     }
                 }

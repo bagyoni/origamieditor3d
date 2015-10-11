@@ -17,19 +17,19 @@ package origamieditor3d.resources;
  * @author Attila Bágyoni (ba-sz-at@users.sourceforge.net)
  */
 public class BaseFolds {
-    
+
     public java.io.InputStream getFile(String name) {
-        
         return getClass().getResourceAsStream("/res/bases/"+name);
     }
-    
+
     public java.util.ArrayList<String> names() {
-        
+
         java.util.ArrayList<String> namelist = new java.util.ArrayList<>();
         java.util.Scanner sc = new java.util.Scanner(getClass().getResourceAsStream("/res/bases/0-filelist"));
         while(sc.hasNextLine()) {
             namelist.add(sc.nextLine());
         }
+        sc.close();
         return namelist;
     }
 }

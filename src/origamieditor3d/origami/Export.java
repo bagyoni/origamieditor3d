@@ -383,22 +383,22 @@ public class Export {
 
                 double[] regiVaszonNV = kamera.camera_dir;
 
-                kamera.camera_dir = Origami.vector_product(new double[]{origami1.history().get(i)[4], origami1.history().get(i)[5], origami1.history().get(i)[6]},
+                kamera.camera_dir = Geometry.vector_product(new double[]{origami1.history().get(i)[4], origami1.history().get(i)[5], origami1.history().get(i)[6]},
                         new double[]{0, 1, 0});
 
-                if (Origami.vector_length(kamera.camera_dir) < .00000001) {
+                if (Geometry.vector_length(kamera.camera_dir) < .00000001) {
                     kamera.camera_dir = new double[]{0, 0, 1};
                 }
 
-                kamera.camera_dir = new double[]{kamera.camera_dir[0] / Origami.vector_length(kamera.camera_dir),
-                    kamera.camera_dir[1] / Origami.vector_length(kamera.camera_dir),
-                    kamera.camera_dir[2] / Origami.vector_length(kamera.camera_dir)};
+                kamera.camera_dir = new double[]{kamera.camera_dir[0] / Geometry.vector_length(kamera.camera_dir),
+                    kamera.camera_dir[1] / Geometry.vector_length(kamera.camera_dir),
+                    kamera.camera_dir[2] / Geometry.vector_length(kamera.camera_dir)};
 
-                if (Origami.vector_length(Origami.vector_product(regiVaszonNV, kamera.camera_dir)) > .00000001) {
+                if (Geometry.vector_length(Geometry.vector_product(regiVaszonNV, kamera.camera_dir)) > .00000001) {
 
                     forgatasok++;
                     ForgatasIndexek.add(i);
-                    double cos = Origami.scalar_product(regiVaszonNV, kamera.camera_dir) / Origami.vector_length(regiVaszonNV) / Origami.vector_length(kamera.camera_dir);
+                    double cos = Geometry.scalar_product(regiVaszonNV, kamera.camera_dir) / Geometry.vector_length(regiVaszonNV) / Geometry.vector_length(kamera.camera_dir);
                     ForgatasSzogek.add((int) (Math.acos(cos >= -1 && cos <= 1 ? cos : 1) / Math.PI * 180));
                 }
             }
@@ -655,32 +655,32 @@ public class Export {
 
                     double[] regiVaszonNV = kamera.camera_dir;
 
-                    kamera.camera_dir = Origami.vector_product(new double[]{origami1.history().get(i)[4], origami1.history().get(i)[5], origami1.history().get(i)[6]},
+                    kamera.camera_dir = Geometry.vector_product(new double[]{origami1.history().get(i)[4], origami1.history().get(i)[5], origami1.history().get(i)[6]},
                             new double[]{0, 1, 0});
 
-                    if (Origami.scalar_product(kamera.camera_dir, kamera.camera_dir) < 0.00000001) {
+                    if (Geometry.scalar_product(kamera.camera_dir, kamera.camera_dir) < 0.00000001) {
                         kamera.camera_dir = new double[]{0, 0, 1};
                     }
 
-                    kamera.camera_dir = new double[]{kamera.camera_dir[0] / Origami.vector_length(kamera.camera_dir),
-                        kamera.camera_dir[1] / Origami.vector_length(kamera.camera_dir),
-                        kamera.camera_dir[2] / Origami.vector_length(kamera.camera_dir)};
+                    kamera.camera_dir = new double[]{kamera.camera_dir[0] / Geometry.vector_length(kamera.camera_dir),
+                        kamera.camera_dir[1] / Geometry.vector_length(kamera.camera_dir),
+                        kamera.camera_dir[2] / Geometry.vector_length(kamera.camera_dir)};
 
                     kamera.axis_y = new double[]{0, 1, 0};
-                    kamera.axis_x = Origami.vector_product(kamera.camera_dir, kamera.axis_y);
+                    kamera.axis_x = Geometry.vector_product(kamera.camera_dir, kamera.axis_y);
 
-                    kamera.axis_x = new double[]{kamera.axis_x[0] / Origami.vector_length(kamera.axis_x) * kamera.zoom(),
-                        kamera.axis_x[1] / Origami.vector_length(kamera.axis_x) * kamera.zoom(),
-                        kamera.axis_x[2] / Origami.vector_length(kamera.axis_x) * kamera.zoom()};
+                    kamera.axis_x = new double[]{kamera.axis_x[0] / Geometry.vector_length(kamera.axis_x) * kamera.zoom(),
+                        kamera.axis_x[1] / Geometry.vector_length(kamera.axis_x) * kamera.zoom(),
+                        kamera.axis_x[2] / Geometry.vector_length(kamera.axis_x) * kamera.zoom()};
 
-                    kamera.axis_y = new double[]{kamera.axis_y[0] / Origami.vector_length(kamera.axis_y) * kamera.zoom(),
-                        kamera.axis_y[1] / Origami.vector_length(kamera.axis_y) * kamera.zoom(),
-                        kamera.axis_y[2] / Origami.vector_length(kamera.axis_y) * kamera.zoom()};
+                    kamera.axis_y = new double[]{kamera.axis_y[0] / Geometry.vector_length(kamera.axis_y) * kamera.zoom(),
+                        kamera.axis_y[1] / Geometry.vector_length(kamera.axis_y) * kamera.zoom(),
+                        kamera.axis_y[2] / Geometry.vector_length(kamera.axis_y) * kamera.zoom()};
 
-                    if (Origami.scalar_product(regiVaszonNV, kamera.camera_dir) < 0 && !ForgatasIndexek.contains(i)) {
+                    if (Geometry.scalar_product(regiVaszonNV, kamera.camera_dir) < 0 && !ForgatasIndexek.contains(i)) {
 
-                        kamera.camera_dir = Origami.vector(Origami.nullvector, kamera.camera_dir);
-                        kamera.axis_x = Origami.vector(Origami.nullvector, kamera.axis_x);
+                        kamera.camera_dir = Geometry.vector(Geometry.nullvector, kamera.camera_dir);
+                        kamera.axis_x = Geometry.vector(Geometry.nullvector, kamera.axis_x);
                     }
 
                     switch ((objindex - (int) Math.ceil((double) cellak_szama / 6)) % 6) {
@@ -1013,32 +1013,32 @@ public class Export {
 
                     double[] regiVaszonNV = kamera.camera_dir;
 
-                    kamera.camera_dir = Origami.vector_product(new double[]{origami1.history().get(i)[4], origami1.history().get(i)[5], origami1.history().get(i)[6]},
+                    kamera.camera_dir = Geometry.vector_product(new double[]{origami1.history().get(i)[4], origami1.history().get(i)[5], origami1.history().get(i)[6]},
                             new double[]{0, 1, 0});
 
-                    if (Origami.scalar_product(kamera.camera_dir, kamera.camera_dir) < 0.00000001) {
+                    if (Geometry.scalar_product(kamera.camera_dir, kamera.camera_dir) < 0.00000001) {
                         kamera.camera_dir = new double[]{0, 0, 1};
                     }
 
-                    kamera.camera_dir = new double[]{kamera.camera_dir[0] / Origami.vector_length(kamera.camera_dir),
-                        kamera.camera_dir[1] / Origami.vector_length(kamera.camera_dir),
-                        kamera.camera_dir[2] / Origami.vector_length(kamera.camera_dir)};
+                    kamera.camera_dir = new double[]{kamera.camera_dir[0] / Geometry.vector_length(kamera.camera_dir),
+                        kamera.camera_dir[1] / Geometry.vector_length(kamera.camera_dir),
+                        kamera.camera_dir[2] / Geometry.vector_length(kamera.camera_dir)};
 
                     kamera.axis_y = new double[]{0, 1, 0};
-                    kamera.axis_x = Origami.vector_product(kamera.camera_dir, kamera.axis_y);
+                    kamera.axis_x = Geometry.vector_product(kamera.camera_dir, kamera.axis_y);
 
-                    kamera.axis_x = new double[]{kamera.axis_x[0] / Origami.vector_length(kamera.axis_x) * kamera.zoom(),
-                        kamera.axis_x[1] / Origami.vector_length(kamera.axis_x) * kamera.zoom(),
-                        kamera.axis_x[2] / Origami.vector_length(kamera.axis_x) * kamera.zoom()};
+                    kamera.axis_x = new double[]{kamera.axis_x[0] / Geometry.vector_length(kamera.axis_x) * kamera.zoom(),
+                        kamera.axis_x[1] / Geometry.vector_length(kamera.axis_x) * kamera.zoom(),
+                        kamera.axis_x[2] / Geometry.vector_length(kamera.axis_x) * kamera.zoom()};
 
-                    kamera.axis_y = new double[]{kamera.axis_y[0] / Origami.vector_length(kamera.axis_y) * kamera.zoom(),
-                        kamera.axis_y[1] / Origami.vector_length(kamera.axis_y) * kamera.zoom(),
-                        kamera.axis_y[2] / Origami.vector_length(kamera.axis_y) * kamera.zoom()};
+                    kamera.axis_y = new double[]{kamera.axis_y[0] / Geometry.vector_length(kamera.axis_y) * kamera.zoom(),
+                        kamera.axis_y[1] / Geometry.vector_length(kamera.axis_y) * kamera.zoom(),
+                        kamera.axis_y[2] / Geometry.vector_length(kamera.axis_y) * kamera.zoom()};
 
-                    if (Origami.scalar_product(regiVaszonNV, kamera.camera_dir) < 0 && !ForgatasIndexek.contains(i)) {
+                    if (Geometry.scalar_product(regiVaszonNV, kamera.camera_dir) < 0 && !ForgatasIndexek.contains(i)) {
 
-                        kamera.camera_dir = Origami.vector(Origami.nullvector, kamera.camera_dir);
-                        kamera.axis_x = Origami.vector(Origami.nullvector, kamera.axis_x);
+                        kamera.camera_dir = Geometry.vector(Geometry.nullvector, kamera.camera_dir);
+                        kamera.axis_x = Geometry.vector(Geometry.nullvector, kamera.axis_x);
                     }
 
                     switch ((int) origami1.history().get(i)[0]) {

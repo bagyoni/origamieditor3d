@@ -53,20 +53,20 @@ public class OrigamiGen2 extends Origami {
             for (int i = 0; i < polygons.get(polygonIndex).size(); i++) {
 
                 int j = (i +1) % polygons.get(polygonIndex).size();
-                if (point_on_plane(ppoint, pnormal, vertices.get(polygons.get(polygonIndex).get(i)))) {
+                if (Geometry.point_on_plane(ppoint, pnormal, vertices.get(polygons.get(polygonIndex).get(i)))) {
 
                     ujsokszog1.add(polygons.get(polygonIndex).get(i));
                     ujsokszog2.add(polygons.get(polygonIndex).get(i));
                 } else {
 
-                    if (scalar_product(vertices.get(polygons.get(polygonIndex).get(i)), pnormal) > scalar_product(ppoint, pnormal)) {
+                    if (Geometry.scalar_product(vertices.get(polygons.get(polygonIndex).get(i)), pnormal) > Geometry.scalar_product(ppoint, pnormal)) {
                         ujsokszog1.add(polygons.get(polygonIndex).get(i));
                     } else {
                         ujsokszog2.add(polygons.get(polygonIndex).get(i));
                     }
 
-                    if (plane_between_points(ppoint, pnormal, vertices.get(polygons.get(polygonIndex).get(i)), vertices.get(polygons.get(polygonIndex).get(j)))
-                            && !point_on_plane(ppoint, pnormal, vertices.get(polygons.get(polygonIndex).get(j)))) {
+                    if (Geometry.plane_between_points(ppoint, pnormal, vertices.get(polygons.get(polygonIndex).get(i)), vertices.get(polygons.get(polygonIndex).get(j)))
+                            && !Geometry.point_on_plane(ppoint, pnormal, vertices.get(polygons.get(polygonIndex).get(j)))) {
 
                         freshcut:
                         {
@@ -83,7 +83,7 @@ public class OrigamiGen2 extends Origami {
                             }
                             double D = ppoint[0] * pnormal[0] + ppoint[1] * pnormal[1] + ppoint[2] * pnormal[2];
 
-                            double[] iranyvek = vector(vertices.get(polygons.get(polygonIndex).get(i)), vertices.get(polygons.get(polygonIndex).get(j)));
+                            double[] iranyvek = Geometry.vector(vertices.get(polygons.get(polygonIndex).get(i)), vertices.get(polygons.get(polygonIndex).get(j)));
                             double X = vertices.get(polygons.get(polygonIndex).get(i))[0];
                             double Y = vertices.get(polygons.get(polygonIndex).get(i))[1];
                             double Z = vertices.get(polygons.get(polygonIndex).get(i))[2];
@@ -98,8 +98,8 @@ public class OrigamiGen2 extends Origami {
                             double[] metszet = new double[]{X + t * U, Y + t * V, Z + t * W};
                             addVertex(metszet);
 
-                            double suly1 = vector_length(vector(metszet, vertices.get(polygons.get(polygonIndex).get(j))));
-                            double suly2 = vector_length(vector(metszet, vertices.get(polygons.get(polygonIndex).get(i))));
+                            double suly1 = Geometry.vector_length(Geometry.vector(metszet, vertices.get(polygons.get(polygonIndex).get(j))));
+                            double suly2 = Geometry.vector_length(Geometry.vector(metszet, vertices.get(polygons.get(polygonIndex).get(i))));
                             add2dVertex(new double[]{
                                 (vertices2d.get(polygons.get(polygonIndex).get(i))[0] * suly1 + vertices2d.get(polygons.get(polygonIndex).get(j))[0] * suly2) / (suly1 + suly2),
                                 (vertices2d.get(polygons.get(polygonIndex).get(i))[1] * suly1 + vertices2d.get(polygons.get(polygonIndex).get(j))[1] * suly2) / (suly1 + suly2),

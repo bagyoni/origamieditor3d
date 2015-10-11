@@ -17,6 +17,7 @@ import java.awt.Desktop;
 import java.awt.event.ActionEvent;
 
 import origamieditor3d.origami.Camera;
+import origamieditor3d.origami.Geometry;
 import origamieditor3d.origami.Origami;
 import origamieditor3d.origami.OrigamiIO;
 import origamieditor3d.origami.OrigamiScriptTerminal;
@@ -79,7 +80,6 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         PLANETHRU, ANGLE_BISECT
     }
 
-    @SuppressWarnings("empty-statement")
     public OrigamiEditorUI() {
 
         setIconImage(java.awt.Toolkit.getDefaultToolkit().getImage(getClass().getClassLoader().getResource("res/icon.png")));
@@ -1630,9 +1630,9 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                     oPanel1.PanelCamera.axis_x[2] / oPanel1.PanelCamera.zoom() * pont1X + oPanel1.PanelCamera.axis_y[2] / oPanel1.PanelCamera.zoom() * pont1Y + oPanel1.PanelCamera.camera_pos[2]
                 };
                 if (neusisOn) {
-                    vonalzoNV = Origami.vector(vonalzoPT, vonalzoPT1);
+                    vonalzoNV = Geometry.vector(vonalzoPT, vonalzoPT1);
                 }
-                if (Origami.scalar_product(oPanel1.PanelCamera.camera_pos, vonalzoNV) - Origami.scalar_product(vonalzoPT, vonalzoNV) > 0) {
+                if (Geometry.scalar_product(oPanel1.PanelCamera.camera_pos, vonalzoNV) - Geometry.scalar_product(vonalzoPT, vonalzoNV) > 0) {
                     vonalzoNV = new double[]{-vonalzoNV[0], -vonalzoNV[1], -vonalzoNV[2]};
                 }
 
@@ -1838,9 +1838,9 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                 oPanel1.PanelCamera.axis_x[2] / oPanel1.PanelCamera.zoom() * pont1X + oPanel1.PanelCamera.axis_y[2] / oPanel1.PanelCamera.zoom() * pont1Y + oPanel1.PanelCamera.camera_pos[2]
             };
             if (neusisOn) {
-                vonalzoNV = Origami.vector(vonalzoPT, vonalzoPT1);
+                vonalzoNV = Geometry.vector(vonalzoPT, vonalzoPT1);
             }
-            if (Origami.scalar_product(oPanel1.PanelCamera.camera_pos, vonalzoNV) - Origami.scalar_product(vonalzoPT, vonalzoNV) > 0) {
+            if (Geometry.scalar_product(oPanel1.PanelCamera.camera_pos, vonalzoNV) - Geometry.scalar_product(vonalzoPT, vonalzoNV) > 0) {
                 vonalzoNV = new double[]{-vonalzoNV[0], -vonalzoNV[1], -vonalzoNV[2]};
             }
 
@@ -2013,9 +2013,9 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                 oPanel1.PanelCamera.axis_x[2] / oPanel1.PanelCamera.zoom() * pont1X + oPanel1.PanelCamera.axis_y[2] / oPanel1.PanelCamera.zoom() * pont1Y + oPanel1.PanelCamera.camera_pos[2]
             };
             if (neusisOn) {
-                vonalzoNV = Origami.vector(vonalzoPT, vonalzoPT1);
+                vonalzoNV = Geometry.vector(vonalzoPT, vonalzoPT1);
             }
-            if (Origami.scalar_product(oPanel1.PanelCamera.camera_pos, vonalzoNV) - Origami.scalar_product(vonalzoPT, vonalzoNV) > 0) {
+            if (Geometry.scalar_product(oPanel1.PanelCamera.camera_pos, vonalzoNV) - Geometry.scalar_product(vonalzoPT, vonalzoNV) > 0) {
                 vonalzoNV = new double[]{-vonalzoNV[0], -vonalzoNV[1], -vonalzoNV[2]};
             }
 
@@ -3006,7 +3006,6 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
     //
     //  TUTORIALS / TUTORIALOK
     //
-    @SuppressWarnings("empty-statement")
     private void ui_help_tutorialsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ui_help_tutorialsActionPerformed
 
         try {
