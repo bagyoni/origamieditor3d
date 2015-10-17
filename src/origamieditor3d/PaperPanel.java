@@ -12,12 +12,14 @@
 // along with this program.  If not, see <http:// www.gnu.org/licenses/>.
 package origamieditor3d;
 
+import java.awt.Color;
+import java.awt.Graphics;
+
+import javax.swing.JPanel;
+
 import origamieditor3d.origami.Camera;
 import origamieditor3d.origami.Geometry;
 import origamieditor3d.origami.Origami;
-import java.awt.Color;
-import java.awt.Graphics;
-import javax.swing.JPanel;
 import origamieditor3d.origami.OrigamiTracker;
 
 /**
@@ -90,8 +92,12 @@ public class PaperPanel extends JPanel implements BasicEditing {
         tracker_x = x;
         tracker_y = y;
         tracker_im = new double[]{
-            ((double) tracker_x - refkamera.xshift + new Camera(refkamera.xshift, refkamera.yshift, refkamera.zoom()).projection0(refkamera.camera_pos)[0]) / refkamera.zoom(),
-            ((double) tracker_y - refkamera.yshift + new Camera(refkamera.xshift, refkamera.yshift, refkamera.zoom()).projection0(refkamera.camera_pos)[1]) / refkamera.zoom(),
+            ((double) tracker_x - refkamera.xshift
+                    + new Camera(refkamera.xshift, refkamera.yshift, refkamera.zoom())
+                    .projection0(refkamera.camera_pos())[0]) / refkamera.zoom(),
+            ((double) tracker_y - refkamera.yshift
+                    + new Camera(refkamera.xshift, refkamera.yshift, refkamera.zoom())
+                    .projection0(refkamera.camera_pos())[1]) / refkamera.zoom(),
             0};
         trackerOn = true;
     }
@@ -118,19 +124,19 @@ public class PaperPanel extends JPanel implements BasicEditing {
         double pont1Y = ((double) y1 - refcam.yshift) / refcam.zoom();
 
         double[] vonalzoNV = new double[]{
-            refcam.axis_x[0] * (y2 - y1) + refcam.axis_y[0] * (x1 - x2),
-            refcam.axis_x[1] * (y2 - y1) + refcam.axis_y[1] * (x1 - x2),
-            refcam.axis_x[2] * (y2 - y1) + refcam.axis_y[2] * (x1 - x2)
+            refcam.axis_x()[0] * (y2 - y1) + refcam.axis_y()[0] * (x1 - x2),
+            refcam.axis_x()[1] * (y2 - y1) + refcam.axis_y()[1] * (x1 - x2),
+            refcam.axis_x()[2] * (y2 - y1) + refcam.axis_y()[2] * (x1 - x2)
         };
         double[] vonalzoPT = new double[]{
-            refcam.axis_x[0] / refcam.zoom() * pontX + refcam.axis_y[0] / refcam.zoom() * pontY + refcam.camera_pos[0],
-            refcam.axis_x[1] / refcam.zoom() * pontX + refcam.axis_y[1] / refcam.zoom() * pontY + refcam.camera_pos[1],
-            refcam.axis_x[2] / refcam.zoom() * pontX + refcam.axis_y[2] / refcam.zoom() * pontY + refcam.camera_pos[2]
+            refcam.axis_x()[0] / refcam.zoom() * pontX + refcam.axis_y()[0] / refcam.zoom() * pontY + refcam.camera_pos()[0],
+            refcam.axis_x()[1] / refcam.zoom() * pontX + refcam.axis_y()[1] / refcam.zoom() * pontY + refcam.camera_pos()[1],
+            refcam.axis_x()[2] / refcam.zoom() * pontX + refcam.axis_y()[2] / refcam.zoom() * pontY + refcam.camera_pos()[2]
         };
         double[] vonalzoPT1 = new double[]{
-            refcam.axis_x[0] / refcam.zoom() * pont1X + refcam.axis_y[0] / refcam.zoom() * pont1Y + refcam.camera_pos[0],
-            refcam.axis_x[1] / refcam.zoom() * pont1X + refcam.axis_y[1] / refcam.zoom() * pont1Y + refcam.camera_pos[1],
-            refcam.axis_x[2] / refcam.zoom() * pont1X + refcam.axis_y[2] / refcam.zoom() * pont1Y + refcam.camera_pos[2]
+            refcam.axis_x()[0] / refcam.zoom() * pont1X + refcam.axis_y()[0] / refcam.zoom() * pont1Y + refcam.camera_pos()[0],
+            refcam.axis_x()[1] / refcam.zoom() * pont1X + refcam.axis_y()[1] / refcam.zoom() * pont1Y + refcam.camera_pos()[1],
+            refcam.axis_x()[2] / refcam.zoom() * pont1X + refcam.axis_y()[2] / refcam.zoom() * pont1Y + refcam.camera_pos()[2]
         };
         if (linerMode == LinerMode.Neusis) {
             vonalzoNV = Geometry.vector(vonalzoPT, vonalzoPT1);
@@ -158,20 +164,20 @@ public class PaperPanel extends JPanel implements BasicEditing {
                 double[] pt1 = new OrigamiTracker(
                         PanelOrigami,
                         new double[]{
-                            ((double) liner_triangle[0][0] - PanelCamera.xshift + PanelCamera.projection0(PanelCamera.camera_pos)[0]) / PanelCamera.zoom(),
-                            ((double) liner_triangle[0][1] - PanelCamera.yshift + PanelCamera.projection0(PanelCamera.camera_pos)[1]) / PanelCamera.zoom()
+                            ((double) liner_triangle[0][0] - PanelCamera.xshift + PanelCamera.projection0(PanelCamera.camera_pos())[0]) / PanelCamera.zoom(),
+                            ((double) liner_triangle[0][1] - PanelCamera.yshift + PanelCamera.projection0(PanelCamera.camera_pos())[1]) / PanelCamera.zoom()
                         }).trackPoint(),
                         pt2 = new OrigamiTracker(
                                 PanelOrigami,
                                 new double[]{
-                                    ((double) liner_triangle[1][0] - PanelCamera.xshift + PanelCamera.projection0(PanelCamera.camera_pos)[0]) / PanelCamera.zoom(),
-                                    ((double) liner_triangle[1][1] - PanelCamera.yshift + PanelCamera.projection0(PanelCamera.camera_pos)[1]) / PanelCamera.zoom()
+                                    ((double) liner_triangle[1][0] - PanelCamera.xshift + PanelCamera.projection0(PanelCamera.camera_pos())[0]) / PanelCamera.zoom(),
+                                    ((double) liner_triangle[1][1] - PanelCamera.yshift + PanelCamera.projection0(PanelCamera.camera_pos())[1]) / PanelCamera.zoom()
                                 }).trackPoint(),
                         pt3 = new OrigamiTracker(
                                 PanelOrigami,
                                 new double[]{
-                                    ((double) liner_triangle[2][0] - PanelCamera.xshift + PanelCamera.projection0(PanelCamera.camera_pos)[0]) / PanelCamera.zoom(),
-                                    ((double) liner_triangle[2][1] - PanelCamera.yshift + PanelCamera.projection0(PanelCamera.camera_pos)[1]) / PanelCamera.zoom()
+                                    ((double) liner_triangle[2][0] - PanelCamera.xshift + PanelCamera.projection0(PanelCamera.camera_pos())[0]) / PanelCamera.zoom(),
+                                    ((double) liner_triangle[2][1] - PanelCamera.yshift + PanelCamera.projection0(PanelCamera.camera_pos())[1]) / PanelCamera.zoom()
                                 }).trackPoint();
 
                 if (linerMode == LinerMode.Planethrough) {
@@ -236,11 +242,11 @@ public class PaperPanel extends JPanel implements BasicEditing {
             g.drawLine(x - 5, y, x + 5, y);
             g.drawLine(x, y - 5, x, y + 5);
         }
-        
+
         if (liner_point != null) {
             PanelCamera.draw2dFoldingLine(g, Color.red, liner_point, liner_normal, PanelOrigami);
         }
-        
+
         g.setColor(Color.magenta);
         ((java.awt.Graphics2D)g).setStroke(new java.awt.BasicStroke(2));
 

@@ -1001,7 +1001,7 @@ public class Origami {
 
         boolean collin = false;
         int farpoint = -1;
-        double tavolsagmax = -1;
+        double dist_max = -1;
 
         if (foldingpoints.size() >= 2) {
 
@@ -1010,10 +1010,13 @@ public class Origami {
                 if (Geometry.vector_length(Geometry.vector(vertices.get(fp), vertices.get(foldingpoints.get(0)))) > 0) {
 
                     collin = true;
-                    if (Geometry.vector_length(Geometry.vector(vertices.get(fp), vertices.get(foldingpoints.get(0)))) > tavolsagmax) {
+                    if (Geometry.vector_length(
+                            Geometry.vector(vertices.get(fp), vertices.get(foldingpoints.get(0))))
+                        > dist_max) {
 
                         farpoint = fp;
-                        tavolsagmax = Geometry.vector_length(Geometry.vector(vertices.get(fp), vertices.get(foldingpoints.get(0))));
+                        dist_max = Geometry.vector_length(
+                                Geometry.vector(vertices.get(fp), vertices.get(foldingpoints.get(0))));
                     }
                 }
             }
@@ -1021,9 +1024,10 @@ public class Origami {
 
         for (int i = 1; i < foldingpoints.size() && i != farpoint; i++) {
 
-            if (Geometry.vector_length(Geometry.vector_product(Geometry.vector(vertices.get(foldingpoints.get(0)), vertices.get(foldingpoints.get(i))),
+            if (Geometry.vector_length(Geometry.vector_product(
+                    Geometry.vector(vertices.get(foldingpoints.get(0)), vertices.get(foldingpoints.get(i))),
                     Geometry.vector(vertices.get(farpoint), vertices.get(foldingpoints.get(i)))))
-                    > Geometry.vector_length(Geometry.vector(vertices.get(foldingpoints.get(0)), vertices.get(farpoint)))) {
+                > Geometry.vector_length(Geometry.vector(vertices.get(foldingpoints.get(0)), vertices.get(farpoint)))) {
 
                 collin = false;
                 break;
@@ -1104,10 +1108,13 @@ public class Origami {
                 if (Geometry.vector_length(Geometry.vector(vertices.get(hp), vertices.get(foldingpoints.get(0)))) > 0) {
 
                     collin = true;
-                    if (Geometry.vector_length(Geometry.vector(vertices.get(hp), vertices.get(foldingpoints.get(0)))) > dist_max) {
+                    if (Geometry.vector_length(
+                            Geometry.vector(vertices.get(hp), vertices.get(foldingpoints.get(0))))
+                        > dist_max) {
 
                         farpoint = hp;
-                        dist_max = Geometry.vector_length(Geometry.vector(vertices.get(hp), vertices.get(foldingpoints.get(0))));
+                        dist_max = Geometry.vector_length(
+                                Geometry.vector(vertices.get(hp), vertices.get(foldingpoints.get(0))));
                     }
                 }
             }
@@ -1115,9 +1122,10 @@ public class Origami {
 
         for (int i = 1; i < foldingpoints.size() && i != farpoint; i++) {
 
-            if (Geometry.vector_length(Geometry.vector_product(Geometry.vector(vertices.get(foldingpoints.get(0)), vertices.get(foldingpoints.get(i))),
+            if (Geometry.vector_length(Geometry.vector_product(
+                    Geometry.vector(vertices.get(foldingpoints.get(0)), vertices.get(foldingpoints.get(i))),
                     Geometry.vector(vertices.get(farpoint), vertices.get(foldingpoints.get(i)))))
-                    > Geometry.vector_length(Geometry.vector(vertices.get(foldingpoints.get(0)), vertices.get(farpoint)))) {
+                > Geometry.vector_length(Geometry.vector(vertices.get(foldingpoints.get(0)), vertices.get(farpoint)))) {
 
                 collin = false;
                 break;
@@ -1347,7 +1355,7 @@ public class Origami {
      * initial vertices in the same order.
      */
     @SuppressWarnings("unchecked")
-    public final void reset() {
+    final public void reset() {
 
         if (papertype == PaperType.A4) {
 
@@ -1554,9 +1562,10 @@ public class Origami {
     }
 
     /**
-     * Visszavonja az utoljára végrehajtott mûveletet this origamiban azáltal,
-     * hogy törli {@link #history} utolsó elemét, majd meghívja a
-     * {@linkplain #reset()} és {@linkplain #execute()} metódusokat.
+     * Restores the state of this origami to the one before the last
+     * {@link FoldingOperation folding operation} was executed.
+     * For this method to work, the origami should not be modified by any
+     * methods other than the constructors and the folding operations.
      *
      * @since 2013-09-05
      */
@@ -1574,11 +1583,10 @@ public class Origami {
     }
 
     /**
-     * undo a paraméternek megfelelô számú mûveletet this origamiban azáltal,
-     * hogy törli {@link #history} annyi utolsó elemét, majd meghívja a
-     * {@linkplain #reset()} és {@linkplain #execute()} metódusokat.
+     * Equivalent to calling {@link #undo() undo} {@code steps} times, except it
+     * will not do anything if {@code steps > history_pointer}.
      *
-     * @param steps A visszavonandó mûveletek száma.
+     * @param steps The number of steps to undo.
      * @since 2013-09-05
      */
     public void undo(int steps) {
@@ -1630,7 +1638,7 @@ public class Origami {
      * at the specified index.
      *
      * @param polygonIndex The zero-based index at which the polygon in the
-     * {@link #polygons() polygons} list should not be moved.
+     * {@link #polygons() polygons} list should be kept in place.
      * @since 2013-09-04
      */
     protected void shrink(int polygonIndex) {
@@ -1841,44 +1849,36 @@ public class Origami {
      * @param pnormal An array containing the 3-dimensional coordinates the
      * plane's normal vector as {@code double}s.
      * @return An array containing the 3-dimensional coordinates of a point the
-     * compressed plane goes through.
+     * compressed plane goes through. Can be arbitrarily far from
+     * {@code ppoint}.
      * @see OrigamiIO#write_gen2(Origami, String)
      */
     static protected double[] planarPointRound(double[] ppoint, double[] pnormal) {
 
-        double max_tavolsag = -1;
-        int hasznalt_origo = 0;
-        double[] sikpontnv = new double[]{0, 0, 0};
-        double konst = ppoint[0] * pnormal[0] + ppoint[1] * pnormal[1] + ppoint[2] * pnormal[2];
+        double dist_max = -1;
+        int used_origin = 0;
+        double[] planeptnv = new double[]{0, 0, 0};
+
         for (int ii = 0; ii < Origins.length; ii++) {
-            double[] iranyvek = pnormal;
-            double X = Origins[ii][0];
-            double Y = Origins[ii][1];
-            double Z = Origins[ii][2];
-            double U = iranyvek[0];
-            double V = iranyvek[1];
-            double W = iranyvek[2];
-            double A = pnormal[0];
-            double B = pnormal[1];
-            double C = pnormal[2];
-            double t = -(A * X + B * Y + C * Z - konst) / (A * U + B * V + C * W);
-            double[] talppont = new double[]{X + t * U, Y + t * V, Z + t * W};
-            if (Geometry.vector_length(Geometry.vector(talppont, Origins[ii])) > max_tavolsag) {
-                sikpontnv = Geometry.vector(talppont, Origins[ii]);
-                max_tavolsag = Geometry.vector_length(sikpontnv);
-                hasznalt_origo = ii;
+
+            double[] basepoint = Geometry.line_plane_intersection(Origins[ii], pnormal, ppoint, pnormal);
+            if (Geometry.vector_length(Geometry.vector(basepoint, Origins[ii])) > dist_max) {
+
+                planeptnv = Geometry.vector(basepoint, Origins[ii]);
+                dist_max = Geometry.vector_length(planeptnv);
+                used_origin = ii;
             }
         }
-        int Xe = (int) sikpontnv[0];
-        int Ye = (int) sikpontnv[1];
-        int Ze = (int) sikpontnv[2];
-        int Xt = (int) Math.round((Math.abs(sikpontnv[0] - Xe)) * 256 * 256);
-        int Yt = (int) Math.round((Math.abs(sikpontnv[1] - Ye)) * 256 * 256);
-        int Zt = (int) Math.round((Math.abs(sikpontnv[2] - Ze)) * 256 * 256);
+        int Xe = (int) planeptnv[0];
+        int Ye = (int) planeptnv[1];
+        int Ze = (int) planeptnv[2];
+        int Xt = (int) Math.round((Math.abs(planeptnv[0] - Xe)) * 256 * 256);
+        int Yt = (int) Math.round((Math.abs(planeptnv[1] - Ye)) * 256 * 256);
+        int Zt = (int) Math.round((Math.abs(planeptnv[2] - Ze)) * 256 * 256);
         return new double[]{
-            (double) Xe + Math.signum(Xe) * Xt / 256 / 256 + Origins[hasznalt_origo][0],
-            (double) Ye + Math.signum(Ye) * Yt / 256 / 256 + Origins[hasznalt_origo][1],
-            (double) Ze + Math.signum(Ze) * Zt / 256 / 256 + Origins[hasznalt_origo][2]
+            (double) Xe + Math.signum(Xe) * Xt / 256 / 256 + Origins[used_origin][0],
+            (double) Ye + Math.signum(Ye) * Yt / 256 / 256 + Origins[used_origin][1],
+            (double) Ze + Math.signum(Ze) * Zt / 256 / 256 + Origins[used_origin][2]
         };
     }
 
@@ -1897,41 +1897,31 @@ public class Origami {
      */
     static protected double[] normalvectorRound(double[] ppoint, double[] pnormal) {
 
-        double max_tavolsag = -1;
-        double[] sikpontnv = new double[]{0, 0, 0};
-        double konst = ppoint[0] * pnormal[0] + ppoint[1] * pnormal[1] + ppoint[2] * pnormal[2];
+        double dist_max = -1;
+        double[] planeptnv = new double[]{0, 0, 0};
+
         for (double[] origo : Origins) {
-            double[] iranyvek = pnormal;
-            double X = origo[0];
-            double Y = origo[1];
-            double Z = origo[2];
-            double U = iranyvek[0];
-            double V = iranyvek[1];
-            double W = iranyvek[2];
-            double A = pnormal[0];
-            double B = pnormal[1];
-            double C = pnormal[2];
-            double t = -(A * X + B * Y + C * Z - konst) / (A * U + B * V + C * W);
-            double[] talppont = new double[]{X + t * U, Y + t * V, Z + t * W};
-            if (Geometry.vector_length(Geometry.vector(talppont, origo)) > max_tavolsag) {
-                sikpontnv = Geometry.vector(talppont, origo);
-                max_tavolsag = Geometry.vector_length(sikpontnv);
+
+            double[] basepoint = Geometry.line_plane_intersection(origo, pnormal, ppoint, pnormal);
+            if (Geometry.vector_length(Geometry.vector(basepoint, origo)) > dist_max) {
+                planeptnv = Geometry.vector(basepoint, origo);
+                dist_max = Geometry.vector_length(planeptnv);
             }
         }
-        double elojel = 1;
-        if (Geometry.scalar_product(pnormal, sikpontnv) < 0) {
-            elojel = -1;
+        double sgn = 1;
+        if (Geometry.scalar_product(pnormal, planeptnv) < 0) {
+            sgn = -1;
         }
-        int Xe = (int) sikpontnv[0];
-        int Ye = (int) sikpontnv[1];
-        int Ze = (int) sikpontnv[2];
-        int Xt = (int) Math.round((Math.abs(sikpontnv[0] - Xe)) * 256 * 256);
-        int Yt = (int) Math.round((Math.abs(sikpontnv[1] - Ye)) * 256 * 256);
-        int Zt = (int) Math.round((Math.abs(sikpontnv[2] - Ze)) * 256 * 256);
+        int Xe = (int) planeptnv[0];
+        int Ye = (int) planeptnv[1];
+        int Ze = (int) planeptnv[2];
+        int Xt = (int) Math.round((Math.abs(planeptnv[0] - Xe)) * 256 * 256);
+        int Yt = (int) Math.round((Math.abs(planeptnv[1] - Ye)) * 256 * 256);
+        int Zt = (int) Math.round((Math.abs(planeptnv[2] - Ze)) * 256 * 256);
         return new double[]{
-            elojel * ((double) Xe + Math.signum(Xe) * Xt / 256 / 256),
-            elojel * ((double) Ye + Math.signum(Ye) * Yt / 256 / 256),
-            elojel * ((double) Ze + Math.signum(Ze) * Zt / 256 / 256)
+            sgn * ((double) Xe + Math.signum(Xe) * Xt / 256 / 256),
+            sgn * ((double) Ye + Math.signum(Ye) * Yt / 256 / 256),
+            sgn * ((double) Ze + Math.signum(Ze) * Zt / 256 / 256)
         };
     }
 
@@ -1954,25 +1944,18 @@ public class Origami {
                         start = vertices.get(polygons.get(polygonIndex).get(i));
                     } else {
 
-                        if (Geometry.plane_between_points(ppoint1, pnormal1, vertices.get(polygons.get(polygonIndex).get(i)), vertices.get(polygons.get(polygonIndex).get(j)))
-                                && !Geometry.point_on_plane(ppoint, pnormal, vertices.get(polygons.get(polygonIndex).get(j)))) {
+                        if (Geometry.plane_between_points(ppoint1, pnormal1,
+                                vertices.get(polygons.get(polygonIndex).get(i)),
+                                vertices.get(polygons.get(polygonIndex).get(j)))
+                            && !Geometry.point_on_plane(ppoint, pnormal,
+                                vertices.get(polygons.get(polygonIndex).get(j)))) {
 
-                            double D = ppoint1[0] * pnormal1[0] + ppoint1[1] * pnormal1[1] + ppoint1[2] * pnormal1[2];
-
-                            double[] iranyvek = Geometry.vector(vertices.get(polygons.get(polygonIndex).get(i)), vertices.get(polygons.get(polygonIndex).get(j)));
-                            double X = vertices.get(polygons.get(polygonIndex).get(i))[0];
-                            double Y = vertices.get(polygons.get(polygonIndex).get(i))[1];
-                            double Z = vertices.get(polygons.get(polygonIndex).get(i))[2];
-                            double U = iranyvek[0];
-                            double V = iranyvek[1];
-                            double W = iranyvek[2];
-                            double A = pnormal1[0];
-                            double B = pnormal1[1];
-                            double C = pnormal1[2];
-                            double t = -(A * X + B * Y + C * Z - D) / (A * U + B * V + C * W);
+                            double[] dirvec = Geometry.vector(vertices.get(polygons.get(polygonIndex).get(i)),
+                                    vertices.get(polygons.get(polygonIndex).get(j)));
+                            double[] ipoint = vertices.get(polygons.get(polygonIndex).get(i));
 
                             end = start;
-                            start = new double[]{X + t * U, Y + t * V, Z + t * W};
+                            start = Geometry.line_plane_intersection(ipoint, dirvec, ppoint1, pnormal1);
                         }
                     }
                 }
@@ -2005,31 +1988,28 @@ public class Origami {
                         start = vertices2d.get(polygons.get(polygonIndex).get(i));
                     } else {
 
-                        if (Geometry.plane_between_points(ppoint1, pnormal1, vertices.get(polygons.get(polygonIndex).get(i)), vertices.get(polygons.get(polygonIndex).get(j)))
-                                && !Geometry.point_on_plane(ppoint, pnormal, vertices.get(polygons.get(polygonIndex).get(j)))) {
+                        if (Geometry.plane_between_points(ppoint1, pnormal1,
+                                vertices.get(polygons.get(polygonIndex).get(i)),
+                                vertices.get(polygons.get(polygonIndex).get(j)))
+                            && !Geometry.point_on_plane(ppoint, pnormal,
+                                vertices.get(polygons.get(polygonIndex).get(j)))) {
 
-                            double D = ppoint1[0] * pnormal1[0] + ppoint1[1] * pnormal1[1] + ppoint1[2] * pnormal1[2];
+                            double[] dirvec = Geometry.vector(vertices.get(polygons.get(polygonIndex).get(i)),
+                                    vertices.get(polygons.get(polygonIndex).get(j)));
+                            double[] ipoint = vertices.get(polygons.get(polygonIndex).get(i));
 
-                            double[] iranyvek = Geometry.vector(vertices.get(polygons.get(polygonIndex).get(i)), vertices.get(polygons.get(polygonIndex).get(j)));
-                            double X = vertices.get(polygons.get(polygonIndex).get(i))[0];
-                            double Y = vertices.get(polygons.get(polygonIndex).get(i))[1];
-                            double Z = vertices.get(polygons.get(polygonIndex).get(i))[2];
-                            double U = iranyvek[0];
-                            double V = iranyvek[1];
-                            double W = iranyvek[2];
-                            double A = pnormal1[0];
-                            double B = pnormal1[1];
-                            double C = pnormal1[2];
-                            double t = -(A * X + B * Y + C * Z - D) / (A * U + B * V + C * W);
+                            double[] meet = Geometry.line_plane_intersection(ipoint, dirvec, ppoint, pnormal);
 
-                            double[] metszet = new double[]{X + t * U, Y + t * V, Z + t * W};
-
-                            double suly1 = Geometry.vector_length(Geometry.vector(metszet, vertices.get(polygons.get(polygonIndex).get(j))));
-                            double suly2 = Geometry.vector_length(Geometry.vector(metszet, vertices.get(polygons.get(polygonIndex).get(i))));
+                            double weight1 = Geometry.vector_length(
+                                    Geometry.vector(meet, vertices.get(polygons.get(polygonIndex).get(j))));
+                            double weight2 = Geometry.vector_length(
+                                    Geometry.vector(meet, vertices.get(polygons.get(polygonIndex).get(i))));
                             end = start;
                             start = new double[]{
-                                (vertices2d.get(polygons.get(polygonIndex).get(i))[0] * suly1 + vertices2d.get(polygons.get(polygonIndex).get(j))[0] * suly2) / (suly1 + suly2),
-                                (vertices2d.get(polygons.get(polygonIndex).get(i))[1] * suly1 + vertices2d.get(polygons.get(polygonIndex).get(j))[1] * suly2) / (suly1 + suly2),
+                                (vertices2d.get(polygons.get(polygonIndex).get(i))[0] * weight1
+                                        + vertices2d.get(polygons.get(polygonIndex).get(j))[0] * weight2) / (weight1 + weight2),
+                                (vertices2d.get(polygons.get(polygonIndex).get(i))[1] * weight1
+                                        + vertices2d.get(polygons.get(polygonIndex).get(j))[1] * weight2) / (weight1 + weight2),
                                 0
                             };
                         }
@@ -2077,25 +2057,26 @@ public class Origami {
         if (components == 1) {
 
             boolean collin = false;
-            int maspont = -1;
-            double tavolsagmax = -1;
+            int farpoint = -1;
+            double dist_max = -1;
 
             for (int hp : lines) {
                 if (Geometry.vector_length(Geometry.vector(vertices.get(hp), vertices.get(lines.get(0)))) > 0) {
                     collin = true;
-                    if (Geometry.vector_length(Geometry.vector(vertices.get(hp), vertices.get(lines.get(0)))) > tavolsagmax) {
-                        maspont = hp;
-                        tavolsagmax = Geometry.vector_length(Geometry.vector(vertices.get(hp), vertices.get(lines.get(0))));
+                    if (Geometry.vector_length(Geometry.vector(vertices.get(hp), vertices.get(lines.get(0)))) > dist_max) {
+                        farpoint = hp;
+                        dist_max = Geometry.vector_length(Geometry.vector(vertices.get(hp), vertices.get(lines.get(0))));
                     }
                 }
             }
 
             if (collin) {
-                for (int ii = 1; ii < lines.size() && ii != maspont; ii++) {
+                for (int ii = 1; ii < lines.size() && ii != farpoint; ii++) {
 
-                    if (Geometry.vector_length(Geometry.vector_product(Geometry.vector(vertices.get(lines.get(0)), vertices.get(lines.get(ii))),
-                            Geometry.vector(vertices.get(maspont), vertices.get(lines.get(ii)))))
-                            > Geometry.vector_length(Geometry.vector(vertices.get(lines.get(0)), vertices.get(maspont)))) {
+                    if (Geometry.vector_length(Geometry.vector_product(
+                            Geometry.vector(vertices.get(lines.get(0)), vertices.get(lines.get(ii))),
+                            Geometry.vector(vertices.get(farpoint), vertices.get(lines.get(ii)))))
+                        > Geometry.vector_length(Geometry.vector(vertices.get(lines.get(0)), vertices.get(farpoint)))) {
 
                         collin = false;
                         break;
@@ -2141,25 +2122,26 @@ public class Origami {
         }
 
         boolean collin = false;
-        int maspont = -1;
-        double tavolsagmax = -1;
+        int farpoint = -1;
+        double dist_max = -1;
 
-        for (int hp : line) {
-            if (Geometry.vector_length(Geometry.vector(vertices.get(hp), vertices.get(line.get(0)))) > 0) {
+        for (int fp : line) {
+            if (Geometry.vector_length(Geometry.vector(vertices.get(fp), vertices.get(line.get(0)))) > 0) {
                 collin = true;
-                if (Geometry.vector_length(Geometry.vector(vertices.get(hp), vertices.get(line.get(0)))) > tavolsagmax) {
-                    maspont = hp;
-                    tavolsagmax = Geometry.vector_length(Geometry.vector(vertices.get(hp), vertices.get(line.get(0))));
+                if (Geometry.vector_length(Geometry.vector(vertices.get(fp), vertices.get(line.get(0)))) > dist_max) {
+                    farpoint = fp;
+                    dist_max = Geometry.vector_length(Geometry.vector(vertices.get(fp), vertices.get(line.get(0))));
                 }
             }
         }
 
         if (collin) {
-            for (int ii = 1; ii < line.size() && ii != maspont; ii++) {
+            for (int ii = 1; ii < line.size() && ii != farpoint; ii++) {
 
-                if (Geometry.vector_length(Geometry.vector_product(Geometry.vector(vertices.get(line.get(0)), vertices.get(line.get(ii))),
-                        Geometry.vector(vertices.get(maspont), vertices.get(line.get(ii)))))
-                        > Geometry.vector_length(Geometry.vector(vertices.get(line.get(0)), vertices.get(maspont)))) {
+                if (Geometry.vector_length(Geometry.vector_product(
+                        Geometry.vector(vertices.get(line.get(0)), vertices.get(line.get(ii))),
+                        Geometry.vector(vertices.get(farpoint), vertices.get(line.get(ii)))))
+                    > Geometry.vector_length(Geometry.vector(vertices.get(line.get(0)), vertices.get(farpoint)))) {
 
                     collin = false;
                     break;

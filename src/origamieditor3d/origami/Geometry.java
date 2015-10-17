@@ -72,6 +72,12 @@ public class Geometry {
         return length;
     }
 
+    static public double[] length_to_1(double[] v) {
+
+        double length = Math.sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
+        return new double[]{v[0] / length, v[1] / length, v[2] / length};
+    }
+
     static public double[] length_to_100(double[] v) {
 
         double length = Math.sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]) * 0.01;
