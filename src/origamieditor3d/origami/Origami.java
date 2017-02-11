@@ -17,8 +17,8 @@ import java.util.HashMap;
 
 /**
  * Represents a three-dimensional rigid origami model consisting of convex
- * polygonal faces. Provides methods to manipulate the model by various types of
- * transformations.
+ * polygonal faces. Provides methods for manipulating the model with various
+ * types of transformations.
  *
  * @author Attila Bágyoni (ba-sz-at@users.sourceforge.net)
  * @since 2013-01-14
@@ -38,14 +38,14 @@ public class Origami {
     }
 
     /**
-     * Creates a new origami model.
-     * <br>
-     * The new model will be initialized with an empty
-     * {@link #history() histroy}, a {@link #papertype() papertype} of the
-     * specified {@link PaperType}, and will be {@link #reset() reset}
-     * immediately afterwards.
+     * Creates a new origami model. <br>
+     * The new model will be initialized with an empty {@link #history()
+     * histroy}, a {@link #papertype() papertype} of the specified
+     * {@link PaperType}, and will be {@link #reset() reset} immediately
+     * afterwards.
      *
-     * @param papertype	The {@link #papertype() papertype} of the new instance.
+     * @param papertype
+     *            The {@link #papertype() papertype} of the new instance.
      */
     public Origami(PaperType papertype) {
 
@@ -61,18 +61,19 @@ public class Origami {
     }
 
     /**
-     * Creates a new origami model.
-     * <br>
-     * The new model will be initialized with an empty
-     * {@link #history() history}, a {@link #papertype() papertype} of
-     * {@link PaperType#Custom}, a {@link #corners() corners} list that is the
+     * Creates a new origami model. <br>
+     * The new model will be initialized with an empty {@link #history()
+     * history}, a {@link #papertype() papertype} of {@link PaperType#Custom}, a
+     * {@link #corners() corners} list that is the
      * {@link #ccwWindingOrder(ArrayList) ccwWindingOrder} of the specified
      * {@link ArrayList}, and will be {@link #reset() reset} immediately
      * afterwards.
      *
-     * @param corners The {@link #corners() corners} list of the new instance in
-     * an arbitrary order.
-     * @throws Exception if {@code !isConvex(ccwWindingOrder(corners))}
+     * @param corners
+     *            The {@link #corners() corners} list of the new instance in an
+     *            arbitrary order.
+     * @throws Exception
+     *             if {@code !isConvex(ccwWindingOrder(corners))}
      */
     public Origami(ArrayList<double[]> corners) throws Exception {
 
@@ -96,8 +97,8 @@ public class Origami {
 
         papertype = origami.papertype;
         corners = origami.corners;
-        history = (ArrayList<double[]>)origami.history.clone();
-        history_stream = (ArrayList<int[]>)origami.history_stream.clone();
+        history = (ArrayList<double[]>) origami.history.clone();
+        history_stream = (ArrayList<int[]>) origami.history_stream.clone();
         reset();
     }
 
@@ -112,13 +113,12 @@ public class Origami {
      * they are used in any of the {@link #polygons() polygons} or not. The
      * elements in this list are {@code double[]}s, each one representing the
      * coordinates of a vertex in the origami space, i. e. the 3-dimensional
-     * space where this origami is edited.
-     * <br>
+     * space where this origami is edited. <br>
      * In this list, every vertex has a corresponding preimage in the
      * {@link #vertices2d() vertices2d} list that has the same index.
      *
      * @return An {@link ArrayList} representing the vertices of this origami in
-     * the origami space.
+     *         the origami space.
      */
     public ArrayList<double[]> vertices() {
         return vertices;
@@ -146,8 +146,7 @@ public class Origami {
      * origami's polygons in the form of indices pointing into both the
      * {@link #vertices() vertices} and the {@link #vertices2d() vertices2d}
      * list. In each polygon, the vertices are arranged in a counter-clockwise
-     * winding order.
-     * <br>
+     * winding order. <br>
      * The polygons themselves do not have any particular order.
      *
      * @return As described above.
@@ -173,7 +172,7 @@ public class Origami {
      * private use</b>, although it may be replaced by a more straightforward
      * and human-readable format in later versions.
      *
-     * @return Do not mind.
+     * @return As described above.
      */
     public ArrayList<double[]> history() {
         return history;
@@ -263,7 +262,8 @@ public class Origami {
          * Returns the PaperType the specified {@code char} value is assigned
          * to.
          *
-         * @param c The {@code char} value of the desired PaperType.
+         * @param c
+         *            The {@code char} value of the desired PaperType.
          * @return The desired PaperType.
          */
         static public PaperType forChar(char c) {
@@ -277,22 +277,28 @@ public class Origami {
             if (super.equals(A4)) {
 
                 return "A4";
-            } else if (super.equals(Square)) {
+            }
+            else if (super.equals(Square)) {
 
                 return "Square";
-            } else if (super.equals(Hexagon)) {
+            }
+            else if (super.equals(Hexagon)) {
 
                 return "Regular hexagon";
-            } else if (super.equals(Dollar)) {
+            }
+            else if (super.equals(Dollar)) {
 
                 return "Dollar bill";
-            } else if (super.equals(Forint)) {
+            }
+            else if (super.equals(Forint)) {
 
                 return "Forint bill";
-            } else if (super.equals(Custom)) {
+            }
+            else if (super.equals(Custom)) {
 
                 return "Custom";
-            } else {
+            }
+            else {
 
                 throw new NullPointerException();
             }
@@ -302,7 +308,7 @@ public class Origami {
     protected PaperType papertype = PaperType.Square;
 
     /**
-     * Returns the paper type of this origami. The  value of this field will be
+     * Returns the paper type of this origami. The value of this field will be
      * taken into account by the {@link #reset() reset} method.
      *
      * @return As described above.
@@ -334,13 +340,12 @@ public class Origami {
      * they are used in any of the {@link #polygons() polygons} or not. The
      * elements in this list are {@code double[]}s, each one representing the
      * coordinates of a vertex in the paper space, i. e. the 2-dimensional space
-     * where the vertices of this origami would be if it were unfolded.
-     * <br>
+     * where the vertices of this origami would be if it were unfolded. <br>
      * In this list, every vertex has a corresponding image in the
      * {@link #vertices() vertices} list that has the same index.
      *
      * @return An {@link ArrayList} representing the vertices of this origami in
-     * the paper space.
+     *         the paper space.
      */
     public ArrayList<double[]> vertices2d() {
         return vertices2d;
@@ -356,8 +361,9 @@ public class Origami {
      * Adds a new vertex to the end of the {@link #vertices() vertices} list of
      * this origami.
      *
-     * @param point The 3-dimensional coordinates of the new vertex in the
-     * origami space as {@code double}s.
+     * @param point
+     *            The 3-dimensional coordinates of the new vertex in the origami
+     *            space as {@code double}s.
      */
     protected void addVertex(double... point) {
 
@@ -369,8 +375,9 @@ public class Origami {
      * Adds a new vertex to the end of the {@link #vertices2d() vertices2d} list
      * of this origami.
      *
-     * @param point The 2-dimensional coordinates of the new vertex in the paper
-     * space as {@code double}s.
+     * @param point
+     *            The 2-dimensional coordinates of the new vertex in the paper
+     *            space as {@code double}s.
      */
     protected void add2dVertex(double... point) {
         vertices2d.add(point);
@@ -378,15 +385,15 @@ public class Origami {
 
     /**
      * Adds a new polygon to the end of the {@link #polygons() polygons} list of
-     * this origami.
-     * <br>
+     * this origami. <br>
      * When adding a new polygon, {@code isConvex(polygon)} is expected (but not
      * checked) to be {@code true}.
      *
-     * @param polygon An {@link ArrayList} that contains zero-based indices
-     * pointing into the {@link #vertices() vertices} and the {@link
-     * #vertices2d() vertices2d} list of this origami in a counter-clockwise
-     * winding order.
+     * @param polygon
+     *            An {@link ArrayList} that contains zero-based indices pointing
+     *            into the {@link #vertices() vertices} and the
+     *            {@link #vertices2d() vertices2d} list of this origami in a
+     *            counter-clockwise winding order.
      */
     protected void addPolygon(ArrayList<Integer> polygon) {
 
@@ -398,8 +405,9 @@ public class Origami {
      * Removes the polygon from this origami's {@link #polygons() polygons} at
      * the specified index.
      *
-     * @param polygonIndex The zero-base index at which the polygon to remove is
-     * located in the {@link #polygons() polygons} list.
+     * @param polygonIndex
+     *            The zero-base index at which the polygon to remove is located
+     *            in the {@link #polygons() polygons} list.
      */
     protected void removePolygon(int polygonIndex) {
 
@@ -415,7 +423,7 @@ public class Origami {
 
     protected void addCommand(int[] cblock) {
 
-        int i=-1;
+        int i = -1;
 
         int header = cblock[++i];
         header <<= 8;
@@ -461,62 +469,70 @@ public class Origami {
         pnormal[1] = Y;
         pnormal[2] = Z;
 
-        //choosing the appropriate half space
+        // choosing the appropriate half space
         if (((header >>> 24) - ((header >>> 24) % 32)) / 32 == 1) {
-            pnormal = new double[]{-pnormal[0], -pnormal[1], -pnormal[2]};
+            pnormal = new double[] { -pnormal[0], -pnormal[1], -pnormal[2] };
         }
 
         double[] command;
         if ((header >>> 24) % 8 == 1) {
 
-            //reflection fold
+            // reflection fold
             command = new double[7];
             command[0] = 1;
-        } else if ((header >>> 24) % 8 == 2) {
+        }
+        else if ((header >>> 24) % 8 == 2) {
 
-            //positive rot. fold
+            // positive rot. fold
             command = new double[8];
             command[0] = 2;
             command[7] = (header >>> 16) % 256;
-        } else if ((header >>> 24) % 8 == 3) {
+        }
+        else if ((header >>> 24) % 8 == 3) {
 
-            //negative rot. fold
+            // negative rot. fold
             command = new double[8];
             command[0] = 2;
             command[7] = -(header >>> 16) % 256;
-        } else if ((header >>> 24) % 8 == 4) {
+        }
+        else if ((header >>> 24) % 8 == 4) {
 
-            //partial reflection fold
+            // partial reflection fold
             command = new double[8];
             command[0] = 3;
             command[7] = (header % 65536);
-        } else if ((header >>> 24) % 8 == 5) {
+        }
+        else if ((header >>> 24) % 8 == 5) {
 
-            //positive partial rot. fold
+            // positive partial rot. fold
             command = new double[9];
             command[0] = 4;
             command[7] = (header >>> 16) % 256;
             command[8] = (header % 65536);
-        } else if ((header >>> 24) % 8 == 6) {
+        }
+        else if ((header >>> 24) % 8 == 6) {
 
-            //negative partial rot. fold
+            // negative partial rot. fold
             command = new double[9];
             command[0] = 4;
             command[7] = -(header >>> 16) % 256;
             command[8] = (header % 65536);
-        } else if ((header >>> 24) % 8 == 7) {
+        }
+        else if ((header >>> 24) % 8 == 7) {
 
-            //crease
+            // crease
             command = new double[7];
             command[0] = 5;
-        } else if (header % 65536 == 65535) {
+        }
+        else if (header % 65536 == 65535) {
 
-            //cut
+            // cut
             command = new double[7];
             command[0] = 6;
-        } else {
+        }
+        else {
 
-            //partial cut
+            // partial cut
             command = new double[8];
             command[0] = 7;
             command[7] = (header % 65536);
@@ -538,7 +554,7 @@ public class Origami {
         double max_d = -1;
         int used_origin = 0;
         int used_hemispace = 0;
-        double[] pjoint = new double[]{0, 0, 0};
+        double[] pjoint = new double[] { 0, 0, 0 };
 
         for (int ii = 0; ii < Origins.length; ii++) {
 
@@ -551,7 +567,7 @@ public class Origami {
             }
         }
 
-        //inner: 1, outer: 0
+        // inner: 1, outer: 0
         if (Geometry.scalar_product(pnormal, pjoint) < 0) {
             used_hemispace = 1;
         }
@@ -572,7 +588,8 @@ public class Origami {
                 phi %= 360;
                 if (phi <= 180) {
                     command = 2;
-                } else {
+                }
+                else {
 
                     command = 3;
                     phi = 360 - phi;
@@ -591,7 +608,8 @@ public class Origami {
                 phi %= 360;
                 if (phi <= 180) {
                     command = 5;
-                } else {
+                }
+                else {
 
                     command = 6;
                     phi = 360 - phi;
@@ -623,28 +641,16 @@ public class Origami {
 
         int[] cblock = {
 
-            //header
-            (0xFF & (used_hemispace * 32 + used_origin * 8 + command)),
-            (0xFF & (phi)),
-            (0xFF & (poly_indx >>> 8)),
-            (0xFF & (poly_indx)),
+                // header
+                (0xFF & (used_hemispace * 32 + used_origin * 8 + command)), (0xFF & (phi)), (0xFF & (poly_indx >>> 8)),
+                (0xFF & (poly_indx)),
 
-            //body
-            (0xFF & (Xe >>> 8)),
-            (0xFF & (Xe)),
-            (0xFF & (Xt >>> 8)),
-            (0xFF & (Xt)),
+                // body
+                (0xFF & (Xe >>> 8)), (0xFF & (Xe)), (0xFF & (Xt >>> 8)), (0xFF & (Xt)),
 
-            (0xFF & (Ye >>> 8)),
-            (0xFF & (Ye)),
-            (0xFF & (Yt >>> 8)),
-            (0xFF & (Yt)),
+                (0xFF & (Ye >>> 8)), (0xFF & (Ye)), (0xFF & (Yt >>> 8)), (0xFF & (Yt)),
 
-            (0xFF & (Ze >>> 8)),
-            (0xFF & (Ze)),
-            (0xFF & (Zt >>> 8)),
-            (0xFF & (Zt))
-        };
+                (0xFF & (Ze >>> 8)), (0xFF & (Ze)), (0xFF & (Zt >>> 8)), (0xFF & (Zt)) };
         return cblock;
     }
 
@@ -653,15 +659,17 @@ public class Origami {
      * polygons} list is at least one-dimensional, i. e. it has two vertices
      * with a positive distance between them.
      *
-     * @param polygonIndex The zero-base index at which the polygon to check is
-     * located in the {@link #polygons() polygons} list.
+     * @param polygonIndex
+     *            The zero-base index at which the polygon to check is located
+     *            in the {@link #polygons() polygons} list.
      * @return {@code false} iff the specified polygon is zero-dimensional.
      */
     public boolean isNonDegenerate(int polygonIndex) {
 
         if (polygons.get(polygonIndex).size() > 1) {
             for (int p : polygons.get(polygonIndex)) {
-                if (Geometry.vector_length(Geometry.vector(vertices.get(p), vertices.get(polygons.get(polygonIndex).get(0)))) > 0) {
+                if (Geometry.vector_length(
+                        Geometry.vector(vertices.get(p), vertices.get(polygons.get(polygonIndex).get(0)))) > 0) {
                     return true;
                 }
             }
@@ -669,6 +677,15 @@ public class Origami {
         return false;
     }
 
+    /**
+     * Checks if the polygon at the specified index in the {@link #polygons()
+     * polygons} list has a positive area.
+     *
+     * @param polygonIndex
+     *            The zero-base index at which the polygon to check is located
+     *            in the {@link #polygons() polygons} list.
+     * @return {@code false} iff the specified polygon is zero- or one-dimensional.
+     */
     public boolean isStrictlyNonDegenerate(int polygonIndex) {
 
         if (polygons.get(polygonIndex).size() > 2) {
@@ -676,8 +693,11 @@ public class Origami {
             for (int point1ind : polygons().get(polygonIndex)) {
                 for (int point2ind : polygons().get(polygonIndex)) {
 
-                    if (Geometry.vector_length(Geometry.vector_product(Geometry.vector(vertices().get(point1ind), vertices().get(polygons().get(polygonIndex).get(0))),
-                            Geometry.vector(vertices().get(point2ind), vertices().get(polygons().get(polygonIndex).get(0))))) > 0) {
+                    if (Geometry.vector_length(Geometry.vector_product(
+                            Geometry.vector(vertices().get(point1ind),
+                                    vertices().get(polygons().get(polygonIndex).get(0))),
+                            Geometry.vector(vertices().get(point2ind),
+                                    vertices().get(polygons().get(polygonIndex).get(0))))) > 0) {
                         return true;
                     }
                 }
@@ -692,11 +712,15 @@ public class Origami {
 
             boolean inner = false, outer = false;
             for (int i = 0; i < polygons.get(polygonIndex).size(); i++) {
-                if (Geometry.scalar_product(vertices.get(polygons.get(polygonIndex).get(i)), pnormal) / Math.sqrt(Math.max(Geometry.scalar_product(pnormal, pnormal), 1))
-                        > Geometry.scalar_product(ppoint, pnormal) / Math.sqrt(Math.max(Geometry.scalar_product(pnormal, pnormal), 1)) + 0.00000001) {
+                if (Geometry.scalar_product(vertices.get(polygons.get(polygonIndex).get(i)), pnormal) / Math.sqrt(Math
+                        .max(Geometry.scalar_product(pnormal, pnormal), 1)) > Geometry.scalar_product(ppoint, pnormal)
+                                / Math.sqrt(Math.max(Geometry.scalar_product(pnormal, pnormal), 1)) + 0.00000001) {
                     inner = true;
-                } else if (Geometry.scalar_product(vertices.get(polygons.get(polygonIndex).get(i)), pnormal) / Math.sqrt(Math.max(Geometry.scalar_product(pnormal, pnormal), 1))
-                        < Geometry.scalar_product(ppoint, pnormal) / Math.sqrt(Math.max(Geometry.scalar_product(pnormal, pnormal), 1)) - 0.00000001) {
+                }
+                else if (Geometry.scalar_product(vertices.get(polygons.get(polygonIndex).get(i)), pnormal)
+                        / Math.sqrt(Math.max(Geometry.scalar_product(pnormal, pnormal), 1)) < Geometry.scalar_product(
+                                ppoint, pnormal) / Math.sqrt(Math.max(Geometry.scalar_product(pnormal, pnormal), 1))
+                                - 0.00000001) {
                     outer = true;
                 }
                 if (inner && outer) {
@@ -717,18 +741,20 @@ public class Origami {
      * by intersecting the old polygon with the specified closed half-space, and
      * the other one by intersecting it with the closure of that half-space's
      * complement. If one of these polygons is empty, only the other one will be
-     * added.
-     * <br>
+     * added. <br>
      * If two new polygons have been generated, their common vertices will point
      * to the same object in the {@link #vertices() vertices} list, thus
      * becoming 'inseparable'.
      *
-     * @param ppoint An array containing the coordinates of a boundary point of
-     * the half-space.
-     * @param pnormal An array containing the coordinates of the normal vector
-     * of the plane bounding the half-space.
-     * @param polygonIndex The zero-base index at which the polygon to split is
-     * located in the {@link #polygons() polygons} list.
+     * @param ppoint
+     *            An array containing the coordinates of a boundary point of the
+     *            half-space.
+     * @param pnormal
+     *            An array containing the coordinates of the normal vector of
+     *            the half-space.
+     * @param polygonIndex
+     *            The zero-base index at which the polygon to split is located
+     *            in the {@link #polygons() polygons} list.
      * @return {@code true} iff the polygon has been divided in two.
      */
     protected boolean cutPolygon(double[] ppoint, double[] pnormal, int polygonIndex) {
@@ -745,51 +771,65 @@ public class Origami {
 
                     newpoly1.add(polygons.get(polygonIndex).get(i));
                     newpoly2.add(polygons.get(polygonIndex).get(i));
-                } else {
+                }
+                else {
 
-                    if (Geometry.scalar_product(vertices.get(polygons.get(polygonIndex).get(i)), pnormal) > Geometry.scalar_product(ppoint, pnormal)) {
+                    if (Geometry.scalar_product(vertices.get(polygons.get(polygonIndex).get(i)), pnormal) > Geometry
+                            .scalar_product(ppoint, pnormal)) {
                         newpoly1.add(polygons.get(polygonIndex).get(i));
-                    } else {
+                    }
+                    else {
                         newpoly2.add(polygons.get(polygonIndex).get(i));
                     }
 
-                    if (Geometry.plane_between_points(ppoint, pnormal, vertices.get(polygons.get(polygonIndex).get(i)), vertices.get(polygons.get(polygonIndex).get(j)))) {
+                    if (Geometry.plane_between_points(ppoint, pnormal, vertices.get(polygons.get(polygonIndex).get(i)),
+                            vertices.get(polygons.get(polygonIndex).get(j)))) {
 
-                        freshcut:
-                        {
+                        freshcut: {
                             for (int[] szakasz : cutpolygon_nodes) {
-                                if (szakasz[0] == polygons.get(polygonIndex).get(i) && szakasz[1] == polygons.get(polygonIndex).get(j)) {
+                                if (szakasz[0] == polygons.get(polygonIndex).get(i)
+                                        && szakasz[1] == polygons.get(polygonIndex).get(j)) {
                                     newpoly1.add(szakasz[2]);
                                     newpoly2.add(szakasz[2]);
                                     break freshcut;
-                                } else if (szakasz[0] == polygons.get(polygonIndex).get(j) && szakasz[1] == polygons.get(polygonIndex).get(i)) {
+                                }
+                                else if (szakasz[0] == polygons.get(polygonIndex).get(j)
+                                        && szakasz[1] == polygons.get(polygonIndex).get(i)) {
                                     newpoly1.add(szakasz[2]);
                                     newpoly2.add(szakasz[2]);
                                     break freshcut;
                                 }
                             }
 
-                            double[] dirvec = Geometry.vector(vertices.get(polygons.get(polygonIndex).get(i)), vertices.get(polygons.get(polygonIndex).get(j)));
+                            double[] dirvec = Geometry.vector(vertices.get(polygons.get(polygonIndex).get(i)),
+                                    vertices.get(polygons.get(polygonIndex).get(j)));
                             double[] ipoint = vertices.get(polygons.get(polygonIndex).get(i));
 
                             double[] meet = Geometry.line_plane_intersection(ipoint, dirvec, ppoint, pnormal);
                             addVertex(meet);
 
-                            double weight1 = Geometry.vector_length(Geometry.vector(meet, vertices.get(polygons.get(polygonIndex).get(j))));
-                            double weight2 = Geometry.vector_length(Geometry.vector(meet, vertices.get(polygons.get(polygonIndex).get(i))));
-                            add2dVertex(new double[]{
-                                (vertices2d.get(polygons.get(polygonIndex).get(i))[0] * weight1 + vertices2d.get(polygons.get(polygonIndex).get(j))[0] * weight2) / (weight1 + weight2),
-                                (vertices2d.get(polygons.get(polygonIndex).get(i))[1] * weight1 + vertices2d.get(polygons.get(polygonIndex).get(j))[1] * weight2) / (weight1 + weight2),
-                                0
-                            });
+                            double weight1 = Geometry.vector_length(
+                                    Geometry.vector(meet, vertices.get(polygons.get(polygonIndex).get(j))));
+                            double weight2 = Geometry.vector_length(
+                                    Geometry.vector(meet, vertices.get(polygons.get(polygonIndex).get(i))));
+                            add2dVertex(new double[] {
+                                    (vertices2d.get(polygons.get(polygonIndex).get(i))[0] * weight1
+                                            + vertices2d.get(polygons.get(polygonIndex).get(j))[0] * weight2)
+                                            / (weight1 + weight2),
+                                    (vertices2d.get(polygons.get(polygonIndex).get(i))[1] * weight1
+                                            + vertices2d.get(polygons.get(polygonIndex).get(j))[1] * weight2)
+                                            / (weight1 + weight2),
+                                    0 });
 
                             newpoly1.add(vertices_size - 1);
                             newpoly2.add(vertices_size - 1);
-                            cutpolygon_nodes.add(new int[]{polygons.get(polygonIndex).get(i), polygons.get(polygonIndex).get(j), vertices_size - 1});
+                            cutpolygon_nodes.add(new int[] { polygons.get(polygonIndex).get(i),
+                                    polygons.get(polygonIndex).get(j), vertices_size - 1 });
 
                             for (int ii = 0; ii < border.size(); ii++) {
                                 if (border.get(ii).equals(polygons.get(polygonIndex).get(i))) {
-                                    if (border.get((ii + 1) % border.size()).equals(polygons.get(polygonIndex).get(j))) {
+                                    if (border.get((ii + 1) % border.size())
+                                            .equals(polygons.get(polygonIndex).get(j))) {
 
                                         border.add(ii + 1, vertices_size - 1);
                                         break;
@@ -801,7 +841,7 @@ public class Origami {
                 }
             }
 
-            cutpolygon_pairs.add(new int[]{polygonIndex, polygons.size()});
+            cutpolygon_pairs.add(new int[] { polygonIndex, polygons.size() });
             last_cut_polygons.add(polygons.get(polygonIndex));
             polygons.set(polygonIndex, newpoly1);
             addPolygon(newpoly2);
@@ -839,36 +879,37 @@ public class Origami {
 
     public double[] polygonCenter(int polygonIndex) {
 
-        double[] res = new double[]{Double.NaN, Double.NaN, Double.NaN};
+        double[] res = new double[] { Double.NaN, Double.NaN, Double.NaN };
         if (isNonDegenerate(polygonIndex)) {
 
-            res = new double[]{0d, 0d, 0d};
+            res = new double[] { 0d, 0d, 0d };
             for (int ind : polygons.get(polygonIndex)) {
-                res = new double[]{res[0] + vertices.get(ind)[0], res[1] + vertices.get(ind)[1], res[2] + vertices.get(ind)[2]};
+                res = new double[] { res[0] + vertices.get(ind)[0], res[1] + vertices.get(ind)[1],
+                        res[2] + vertices.get(ind)[2] };
             }
 
             java.util.Random eltolas = new java.util.Random(polygonIndex);
-            res = new double[]{
-                res[0] / polygons.get(polygonIndex).size() + eltolas.nextDouble() * 10 - 5,
-                res[1] / polygons.get(polygonIndex).size() + eltolas.nextDouble() * 10 - 5,
-                res[2] / polygons.get(polygonIndex).size() + eltolas.nextDouble() * 10 - 5
-            };
+            res = new double[] { res[0] / polygons.get(polygonIndex).size() + eltolas.nextDouble() * 10 - 5,
+                    res[1] / polygons.get(polygonIndex).size() + eltolas.nextDouble() * 10 - 5,
+                    res[2] / polygons.get(polygonIndex).size() + eltolas.nextDouble() * 10 - 5 };
         }
         return res;
     }
 
     /**
      * Performs a {@link #cutPolygon(double[], double[], int) cutPolygon} with
-     * the specified plane and every polygon's index in this origami's {@link
-     * #polygons() polygon list}, and reflects some of the {@link #vertices()
-     * vertices} over the plane. The vertices located on the same side of the
-     * plane as where the specified normal vector is pointing to will be the
-     * ones reflected over the plane.
+     * the specified plane and every polygon's index in this origami's
+     * {@link #polygons() polygon list}, and reflects some of the
+     * {@link #vertices() vertices} over the plane. The vertices located on the
+     * same side of the plane as where the specified normal vector is pointing
+     * to will be the ones reflected over the plane.
      *
-     * @param ppoint An array containing the 3-dimensional coordinates of a
-     * point the plane goes through as {@code double}s.
-     * @param pnormal An array containing the 3-dimensional coordinates the
-     * plane's normal vector as {@code double}s.
+     * @param ppoint
+     *            An array containing the 3-dimensional coordinates of a point
+     *            the plane goes through as {@code double}s.
+     * @param pnormal
+     *            An array containing the 3-dimensional coordinates the plane's
+     *            normal vector as {@code double}s.
      */
     protected void internalReflectionFold(double[] ppoint, double[] pnormal) {
 
@@ -902,18 +943,20 @@ public class Origami {
      * Passes the arguments in the same order to the
      * {@link Origami#polygonSelect(double[], double[], int) polygonSelect}
      * method, and reflects every {@link #polygons() polygon} listed therein
-     * over the specified plane.
-     * <br>
-     * Reunites previously
-     * {@link Origami#cutPolygon(double[], double[], int) split} polygons if
-     * possible.
+     * over the specified plane. <br>
+     * Reunites previously {@link Origami#cutPolygon(double[], double[], int)
+     * split} polygons if possible.
      *
-     * @param ppoint An array containing the 3-dimensional coordinates of a
-     * point the plane goes through as {@code double}s.
-     * @param pnormal An array containing the 3-dimensional coordinates the
-     * plane's normal vector as {@code double}s.
-     * @param polygonIndex The index of the polygon to include in
-     * {@link Origami#polygonSelect(double[], double[], int) polygonSelect}.
+     * @param ppoint
+     *            An array containing the 3-dimensional coordinates of a point
+     *            the plane goes through as {@code double}s.
+     * @param pnormal
+     *            An array containing the 3-dimensional coordinates the plane's
+     *            normal vector as {@code double}s.
+     * @param polygonIndex
+     *            The index of the polygon to include in
+     *            {@link Origami#polygonSelect(double[], double[], int)
+     *            polygonSelect}.
      */
     protected void internalReflectionFold(double[] ppoint, double[] pnormal, int polygonIndex) {
 
@@ -955,21 +998,24 @@ public class Origami {
 
     /**
      * Performs a {@link #cutPolygon(double[], double[], int) cutPolygon} with
-     * the specified plane and every polygon's index in this origami's {@link
-     * #polygons() polygon list}, and if the intersection of the plane and the
-     * origami is a non-degenerate line, rotates some of the {@link #vertices()
-     * vertices} around that line by the specified angle.
+     * the specified plane and every polygon's index in this origami's
+     * {@link #polygons() polygon list}, and if the intersection of the plane
+     * and the origami is a non-degenerate line, rotates some of the
+     * {@link #vertices() vertices} around that line by the specified angle.
      * <br>
      * In this case, every vertex located on the same side of the plane as where
      * the specified normal vector is pointing to will be rotated around the
      * line. As there is no exclusive 'clockwise' direction in a 3-dimensional
      * space, the rotation's direction will be decided on a whim.
      *
-     * @param ppoint An array containing the 3-dimensional coordinates of a
-     * point the plane goes through as {@code double}s.
-     * @param pnormal An array containing the 3-dimensional coordinates the
-     * plane's normal vector as {@code double}s.
-     * @param phi The angle of the rotation.
+     * @param ppoint
+     *            An array containing the 3-dimensional coordinates of a point
+     *            the plane goes through as {@code double}s.
+     * @param pnormal
+     *            An array containing the 3-dimensional coordinates the plane's
+     *            normal vector as {@code double}s.
+     * @param phi
+     *            The angle of the rotation.
      * @return 0 if the rotation has been performed; 1 if it has not.
      */
     protected int internalRotationFold(double[] ppoint, double[] pnormal, int phi) {
@@ -1011,12 +1057,11 @@ public class Origami {
 
                     collin = true;
                     if (Geometry.vector_length(
-                            Geometry.vector(vertices.get(fp), vertices.get(foldingpoints.get(0))))
-                        > dist_max) {
+                            Geometry.vector(vertices.get(fp), vertices.get(foldingpoints.get(0)))) > dist_max) {
 
                         farpoint = fp;
-                        dist_max = Geometry.vector_length(
-                                Geometry.vector(vertices.get(fp), vertices.get(foldingpoints.get(0))));
+                        dist_max = Geometry
+                                .vector_length(Geometry.vector(vertices.get(fp), vertices.get(foldingpoints.get(0))));
                     }
                 }
             }
@@ -1026,8 +1071,9 @@ public class Origami {
 
             if (Geometry.vector_length(Geometry.vector_product(
                     Geometry.vector(vertices.get(foldingpoints.get(0)), vertices.get(foldingpoints.get(i))),
-                    Geometry.vector(vertices.get(farpoint), vertices.get(foldingpoints.get(i)))))
-                > Geometry.vector_length(Geometry.vector(vertices.get(foldingpoints.get(0)), vertices.get(farpoint)))) {
+                    Geometry.vector(vertices.get(farpoint), vertices.get(foldingpoints.get(i))))) > Geometry
+                            .vector_length(
+                                    Geometry.vector(vertices.get(foldingpoints.get(0)), vertices.get(farpoint)))) {
 
                 collin = false;
                 break;
@@ -1045,13 +1091,15 @@ public class Origami {
                 double[] ipoint = vertices.get(i);
                 if (ipoint[0] * pnormal[0] + ipoint[1] * pnormal[1] + ipoint[2] * pnormal[2] - konst > 0) {
 
-                    double[] img = Geometry.rotation(ipoint, vertices.get(foldingpoints.get(0)), dirvec, sinphi, cosphi);
+                    double[] img = Geometry.rotation(ipoint, vertices.get(foldingpoints.get(0)), dirvec, sinphi,
+                            cosphi);
                     vertices.set(i, img);
                 }
             }
             return 0;
 
-        } else {
+        }
+        else {
             return 1;
         }
     }
@@ -1063,18 +1111,20 @@ public class Origami {
      * intersects the specified plane in a non-degenerate line, rotates these
      * polygons by the specified angle around the line. As there is no exclusive
      * 'clockwise' direction in a 3-dimensional space, the rotation's direction
-     * will be decided on a whim.
-     * <br>
-     * Reunites previously
-     * {@link Origami#cutPolygon(double[], double[], int) split} polygons if
-     * possible.
+     * will be decided on a whim. <br>
+     * Reunites previously {@link Origami#cutPolygon(double[], double[], int)
+     * split} polygons if possible.
      *
-     * @param ppoint An array containing the 3-dimensional coordinates of a
-     * point the plane goes through as {@code double}s.
-     * @param pnormal An array containing the 3-dimensional coordinates the
-     * plane's normal vector as {@code double}s.
-     * @param polygonIndex The index of the polygon to include in
-     * {@link Origami#polygonSelect(double[], double[], int) polygonSelect}.
+     * @param ppoint
+     *            An array containing the 3-dimensional coordinates of a point
+     *            the plane goes through as {@code double}s.
+     * @param pnormal
+     *            An array containing the 3-dimensional coordinates the plane's
+     *            normal vector as {@code double}s.
+     * @param polygonIndex
+     *            The index of the polygon to include in
+     *            {@link Origami#polygonSelect(double[], double[], int)
+     *            polygonSelect}.
      */
     protected void internalRotationFold(double[] ppoint, double[] pnormal, int phi, int polygonIndex) {
 
@@ -1109,12 +1159,11 @@ public class Origami {
 
                     collin = true;
                     if (Geometry.vector_length(
-                            Geometry.vector(vertices.get(hp), vertices.get(foldingpoints.get(0))))
-                        > dist_max) {
+                            Geometry.vector(vertices.get(hp), vertices.get(foldingpoints.get(0)))) > dist_max) {
 
                         farpoint = hp;
-                        dist_max = Geometry.vector_length(
-                                Geometry.vector(vertices.get(hp), vertices.get(foldingpoints.get(0))));
+                        dist_max = Geometry
+                                .vector_length(Geometry.vector(vertices.get(hp), vertices.get(foldingpoints.get(0))));
                     }
                 }
             }
@@ -1124,8 +1173,9 @@ public class Origami {
 
             if (Geometry.vector_length(Geometry.vector_product(
                     Geometry.vector(vertices.get(foldingpoints.get(0)), vertices.get(foldingpoints.get(i))),
-                    Geometry.vector(vertices.get(farpoint), vertices.get(foldingpoints.get(i)))))
-                > Geometry.vector_length(Geometry.vector(vertices.get(foldingpoints.get(0)), vertices.get(farpoint)))) {
+                    Geometry.vector(vertices.get(farpoint), vertices.get(foldingpoints.get(i))))) > Geometry
+                            .vector_length(
+                                    Geometry.vector(vertices.get(foldingpoints.get(0)), vertices.get(farpoint)))) {
 
                 collin = false;
                 break;
@@ -1144,7 +1194,8 @@ public class Origami {
                     if (polygons.get(tag).contains(i)) {
 
                         double[] ipoint = vertices.get(i);
-                        double[] img = Geometry.rotation(ipoint, vertices.get(foldingpoints.get(0)), dirvec, sinphi, cosphi);
+                        double[] img = Geometry.rotation(ipoint, vertices.get(foldingpoints.get(0)), dirvec, sinphi,
+                                cosphi);
                         vertices.set(i, img);
                         break;
                     }
@@ -1175,14 +1226,17 @@ public class Origami {
 
     /**
      * Performs a {@link #cutPolygon(double[], double[], int) cutPolygon} with
-     * the specified plane and every polygon's index in this origami's {@link
-     * #polygons() polygon list}, and deletes every polygon that is on the same
-     * side of the plane as where the specified normal vector is pointing to.
+     * the specified plane and every polygon's index in this origami's
+     * {@link #polygons() polygon list}, and deletes every polygon that is on
+     * the same side of the plane as where the specified normal vector is
+     * pointing to.
      *
-     * @param ppoint An array containing the 3-dimensional coordinates of a
-     * point the plane goes through as {@code double}s.
-     * @param pnormal An array containing the 3-dimensional coordinates the
-     * plane's normal vector as {@code double}s.
+     * @param ppoint
+     *            An array containing the 3-dimensional coordinates of a point
+     *            the plane goes through as {@code double}s.
+     * @param pnormal
+     *            An array containing the 3-dimensional coordinates the plane's
+     *            normal vector as {@code double}s.
      */
     protected void internalMutilation(double[] ppoint, double[] pnormal) {
 
@@ -1219,16 +1273,19 @@ public class Origami {
      * {@link Origami#polygonSelect(double[], double[], int) polygonSelect}
      * method, and deletes every {@link #polygons() polygon} listed therein.
      * <br>
-     * Reunites previously
-     * {@link Origami#cutPolygon(double[], double[], int) split} polygons if
-     * possible.
+     * Reunites previously {@link Origami#cutPolygon(double[], double[], int)
+     * split} polygons if possible.
      *
-     * @param ppoint An array containing the 3-dimensional coordinates of a
-     * point the plane goes through as {@code double}s.
-     * @param pnormal An array containing the 3-dimensional coordinates the
-     * plane's normal vector as {@code double}s.
-     * @param polygonIndex The index of the polygon to include in
-     * {@link Origami#polygonSelect(double[], double[], int) polygonSelect}.
+     * @param ppoint
+     *            An array containing the 3-dimensional coordinates of a point
+     *            the plane goes through as {@code double}s.
+     * @param pnormal
+     *            An array containing the 3-dimensional coordinates the plane's
+     *            normal vector as {@code double}s.
+     * @param polygonIndex
+     *            The index of the polygon to include in
+     *            {@link Origami#polygonSelect(double[], double[], int)
+     *            polygonSelect}.
      */
     protected void internalMutilation(double[] ppoint, double[] pnormal, int polygonIndex) {
 
@@ -1237,7 +1294,7 @@ public class Origami {
         for (int i : selection) {
 
             ArrayList<Integer> poly = polygons.get(i);
-            //this is just double-checking; the code should work without it
+            // this is just double-checking; the code should work without it
             for (int vert : poly) {
                 if (Geometry.scalar_product(vertices.get(vert), pnormal) > konst) {
 
@@ -1270,9 +1327,10 @@ public class Origami {
     /**
      * Logs its own {@link Origami#FoldingOperator FoldingOperator} identifier
      * and the given parameters by calling
-     * {@link #addCommand(int, double[], double[], int, int) addCommand}.
-     * Calls {@link #internalReflectionFold(double[], double[]) its internal
-     * variant} with the same parameters.
+     * {@link #addCommand(int, double[], double[], int, int) addCommand}. Calls
+     * {@link #internalReflectionFold(double[], double[]) its internal variant}
+     * with the same parameters.
+     * 
      * @param ppoint
      * @param pnormal
      */
@@ -1483,11 +1541,8 @@ public class Origami {
     }
 
     /**
-     * Végrehajtja a this origami {@link #history}-jában szereplô összes
-     * mûveletet index szerint növekvô sorrendben.
-     * <p>
-     * Mivel a mûveleteket this origami aktuális állapotán végzi el, általában
-     * egy {@linkplain #reset()} hívás elôzi meg.
+     * Executes every {@link Origami#FoldingOperator FoldingOperator} stored in
+     * this origami's {@link #history()}. Does not call {@linkplain #reset()}.
      */
     public void execute() {
 
@@ -1495,26 +1550,32 @@ public class Origami {
 
             double[] parancs = history.get(i);
             if (parancs[0] == 1) {
-                internalReflectionFold(new double[]{parancs[1], parancs[2], parancs[3]},
-                        new double[]{parancs[4], parancs[5], parancs[6]});
-            } else if (parancs[0] == 2) {
-                internalRotationFold(new double[]{parancs[1], parancs[2], parancs[3]},
-                        new double[]{parancs[4], parancs[5], parancs[6]}, (int) (parancs[7]));
-            } else if (parancs[0] == 3) {
-                internalReflectionFold(new double[]{parancs[1], parancs[2], parancs[3]},
-                        new double[]{parancs[4], parancs[5], parancs[6]}, (int) (parancs[7]));
-            } else if (parancs[0] == 4) {
-                internalRotationFold(new double[]{parancs[1], parancs[2], parancs[3]},
-                        new double[]{parancs[4], parancs[5], parancs[6]}, (int) (parancs[7]), (int) (parancs[8]));
-            } else if (parancs[0] == 5) {
-                internalRotationFold(new double[]{parancs[1], parancs[2], parancs[3]},
-                        new double[]{parancs[4], parancs[5], parancs[6]}, 0);
-            } else if (parancs[0] == 6) {
-                internalMutilation(new double[]{parancs[1], parancs[2], parancs[3]},
-                        new double[]{parancs[4], parancs[5], parancs[6]});
-            } else if (parancs[0] == 7) {
-                internalMutilation(new double[]{parancs[1], parancs[2], parancs[3]},
-                        new double[]{parancs[4], parancs[5], parancs[6]}, (int) (parancs[7]));
+                internalReflectionFold(new double[] { parancs[1], parancs[2], parancs[3] },
+                        new double[] { parancs[4], parancs[5], parancs[6] });
+            }
+            else if (parancs[0] == 2) {
+                internalRotationFold(new double[] { parancs[1], parancs[2], parancs[3] },
+                        new double[] { parancs[4], parancs[5], parancs[6] }, (int) (parancs[7]));
+            }
+            else if (parancs[0] == 3) {
+                internalReflectionFold(new double[] { parancs[1], parancs[2], parancs[3] },
+                        new double[] { parancs[4], parancs[5], parancs[6] }, (int) (parancs[7]));
+            }
+            else if (parancs[0] == 4) {
+                internalRotationFold(new double[] { parancs[1], parancs[2], parancs[3] },
+                        new double[] { parancs[4], parancs[5], parancs[6] }, (int) (parancs[7]), (int) (parancs[8]));
+            }
+            else if (parancs[0] == 5) {
+                internalRotationFold(new double[] { parancs[1], parancs[2], parancs[3] },
+                        new double[] { parancs[4], parancs[5], parancs[6] }, 0);
+            }
+            else if (parancs[0] == 6) {
+                internalMutilation(new double[] { parancs[1], parancs[2], parancs[3] },
+                        new double[] { parancs[4], parancs[5], parancs[6] });
+            }
+            else if (parancs[0] == 7) {
+                internalMutilation(new double[] { parancs[1], parancs[2], parancs[3] },
+                        new double[] { parancs[4], parancs[5], parancs[6] }, (int) (parancs[7]));
             }
         }
     }
@@ -1524,10 +1585,12 @@ public class Origami {
      * {@link #history}-jában egymást követô mûveletet this origamin index
      * szerint növekvô sorrendben.
      *
-     * @param index Az elsô végrehajtandó mûvelet {@link history}-beli 0-alapú
-     * indexe. Negatív érték esetén csak a mûveletek nemnegatív indexû része
-     * lesz elvégezve.
-     * @param steps A végrehajtandó mûveletek száma.
+     * @param index
+     *            Az elsô végrehajtandó mûvelet {@link history}-beli 0-alapú
+     *            indexe. Negatív érték esetén csak a mûveletek nemnegatív
+     *            indexû része lesz elvégezve.
+     * @param steps
+     *            A végrehajtandó mûveletek száma.
      */
     public void execute(int index, int steps) {
 
@@ -1536,26 +1599,33 @@ public class Origami {
                 double[] parancs = history.get(i);
 
                 if (parancs[0] == 1) {
-                    internalReflectionFold(new double[]{parancs[1], parancs[2], parancs[3]},
-                            new double[]{parancs[4], parancs[5], parancs[6]});
-                } else if (parancs[0] == 2) {
-                    internalRotationFold(new double[]{parancs[1], parancs[2], parancs[3]},
-                            new double[]{parancs[4], parancs[5], parancs[6]}, (int) (parancs[7]));
-                } else if (parancs[0] == 3) {
-                    internalReflectionFold(new double[]{parancs[1], parancs[2], parancs[3]},
-                            new double[]{parancs[4], parancs[5], parancs[6]}, (int) (parancs[7]));
-                } else if (parancs[0] == 4) {
-                    internalRotationFold(new double[]{parancs[1], parancs[2], parancs[3]},
-                            new double[]{parancs[4], parancs[5], parancs[6]}, (int) (parancs[7]), (int) (parancs[8]));
-                } else if (parancs[0] == 5) {
-                    internalRotationFold(new double[]{parancs[1], parancs[2], parancs[3]},
-                            new double[]{parancs[4], parancs[5], parancs[6]}, 0);
-                } else if (parancs[0] == 6) {
-                    internalMutilation(new double[]{parancs[1], parancs[2], parancs[3]},
-                            new double[]{parancs[4], parancs[5], parancs[6]});
-                } else if (parancs[0] == 7) {
-                    internalMutilation(new double[]{parancs[1], parancs[2], parancs[3]},
-                            new double[]{parancs[4], parancs[5], parancs[6]}, (int) (parancs[7]));
+                    internalReflectionFold(new double[] { parancs[1], parancs[2], parancs[3] },
+                            new double[] { parancs[4], parancs[5], parancs[6] });
+                }
+                else if (parancs[0] == 2) {
+                    internalRotationFold(new double[] { parancs[1], parancs[2], parancs[3] },
+                            new double[] { parancs[4], parancs[5], parancs[6] }, (int) (parancs[7]));
+                }
+                else if (parancs[0] == 3) {
+                    internalReflectionFold(new double[] { parancs[1], parancs[2], parancs[3] },
+                            new double[] { parancs[4], parancs[5], parancs[6] }, (int) (parancs[7]));
+                }
+                else if (parancs[0] == 4) {
+                    internalRotationFold(new double[] { parancs[1], parancs[2], parancs[3] },
+                            new double[] { parancs[4], parancs[5], parancs[6] }, (int) (parancs[7]),
+                            (int) (parancs[8]));
+                }
+                else if (parancs[0] == 5) {
+                    internalRotationFold(new double[] { parancs[1], parancs[2], parancs[3] },
+                            new double[] { parancs[4], parancs[5], parancs[6] }, 0);
+                }
+                else if (parancs[0] == 6) {
+                    internalMutilation(new double[] { parancs[1], parancs[2], parancs[3] },
+                            new double[] { parancs[4], parancs[5], parancs[6] });
+                }
+                else if (parancs[0] == 7) {
+                    internalMutilation(new double[] { parancs[1], parancs[2], parancs[3] },
+                            new double[] { parancs[4], parancs[5], parancs[6] }, (int) (parancs[7]));
                 }
             }
         }
@@ -1563,9 +1633,9 @@ public class Origami {
 
     /**
      * Restores the state of this origami to the one before the last
-     * {@link FoldingOperation folding operation} was executed.
-     * For this method to work, the origami should not be modified by any
-     * methods other than the constructors and the folding operations.
+     * {@link FoldingOperation folding operation} was executed. For this method
+     * to work, the user should never use any method with a protected signature
+     * in this class.
      *
      * @since 2013-09-05
      */
@@ -1586,7 +1656,8 @@ public class Origami {
      * Equivalent to calling {@link #undo() undo} {@code steps} times, except it
      * will not do anything if {@code steps > history_pointer}.
      *
-     * @param steps The number of steps to undo.
+     * @param steps
+     *            The number of steps to undo.
      * @since 2013-09-05
      */
     public void undo(int steps) {
@@ -1637,8 +1708,9 @@ public class Origami {
      * {@link #polygons() polygons} list as possible without moving the polygon
      * at the specified index.
      *
-     * @param polygonIndex The zero-based index at which the polygon in the
-     * {@link #polygons() polygons} list should be kept in place.
+     * @param polygonIndex
+     *            The zero-based index at which the polygon in the
+     *            {@link #polygons() polygons} list should be kept in place.
      * @since 2013-09-04
      */
     protected void shrink(int polygonIndex) {
@@ -1646,8 +1718,7 @@ public class Origami {
         ArrayList<Integer> tmp = polygons.get(polygonIndex);
         removePolygon(polygonIndex);
         for (int i = 0; i < polygons_size; i++) {
-            if (polygons.get(i) == new ArrayList<Integer>()
-                    || polygons.get(i).isEmpty()) {
+            if (polygons.get(i) == new ArrayList<Integer>() || polygons.get(i).isEmpty()) {
 
                 removePolygon(i);
                 i--;
@@ -1671,8 +1742,7 @@ public class Origami {
     protected void shrink() {
 
         for (int i = 0; i < polygons_size; i++) {
-            if (polygons.get(i) == new ArrayList<Integer>()
-                    || polygons.get(i).isEmpty()) {
+            if (polygons.get(i) == new ArrayList<Integer>() || polygons.get(i).isEmpty()) {
 
                 removePolygon(i);
                 i--;
@@ -1684,8 +1754,9 @@ public class Origami {
      * Arranges the planar points in the specified list in a counter-clockwise
      * winding order as viewed from their center.
      *
-     * @param polygon An {@link ArrayList} whose each element is an array
-     * containing the 2-dimensional coordinates of a point.
+     * @param polygon
+     *            An {@link ArrayList} whose each element is an array containing
+     *            the 2-dimensional coordinates of a point.
      * @return An {@link ArrayList} containing the same elements as {@code
      * polygon}, but in a counter-clockwise winding order.
      * @since 2013-10-11
@@ -1698,14 +1769,11 @@ public class Origami {
 
         if (polygon.size() > 0) {
 
-            double[] center = new double[]{0, 0};
+            double[] center = new double[] { 0, 0 };
 
             for (double[] point : polygon) {
 
-                center = new double[]{
-                    center[0] + point[0] / polygon.size(),
-                    center[1] + point[1] / polygon.size()
-                };
+                center = new double[] { center[0] + point[0] / polygon.size(), center[1] + point[1] / polygon.size() };
             }
 
             for (int i = 1; i < polygon.size(); i++) {
@@ -1730,7 +1798,7 @@ public class Origami {
                     }
                 }
 
-                ordered.add(new double[]{minpoint[0], minpoint[1]});
+                ordered.add(new double[] { minpoint[0], minpoint[1] });
                 angles.set(mindex, -1.0);
             }
         }
@@ -1741,8 +1809,9 @@ public class Origami {
      * Returns {@code true} iff the planar points in the specified list are the
      * vertices of a convex polygon listed in a counter-clockwise winding order.
      *
-     * @param polygon An {@link ArrayList} whose each element is an array
-     * containing the 2-dimensional coordinates of a point.
+     * @param polygon
+     *            An {@link ArrayList} whose each element is an array containing
+     *            the 2-dimensional coordinates of a point.
      * @return As described above.
      * @since 2013-10-12
      */
@@ -1751,23 +1820,20 @@ public class Origami {
         if (polygon.size() > 3) {
 
             if (Geometry.angle(Geometry.vector(polygon.get(polygon.size() - 1), polygon.get(0)),
-                    Geometry.vector(polygon.get(1), polygon.get(0)))
-                    > Math.PI) {
+                    Geometry.vector(polygon.get(1), polygon.get(0))) > Math.PI) {
                 return false;
             }
 
             for (int i = 1; i < polygon.size() - 1; i++) {
 
                 if (Geometry.angle(Geometry.vector(polygon.get(i - 1), polygon.get(i)),
-                        Geometry.vector(polygon.get(i + 1), polygon.get(i)))
-                        > Math.PI) {
+                        Geometry.vector(polygon.get(i + 1), polygon.get(i))) > Math.PI) {
                     return false;
                 }
             }
 
             if (Geometry.angle(Geometry.vector(polygon.get(polygon.size() - 2), polygon.get(polygon.size() - 1)),
-                    Geometry.vector(polygon.get(0), polygon.get(polygon.size() - 1)))
-                    > Math.PI) {
+                    Geometry.vector(polygon.get(0), polygon.get(polygon.size() - 1))) > Math.PI) {
                 return false;
             }
         }
@@ -1775,8 +1841,8 @@ public class Origami {
     }
 
     /**
-     * Returns the size of the smallest orthogonal square all the {@link
-     * #corners() corners} of this origami can fit in.
+     * Returns the size of the smallest orthogonal square all the
+     * {@link #corners() corners} of this origami can fit in.
      *
      * @return As described above.
      * @since 2013-10-31
@@ -1787,7 +1853,7 @@ public class Origami {
 
     /**
      * Returns the difference of the largest and the smallest first coordinate
-     * occuring within the {@link #corners() corners} list.
+     * occurring within the {@link #corners() corners} list.
      *
      * @return As described above.
      */
@@ -1831,33 +1897,32 @@ public class Origami {
         return felso - also;
     }
 
-    final static private double[][] Origins = new double[][]{
+    final static private double[][] Origins = new double[][] {
 
-        new double[]{0, 0, 0},
-        new double[]{400, 0, 0},
-        new double[]{0, 400, 0},
-        new double[]{0, 0, 400}
-    };
+            new double[] { 0, 0, 0 }, new double[] { 400, 0, 0 }, new double[] { 0, 400, 0 },
+            new double[] { 0, 0, 400 } };
 
     /**
      * Emulates the plane equation compression done by the
      * {@link #commandBlock(int, double[], double[], int, int) commandBlock}
      * method. Used for previewing.
      *
-     * @param ppoint An array containing the 3-dimensional coordinates of a
-     * point the plane goes through as {@code double}s.
-     * @param pnormal An array containing the 3-dimensional coordinates the
-     * plane's normal vector as {@code double}s.
+     * @param ppoint
+     *            An array containing the 3-dimensional coordinates of a point
+     *            the plane goes through as {@code double}s.
+     * @param pnormal
+     *            An array containing the 3-dimensional coordinates the plane's
+     *            normal vector as {@code double}s.
      * @return An array containing the 3-dimensional coordinates of a point the
-     * compressed plane goes through. Can be arbitrarily far from
-     * {@code ppoint}.
+     *         compressed plane goes through. Can be arbitrarily far from
+     *         {@code ppoint}.
      * @see OrigamiIO#write_gen2(Origami, String)
      */
     static protected double[] planarPointRound(double[] ppoint, double[] pnormal) {
 
         double dist_max = -1;
         int used_origin = 0;
-        double[] planeptnv = new double[]{0, 0, 0};
+        double[] planeptnv = new double[] { 0, 0, 0 };
 
         for (int ii = 0; ii < Origins.length; ii++) {
 
@@ -1875,11 +1940,9 @@ public class Origami {
         int Xt = (int) Math.round((Math.abs(planeptnv[0] - Xe)) * 256 * 256);
         int Yt = (int) Math.round((Math.abs(planeptnv[1] - Ye)) * 256 * 256);
         int Zt = (int) Math.round((Math.abs(planeptnv[2] - Ze)) * 256 * 256);
-        return new double[]{
-            (double) Xe + Math.signum(Xe) * Xt / 256 / 256 + Origins[used_origin][0],
-            (double) Ye + Math.signum(Ye) * Yt / 256 / 256 + Origins[used_origin][1],
-            (double) Ze + Math.signum(Ze) * Zt / 256 / 256 + Origins[used_origin][2]
-        };
+        return new double[] { (double) Xe + Math.signum(Xe) * Xt / 256 / 256 + Origins[used_origin][0],
+                (double) Ye + Math.signum(Ye) * Yt / 256 / 256 + Origins[used_origin][1],
+                (double) Ze + Math.signum(Ze) * Zt / 256 / 256 + Origins[used_origin][2] };
     }
 
     /**
@@ -1887,18 +1950,20 @@ public class Origami {
      * {@link #commandBlock(int, double[], double[], int, int) commandBlock}
      * method. Used for previewing.
      *
-     * @param ppoint An array containing the 3-dimensional coordinates of a
-     * point the plane goes through as {@code double}s.
-     * @param pnormal An array containing the 3-dimensional coordinates the
-     * plane's normal vector as {@code double}s.
+     * @param ppoint
+     *            An array containing the 3-dimensional coordinates of a point
+     *            the plane goes through as {@code double}s.
+     * @param pnormal
+     *            An array containing the 3-dimensional coordinates the plane's
+     *            normal vector as {@code double}s.
      * @return An array containing the 3-dimensional coordinates of the
-     * compressed plane's normal vector.
+     *         compressed plane's normal vector.
      * @see OrigamiIO#write_gen2(Origami, String)
      */
     static protected double[] normalvectorRound(double[] ppoint, double[] pnormal) {
 
         double dist_max = -1;
-        double[] planeptnv = new double[]{0, 0, 0};
+        double[] planeptnv = new double[] { 0, 0, 0 };
 
         for (double[] origo : Origins) {
 
@@ -1918,11 +1983,9 @@ public class Origami {
         int Xt = (int) Math.round((Math.abs(planeptnv[0] - Xe)) * 256 * 256);
         int Yt = (int) Math.round((Math.abs(planeptnv[1] - Ye)) * 256 * 256);
         int Zt = (int) Math.round((Math.abs(planeptnv[2] - Ze)) * 256 * 256);
-        return new double[]{
-            sgn * ((double) Xe + Math.signum(Xe) * Xt / 256 / 256),
-            sgn * ((double) Ye + Math.signum(Ye) * Yt / 256 / 256),
-            sgn * ((double) Ze + Math.signum(Ze) * Zt / 256 / 256)
-        };
+        return new double[] { sgn * ((double) Xe + Math.signum(Xe) * Xt / 256 / 256),
+                sgn * ((double) Ye + Math.signum(Ye) * Yt / 256 / 256),
+                sgn * ((double) Ze + Math.signum(Ze) * Zt / 256 / 256) };
     }
 
     public ArrayList<double[]> foldingLine(double[] ppoint, double[] pnormal) {
@@ -1942,13 +2005,14 @@ public class Origami {
 
                         end = start;
                         start = vertices.get(polygons.get(polygonIndex).get(i));
-                    } else {
+                    }
+                    else {
 
                         if (Geometry.plane_between_points(ppoint1, pnormal1,
                                 vertices.get(polygons.get(polygonIndex).get(i)),
                                 vertices.get(polygons.get(polygonIndex).get(j)))
-                            && !Geometry.point_on_plane(ppoint, pnormal,
-                                vertices.get(polygons.get(polygonIndex).get(j)))) {
+                                && !Geometry.point_on_plane(ppoint, pnormal,
+                                        vertices.get(polygons.get(polygonIndex).get(j)))) {
 
                             double[] dirvec = Geometry.vector(vertices.get(polygons.get(polygonIndex).get(i)),
                                     vertices.get(polygons.get(polygonIndex).get(j)));
@@ -1986,13 +2050,14 @@ public class Origami {
 
                         end = start;
                         start = vertices2d.get(polygons.get(polygonIndex).get(i));
-                    } else {
+                    }
+                    else {
 
                         if (Geometry.plane_between_points(ppoint1, pnormal1,
                                 vertices.get(polygons.get(polygonIndex).get(i)),
                                 vertices.get(polygons.get(polygonIndex).get(j)))
-                            && !Geometry.point_on_plane(ppoint, pnormal,
-                                vertices.get(polygons.get(polygonIndex).get(j)))) {
+                                && !Geometry.point_on_plane(ppoint, pnormal,
+                                        vertices.get(polygons.get(polygonIndex).get(j)))) {
 
                             double[] dirvec = Geometry.vector(vertices.get(polygons.get(polygonIndex).get(i)),
                                     vertices.get(polygons.get(polygonIndex).get(j)));
@@ -2005,13 +2070,14 @@ public class Origami {
                             double weight2 = Geometry.vector_length(
                                     Geometry.vector(meet, vertices.get(polygons.get(polygonIndex).get(i))));
                             end = start;
-                            start = new double[]{
-                                (vertices2d.get(polygons.get(polygonIndex).get(i))[0] * weight1
-                                        + vertices2d.get(polygons.get(polygonIndex).get(j))[0] * weight2) / (weight1 + weight2),
-                                (vertices2d.get(polygons.get(polygonIndex).get(i))[1] * weight1
-                                        + vertices2d.get(polygons.get(polygonIndex).get(j))[1] * weight2) / (weight1 + weight2),
-                                0
-                            };
+                            start = new double[] {
+                                    (vertices2d.get(polygons.get(polygonIndex).get(i))[0] * weight1
+                                            + vertices2d.get(polygons.get(polygonIndex).get(j))[0] * weight2)
+                                            / (weight1 + weight2),
+                                    (vertices2d.get(polygons.get(polygonIndex).get(i))[1] * weight1
+                                            + vertices2d.get(polygons.get(polygonIndex).get(j))[1] * weight2)
+                                            / (weight1 + weight2),
+                                    0 };
                         }
                     }
                 }
@@ -2063,9 +2129,12 @@ public class Origami {
             for (int hp : lines) {
                 if (Geometry.vector_length(Geometry.vector(vertices.get(hp), vertices.get(lines.get(0)))) > 0) {
                     collin = true;
-                    if (Geometry.vector_length(Geometry.vector(vertices.get(hp), vertices.get(lines.get(0)))) > dist_max) {
+                    if (Geometry
+                            .vector_length(Geometry.vector(vertices.get(hp), vertices.get(lines.get(0)))) > dist_max) {
+                        
                         farpoint = hp;
-                        dist_max = Geometry.vector_length(Geometry.vector(vertices.get(hp), vertices.get(lines.get(0))));
+                        dist_max = Geometry
+                                .vector_length(Geometry.vector(vertices.get(hp), vertices.get(lines.get(0))));
                     }
                 }
             }
@@ -2075,8 +2144,9 @@ public class Origami {
 
                     if (Geometry.vector_length(Geometry.vector_product(
                             Geometry.vector(vertices.get(lines.get(0)), vertices.get(lines.get(ii))),
-                            Geometry.vector(vertices.get(farpoint), vertices.get(lines.get(ii)))))
-                        > Geometry.vector_length(Geometry.vector(vertices.get(lines.get(0)), vertices.get(farpoint)))) {
+                            Geometry.vector(vertices.get(farpoint), vertices.get(lines.get(ii))))) > Geometry
+                                    .vector_length(
+                                            Geometry.vector(vertices.get(lines.get(0)), vertices.get(farpoint)))) {
 
                         collin = false;
                         break;
@@ -2138,10 +2208,11 @@ public class Origami {
         if (collin) {
             for (int ii = 1; ii < line.size() && ii != farpoint; ii++) {
 
-                if (Geometry.vector_length(Geometry.vector_product(
-                        Geometry.vector(vertices.get(line.get(0)), vertices.get(line.get(ii))),
-                        Geometry.vector(vertices.get(farpoint), vertices.get(line.get(ii)))))
-                    > Geometry.vector_length(Geometry.vector(vertices.get(line.get(0)), vertices.get(farpoint)))) {
+                if (Geometry.vector_length(
+                        Geometry.vector_product(Geometry.vector(vertices.get(line.get(0)), vertices.get(line.get(ii))),
+                                Geometry.vector(vertices.get(farpoint), vertices.get(line.get(ii))))) > Geometry
+                                        .vector_length(
+                                                Geometry.vector(vertices.get(line.get(0)), vertices.get(farpoint)))) {
 
                     collin = false;
                     break;
@@ -2212,16 +2283,10 @@ public class Origami {
             origami.undo(origami.history_pointer - step + 1);
             origami.redo(1);
 
-            double[] point = new double[]{
-                origami.history().get(step)[1],
-                origami.history().get(step)[2],
-                origami.history().get(step)[3]
-            };
-            double[] normal = new double[]{
-                origami.history().get(step)[4],
-                origami.history().get(step)[5],
-                origami.history().get(step)[6]
-            };
+            double[] point = new double[] { origami.history().get(step)[1], origami.history().get(step)[2],
+                    origami.history().get(step)[3] };
+            double[] normal = new double[] { origami.history().get(step)[4], origami.history().get(step)[5],
+                    origami.history().get(step)[6] };
             int index = (int) origami.history().get(step)[7];
 
             ArrayList<int[]> pairs = (ArrayList<int[]>) origami.cutpolygon_pairs.clone();

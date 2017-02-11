@@ -23,8 +23,7 @@ import origamieditor3d.OrigamiEditorUI;
 import origamieditor3d.resources.Instructor;
 
 /**
- * Metódusokat nyújt az {@linkplain Origami} objektumok PDF és OpenCTM
- * formátumba exportálásához.
+ * A collection of methods for exporting origami into various formats.
  *
  * @author Attila Bágyoni (ba-sz-at@users.sourceforge.net)
  * @since 2013-01-14
@@ -1766,8 +1765,9 @@ public class Export {
             }
 
             zos.closeEntry();
-            zos.close();
+
             System.out.println(fos.getChannel().position() + " bytes written to " + filename);
+            zos.close();
             fos.close();
             is.close();
             jar.close();

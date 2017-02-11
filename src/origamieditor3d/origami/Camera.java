@@ -255,67 +255,22 @@ public class Camera {
 
     public void drawPreview(Graphics canvas, Color color, Origami origami, double[] ppoint, double[] pnormal) {
 
-        double[] vpt = camera_pos;
-        double[] vnv = camera_dir;
-        double[] xt = axis_x;
-        double[] yt = axis_y;
+        double[] cp_tmp = camera_pos;
+        double[] cd_tmp = camera_dir;
+        double[] x_tmp = axis_x;
+        double[] y_tmp = axis_y;
 
-        double konst = ppoint[0] * pnormal[0] + ppoint[1] * pnormal[1] + ppoint[2] * pnormal[2];
-        double[] basepoint;
-        double X, Y, Z, t;
-        double[] dirvec = pnormal;
-        double U = dirvec[0];
-        double V = dirvec[1];
-        double W = dirvec[2];
-        double A = pnormal[0];
-        double B = pnormal[1];
-        double C = pnormal[2];
-
-        X = camera_pos[0];
-        Y = camera_pos[1];
-        Z = camera_pos[2];
-        t = -(A * X + B * Y + C * Z - konst) / (A * U + B * V + C * W);
-        basepoint = new double[]{X + t * U, Y + t * V, Z + t * W};
-        camera_pos = new double[]{
-            basepoint[0] + Geometry.vector(basepoint, camera_pos)[0],
-            basepoint[1] + Geometry.vector(basepoint, camera_pos)[1],
-            basepoint[2] + Geometry.vector(basepoint, camera_pos)[2]};
-
-        X = camera_dir[0];
-        Y = camera_dir[1];
-        Z = camera_dir[2];
-        t = -(A * X + B * Y + C * Z) / (A * U + B * V + C * W);
-        basepoint = new double[]{X + t * U, Y + t * V, Z + t * W};
-        camera_dir = new double[]{
-            basepoint[0] + Geometry.vector(basepoint, camera_dir)[0],
-            basepoint[1] + Geometry.vector(basepoint, camera_dir)[1],
-            basepoint[2] + Geometry.vector(basepoint, camera_dir)[2]};
-
-        X = axis_x[0];
-        Y = axis_x[1];
-        Z = axis_x[2];
-        t = -(A * X + B * Y + C * Z) / (A * U + B * V + C * W);
-        basepoint = new double[]{X + t * U, Y + t * V, Z + t * W};
-        axis_x = new double[]{
-            basepoint[0] + Geometry.vector(basepoint, axis_x)[0],
-            basepoint[1] + Geometry.vector(basepoint, axis_x)[1],
-            basepoint[2] + Geometry.vector(basepoint, axis_x)[2]};
-
-        X = axis_y[0];
-        Y = axis_y[1];
-        Z = axis_y[2];
-        t = -(A * X + B * Y + C * Z) / (A * U + B * V + C * W);
-        basepoint = new double[]{X + t * U, Y + t * V, Z + t * W};
-        axis_y = new double[]{
-            basepoint[0] + Geometry.vector(basepoint, axis_y)[0],
-            basepoint[1] + Geometry.vector(basepoint, axis_y)[1],
-            basepoint[2] + Geometry.vector(basepoint, axis_y)[2]};
+        camera_pos = Geometry.reflection(camera_pos, ppoint, pnormal);
+        camera_dir = Geometry.reflection(camera_dir, Geometry.nullvector, pnormal);
+        axis_x = Geometry.reflection(axis_x, Geometry.nullvector, pnormal);
+        axis_y = Geometry.reflection(axis_y, Geometry.nullvector, pnormal);
 
         drawEdges(canvas, color, origami);
-        camera_pos = vpt;
-        camera_dir = vnv;
-        axis_x = xt;
-        axis_y = yt;
+
+        camera_pos = cp_tmp;
+        camera_dir = cd_tmp;
+        axis_x = x_tmp;
+        axis_y = y_tmp;
     }
 
     public String drawSelection(int x, int y, double[] ppoint, double[] pnormal, int polygonIndex, Origami origami) {
