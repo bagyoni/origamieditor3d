@@ -14,7 +14,6 @@ package origamieditor3d;
 
 import java.awt.Color;
 import java.awt.Desktop;
-import java.awt.event.ActionEvent;
 
 import origamieditor3d.origami.Camera;
 import origamieditor3d.origami.Geometry;
@@ -97,9 +96,16 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                     inf.reset();
                     while (!(line = inf.nextLine().replace(" ", "")).startsWith("download_link="))
                         ;
-                    Desktop.getDesktop()
-                            .browse(new java.net.URI(line.substring(line.indexOf("\"") + 1, line.lastIndexOf("\""))));
-                    System.exit(0);
+                    String dl_url = line.substring(line.indexOf("\"") + 1, line.lastIndexOf("\""));
+                    if (Desktop.isDesktopSupported() ? Desktop.getDesktop().isSupported(Desktop.Action.BROWSE) : false) {
+                        Desktop.getDesktop().browse(new java.net.URI(dl_url));
+                        System.exit(0);
+                    }
+                    else {
+                        javax.swing.JTextArea copyable = new javax.swing.JTextArea(Dictionary.getString("browser-fail", dl_url));
+                        copyable.setEditable(false);
+                        javax.swing.JOptionPane.showMessageDialog(this, copyable, Dictionary.getString("error"), javax.swing.JOptionPane.ERROR_MESSAGE);
+                    }
                 }
             }
             inf.close();
@@ -420,90 +426,15 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         settings.pack();
 
         // initialize file chooser(s)
-        try {
-            chooser = new javax.swing.JFileChooser();
-            texture_open = chooser;
-            open = chooser;
-            save = chooser;
-            ctm_export = chooser;
-            pdf_export = chooser;
-            gif_export = chooser;
-            jar_export = chooser;
-            png_export = chooser;
-
-        }
-        catch (Exception ex) {
-            ui_file_open.addActionListener(new java.awt.event.ActionListener() {
-
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    javax.swing.JOptionPane.showMessageDialog(OrigamiEditorUI.this, Dictionary.getString("sandbox"));
-                }
-            });
-            ui_file_save.addActionListener(new java.awt.event.ActionListener() {
-
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    javax.swing.JOptionPane.showMessageDialog(OrigamiEditorUI.this, Dictionary.getString("sandbox"));
-                }
-            });
-            ui_file_saveas.addActionListener(new java.awt.event.ActionListener() {
-
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    javax.swing.JOptionPane.showMessageDialog(OrigamiEditorUI.this, Dictionary.getString("sandbox"));
-                }
-            });
-            ui_view_paper_image.addActionListener(new java.awt.event.ActionListener() {
-
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    javax.swing.JOptionPane.showMessageDialog(OrigamiEditorUI.this, Dictionary.getString("sandbox"));
-                }
-            });
-            ui_file_export_toopenctm.addActionListener(new java.awt.event.ActionListener() {
-
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    javax.swing.JOptionPane.showMessageDialog(OrigamiEditorUI.this, Dictionary.getString("sandbox"));
-                }
-            });
-            ui_file_export_topdf.addActionListener(new java.awt.event.ActionListener() {
-
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    javax.swing.JOptionPane.showMessageDialog(OrigamiEditorUI.this, Dictionary.getString("sandbox"));
-                }
-            });
-            ui_file_export_togif_revolving.addActionListener(new java.awt.event.ActionListener() {
-
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    javax.swing.JOptionPane.showMessageDialog(OrigamiEditorUI.this, Dictionary.getString("sandbox"));
-                }
-            });
-            ui_file_export_togif_folding.addActionListener(new java.awt.event.ActionListener() {
-
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    javax.swing.JOptionPane.showMessageDialog(OrigamiEditorUI.this, Dictionary.getString("sandbox"));
-                }
-            });
-            ui_file_export_crease.addActionListener(new java.awt.event.ActionListener() {
-
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    javax.swing.JOptionPane.showMessageDialog(OrigamiEditorUI.this, Dictionary.getString("sandbox"));
-                }
-            });
-            ui_file_export_toself.addActionListener(new java.awt.event.ActionListener() {
-
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    javax.swing.JOptionPane.showMessageDialog(OrigamiEditorUI.this, Dictionary.getString("sandbox"));
-                }
-            });
-        }
+        chooser = new javax.swing.JFileChooser();
+        texture_open = chooser;
+        open = chooser;
+        save = chooser;
+        ctm_export = chooser;
+        pdf_export = chooser;
+        gif_export = chooser;
+        jar_export = chooser;
+        png_export = chooser;
 
         // initialize timeline
         timeline = new javax.swing.JDialog(this, Dictionary.getString("timeline"));
@@ -3938,44 +3869,6 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
             }
         }
     }// GEN-LAST:event_ui_file_export_toselfActionPerformed
-
-    /**
-     * @param args
-     *            the command line arguments
-     */
-    static public void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        // <editor-fold defaultstate="collapsed" desc=" Look and feel setting
-        // code (optional) ">
-        /*
-         * If Nimbus (introduced in Java SE 6) is not available, stay with the
-         * default look and feel. For details see
-         * http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.
-         * html
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        }
-        catch (ClassNotFoundException | InstantiationException | IllegalAccessException
-                | javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(OrigamiEditorUI.class.getName()).log(java.util.logging.Level.SEVERE,
-                    null, ex);
-        }
-        // </editor-fold>
-
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                new OrigamiEditorUI().setVisible(true);
-            }
-        });
-    }
 
     private boolean Igazit1(int sugar) {
 
