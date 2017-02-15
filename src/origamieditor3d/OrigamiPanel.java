@@ -14,6 +14,8 @@ package origamieditor3d;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 
 import javax.swing.JPanel;
 
@@ -48,6 +50,7 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
         previewOn = false;
         displaymode = DisplayMode.GRADIENT;
         linerMode = LinerMode.Normal;
+        antialiasOn = true;
     }
     private Origami PanelOrigami;
     protected Camera PanelCamera;
@@ -65,6 +68,7 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
     private DisplayMode displaymode;
     private Integer protractor_angle;
     private LinerMode linerMode;
+    private boolean antialiasOn;
 
     public enum DisplayMode {
 
@@ -229,6 +233,18 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
     public void setTexture(java.awt.image.BufferedImage tex) throws Exception {
         PanelCamera.setTexture(tex);
     }
+    
+    public void antialiasOn() {
+        
+        antialiasOn = true;
+        repaint();
+    }
+    
+    public void antialiasOff() {
+        
+        antialiasOn = false;
+        repaint();
+    }
 
     @Override
     public void paintComponent(Graphics g) {
@@ -236,6 +252,8 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
         super.paintComponent(g);
         if (ready_to_paint) {
 
+            Graphics2D gx2d = (Graphics2D)g;
+            
             switch (displaymode) {
 
                 case UV:
@@ -244,18 +262,29 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
 
                 case GRADIENT:
                     PanelCamera.drawGradient(g, paper_front_color, PanelOrigami);
+                    if (antialiasOn) {
+                        gx2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                    }
                     PanelCamera.drawEdges(g, new Color(0, 0, 0, .5f), PanelOrigami);
                     break;
 
                 case SIMA:
                     PanelCamera.drawFaces(g, paper_front_color, PanelOrigami);
+                    if (antialiasOn) {
+                        gx2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                    }
                     PanelCamera.drawEdges(g, new Color(0, 0, 0, .5f), PanelOrigami);
                     break;
 
                 case SEMMI:
+                    if (antialiasOn) {
+                        gx2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                    }
                     PanelCamera.drawEdges(g, new Color(0, 0, 0, .5f), PanelOrigami);
                     break;
             }
+            
+            gx2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
         }
         if (alignment_point != null) {
 

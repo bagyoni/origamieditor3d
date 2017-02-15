@@ -147,7 +147,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                 public void actionPerformed(java.awt.event.ActionEvent evt) {
 
                     if (!saved) {
-                        Object[] options = { Dictionary.getString("yes"), Dictionary.getString("no") };
+                        Object[] options = { Dictionary.getString("close"), Dictionary.getString("dontclose") };
                         if (javax.swing.JOptionPane.showOptionDialog(OrigamiEditorUI.this,
                                 Dictionary.getString("nosave"), Dictionary.getString("question"),
                                 javax.swing.JOptionPane.YES_NO_OPTION, javax.swing.JOptionPane.QUESTION_MESSAGE, null,
@@ -217,7 +217,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                 public void actionPerformed(java.awt.event.ActionEvent evt) {
 
                     if (!saved) {
-                        Object[] options = { Dictionary.getString("yes"), Dictionary.getString("no") };
+                        Object[] options = { Dictionary.getString("close"), Dictionary.getString("dontclose") };
                         if (javax.swing.JOptionPane.showOptionDialog(OrigamiEditorUI.this,
                                 Dictionary.getString("nosave"), Dictionary.getString("question"),
                                 javax.swing.JOptionPane.YES_NO_OPTION, javax.swing.JOptionPane.QUESTION_MESSAGE, null,
@@ -286,7 +286,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
             @Override
             public void windowClosing(java.awt.event.WindowEvent e) {
                 if (!saved) {
-                    Object[] options = { Dictionary.getString("yes"), Dictionary.getString("no") };
+                    Object[] options = { Dictionary.getString("close"), Dictionary.getString("dontclose") };
                     if (javax.swing.JOptionPane.showOptionDialog(OrigamiEditorUI.this, Dictionary.getString("nosave"),
                             Dictionary.getString("question"), javax.swing.JOptionPane.YES_NO_OPTION,
                             javax.swing.JOptionPane.QUESTION_MESSAGE, null, options,
@@ -315,6 +315,8 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         alwaysInMiddle = true;
         neusisOn = false;
         terminal = new OrigamiScriptTerminal(OrigamiScriptTerminal.Access.USER);
+        
+        oPanel1.antialiasOn();
         oPanel1.setFrontColor(Camera.paper_front_color);
         oPanel1.PanelCamera.xshift = oPanel1.getWidth() / 2;
         oPanel1.PanelCamera.yshift = oPanel1.getHeight() / 2;
@@ -611,6 +613,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         ui_view_paper_gradient.setText(Dictionary.getString("texgradient"));
         ui_view_paper_plain.setText(Dictionary.getString("texplain"));
         ui_view_paper_none.setText(Dictionary.getString("texnone"));
+        ui_view_use.setText(Dictionary.getString("antialias"));
         ui_view_show.setText(Dictionary.getString("showprev"));
         ui_view_zoom.setText(Dictionary.getString("zoomonscroll"));
         ui_view_best.setText(Dictionary.getString("bestfit"));
@@ -701,6 +704,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         ui_view_paper_gradient = new javax.swing.JCheckBoxMenuItem();
         ui_view_paper_plain = new javax.swing.JCheckBoxMenuItem();
         ui_view_paper_none = new javax.swing.JCheckBoxMenuItem();
+        ui_view_use = new javax.swing.JCheckBoxMenuItem();
         ui_view_show = new javax.swing.JCheckBoxMenuItem();
         jSeparator5 = new javax.swing.JPopupMenu.Separator();
         ui_view_zoom = new javax.swing.JCheckBoxMenuItem();
@@ -1248,6 +1252,18 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
 
         ui_view.add(ui_view_paper);
 
+        ui_view_use.setSelected(true);
+        ui_view_use.setText("Use anti-aliasing");
+        ui_view_use.addActionListener(new java.awt.event.ActionListener() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ui_view_useActionPerformed(evt);
+            }
+        });
+        ui_view.add(ui_view_use);
+        
+        ui_view.add(jSeparator5);
+        
         ui_view_show.setAccelerator(
                 javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_P, java.awt.event.InputEvent.CTRL_MASK));
         ui_view_show.setText("Show preview");
@@ -1258,7 +1274,6 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
             }
         });
         ui_view.add(ui_view_show);
-        ui_view.add(jSeparator5);
 
         ui_view_zoom.setSelected(true);
         ui_view_zoom.setText("Zoom on scroll");
@@ -2639,7 +2654,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
     private void ui_file_openActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_ui_file_openActionPerformed
 
         if (!saved) {
-            Object[] options = { Dictionary.getString("yes"), Dictionary.getString("no") };
+            Object[] options = { Dictionary.getString("close"), Dictionary.getString("dontclose") };
             if (javax.swing.JOptionPane.showOptionDialog(this, Dictionary.getString("nosave"),
                     Dictionary.getString("question"), javax.swing.JOptionPane.YES_NO_OPTION,
                     javax.swing.JOptionPane.QUESTION_MESSAGE, null, options,
@@ -2778,7 +2793,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
     private void ui_file_new_hexagonalActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_ui_file_new_hexagonalActionPerformed
 
         if (!saved) {
-            Object[] options = { Dictionary.getString("yes"), Dictionary.getString("no") };
+            Object[] options = { Dictionary.getString("close"), Dictionary.getString("dontclose") };
             if (javax.swing.JOptionPane.showOptionDialog(this, Dictionary.getString("nosave"),
                     Dictionary.getString("question"), javax.swing.JOptionPane.YES_NO_OPTION,
                     javax.swing.JOptionPane.QUESTION_MESSAGE, null, options,
@@ -2827,7 +2842,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
     private void ui_file_new_squareActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_ui_file_new_squareActionPerformed
 
         if (!saved) {
-            Object[] options = { Dictionary.getString("yes"), Dictionary.getString("no") };
+            Object[] options = { Dictionary.getString("close"), Dictionary.getString("dontclose") };
             if (javax.swing.JOptionPane.showOptionDialog(this, Dictionary.getString("nosave"),
                     Dictionary.getString("question"), javax.swing.JOptionPane.YES_NO_OPTION,
                     javax.swing.JOptionPane.QUESTION_MESSAGE, null, options,
@@ -2875,7 +2890,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
     private void ui_file_new_a4ActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_ui_file_new_a4ActionPerformed
 
         if (!saved) {
-            Object[] options = { Dictionary.getString("yes"), Dictionary.getString("no") };
+            Object[] options = { Dictionary.getString("close"), Dictionary.getString("dontclose") };
             if (javax.swing.JOptionPane.showOptionDialog(this, Dictionary.getString("nosave"),
                     Dictionary.getString("question"), javax.swing.JOptionPane.YES_NO_OPTION,
                     javax.swing.JOptionPane.QUESTION_MESSAGE, null, options,
@@ -2923,7 +2938,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
     private void ui_file_new_dollarActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_ui_file_new_dollarActionPerformed
 
         if (!saved) {
-            Object[] options = { Dictionary.getString("yes"), Dictionary.getString("no") };
+            Object[] options = { Dictionary.getString("close"), Dictionary.getString("dontclose") };
             if (javax.swing.JOptionPane.showOptionDialog(this, Dictionary.getString("nosave"),
                     Dictionary.getString("question"), javax.swing.JOptionPane.YES_NO_OPTION,
                     javax.swing.JOptionPane.QUESTION_MESSAGE, null, options,
@@ -3160,6 +3175,19 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         }
     }// GEN-LAST:event_ui_view_showActionPerformed
 
+    //
+    // ANTIALIASING / SIMA ÉLEK
+    //
+    private void ui_view_useActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_ui_view_showActionPerformed
+
+        if (ui_view_use.isSelected()) {
+            oPanel1.antialiasOn();
+        }
+        else {
+            oPanel1.antialiasOff();
+        }
+    }
+    
     //
     // UV PAPER / UV PAPÍR
     //
@@ -4004,16 +4032,17 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
     private javax.swing.JToolBar.Separator ui_snap_separator;
     private javax.swing.JSplitPane ui_toolbars;
     private javax.swing.JMenu ui_view;
-    private javax.swing.JCheckBoxMenuItem ui_view_best;
-    private javax.swing.JMenuItem ui_view_options;
     private javax.swing.JMenu ui_view_paper;
     private javax.swing.JCheckBoxMenuItem ui_view_paper_gradient;
     private javax.swing.JCheckBoxMenuItem ui_view_paper_image;
     private javax.swing.JCheckBoxMenuItem ui_view_paper_none;
     private javax.swing.JCheckBoxMenuItem ui_view_paper_plain;
+    private javax.swing.JCheckBoxMenuItem ui_view_use;
     private javax.swing.JCheckBoxMenuItem ui_view_show;
-    private javax.swing.JMenuItem ui_view_timeline;
     private javax.swing.JCheckBoxMenuItem ui_view_zoom;
+    private javax.swing.JCheckBoxMenuItem ui_view_best;
+    private javax.swing.JMenuItem ui_view_timeline;
+    private javax.swing.JMenuItem ui_view_options;
     private JSeparator separator;
     private JSeparator separator_1;
     // End of variables declaration//GEN-END:variables
