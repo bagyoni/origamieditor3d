@@ -20,10 +20,10 @@ import origamieditor3d.origami.Geometry;
 import origamieditor3d.origami.Origami;
 import origamieditor3d.origami.OrigamiIO;
 import origamieditor3d.origami.OrigamiScriptTerminal;
-import origamieditor3d.resources.BaseFolds;
+import origamieditor3d.resources.BaseModels;
 import origamieditor3d.resources.Dictionary;
 import origamieditor3d.resources.Instructor;
-import origamieditor3d.resources.Models;
+import origamieditor3d.resources.ExampleModels;
 import javax.swing.JSeparator;
 
 /**
@@ -39,7 +39,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
     private Integer mouseDragX, mouseDragY;
     private int rotation_angle;
     private Integer liner1X, liner1Y, liner2X, liner2Y;
-    private OrigamiScriptTerminal terminal;
+    final private OrigamiScriptTerminal terminal;
     private ControlState EditorState, SecondaryState;
     private boolean alignOn;
     private int alignment_radius;
@@ -133,12 +133,11 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         };
         System.setOut(new java.io.PrintStream(sysout));
 
-        ui_file_sample.getPopupMenu().setLayout(new java.awt.GridLayout(0, 2));
+        ui_file_example.getPopupMenu().setLayout(new java.awt.GridLayout(0, 2));
 
-        final BaseFolds bases = new BaseFolds();
+        // Load base model entries into the menu
+        final BaseModels bases = new BaseModels();
         final java.util.ArrayList<String> basenames = bases.names();
-
-        // Load example model entries into the menu
         for (int i = 0; i < basenames.size(); i++) {
 
             final int ind = i;
@@ -206,7 +205,9 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
             });
             ui_file_new_bases.add(baseitem);
         }
-        final Models models = new Models();
+        
+        // Load example model entries into the menu
+        final ExampleModels models = new ExampleModels();
         final java.util.ArrayList<String> modnames = models.names();
         for (int i = 0; i < modnames.size(); i++) {
             final int ind = i;
@@ -272,7 +273,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                     timeSlider.setValue(terminal.TerminalOrigami.history_pointer());
                 }
             });
-            ui_file_sample.add(modelitem);
+            ui_file_example.add(modelitem);
         }
 
         relabel();
@@ -584,7 +585,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         ui_file_new_hexagonal.setText(Dictionary.getString("newhex"));
         ui_file_new_dollar.setText(Dictionary.getString("newdollar"));
         ui_file_new_bases.setText(Dictionary.getString("bases"));
-        ui_file_sample.setText(Dictionary.getString("samples"));
+        ui_file_example.setText(Dictionary.getString("examples"));
         ui_file_open.setText(Dictionary.getString("open"));
         ui_file_save.setText(Dictionary.getString("save"));
         ui_file_saveas.setText(Dictionary.getString("saveas"));
@@ -671,7 +672,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         ui_file_new_hexagonal = new javax.swing.JMenuItem();
         ui_file_new_dollar = new javax.swing.JMenuItem();
         ui_file_new_bases = new javax.swing.JMenu();
-        ui_file_sample = new javax.swing.JMenu();
+        ui_file_example = new javax.swing.JMenu();
         jSeparator1 = new javax.swing.JPopupMenu.Separator();
         ui_file_open = new javax.swing.JMenuItem();
         ui_file_save = new javax.swing.JMenuItem();
@@ -1030,8 +1031,8 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
 
         ui_file.add(ui_file_new);
 
-        ui_file_sample.setText("Sample figures");
-        ui_file.add(ui_file_sample);
+        ui_file_example.setText("Sample figures");
+        ui_file.add(ui_file_example);
         ui_file.add(jSeparator1);
 
         ui_file_open.setAccelerator(
@@ -3982,7 +3983,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
     private javax.swing.JMenuItem ui_file_new_square;
     private javax.swing.JMenuItem ui_file_open;
     private javax.swing.JMenuItem ui_file_properties;
-    private javax.swing.JMenu ui_file_sample;
+    private javax.swing.JMenu ui_file_example;
     private javax.swing.JMenuItem ui_file_save;
     private javax.swing.JMenuItem ui_file_saveas;
     private javax.swing.JMenu ui_help;
