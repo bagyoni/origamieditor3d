@@ -33,7 +33,7 @@ import javax.swing.JSeparator;
 public class OrigamiEditorUI extends javax.swing.JFrame {
 
     final static private long serialVersionUID = 1L;
-    final static public String Version = "1.3.0";
+    final static public String Version = "1.3.1";
     final static public String UserguideLink = "http://origamieditor3d.sourceforge.net/userguide/en/index.html";
     
     private Integer mouseDragX, mouseDragY;
@@ -360,7 +360,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         // initialize options menu
         final javax.swing.JColorChooser paletta = new javax.swing.JColorChooser(
                 new java.awt.Color(Camera.paper_front_color));
-        settings = new javax.swing.JFrame(Dictionary.getString("options"));
+        settings = new javax.swing.JFrame(Dictionary.getString("ui.view.options"));
         settings.setIconImage(getIconImage());
         java.awt.GridBagConstraints c;
         settings.setDefaultCloseOperation(javax.swing.JFrame.DISPOSE_ON_CLOSE);
@@ -440,7 +440,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         png_export = chooser;
 
         // initialize timeline
-        timeline = new javax.swing.JDialog(this, Dictionary.getString("timeline"));
+        timeline = new javax.swing.JDialog(this, Dictionary.getString("ui.timeline"));
         timeline.setDefaultCloseOperation(javax.swing.JFrame.DISPOSE_ON_CLOSE);
         timeSlider = new javax.swing.JSlider();
         timeSlider.setMinimum(0);
@@ -580,57 +580,63 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
 
     private void relabel() {
 
-        ui_file.setText(Dictionary.getString("file"));
-        ui_file_new.setText(Dictionary.getString("new"));
-        ui_file_new_square.setText(Dictionary.getString("newsquare"));
-        ui_file_new_a4.setText(Dictionary.getString("newa4"));
-        ui_file_new_hexagonal.setText(Dictionary.getString("newhex"));
-        ui_file_new_dollar.setText(Dictionary.getString("newdollar"));
-        ui_file_new_bases.setText(Dictionary.getString("bases"));
-        ui_file_example.setText(Dictionary.getString("examples"));
-        ui_file_open.setText(Dictionary.getString("open"));
-        ui_file_save.setText(Dictionary.getString("save"));
-        ui_file_saveas.setText(Dictionary.getString("saveas"));
-        ui_file_export.setText(Dictionary.getString("export"));
-        ui_file_export_topdf.setText(Dictionary.getString("exportpdf"));
-        ui_file_export_toopenctm.setText(Dictionary.getString("exportctm"));
-        ui_file_export_togif.setText(Dictionary.getString("exportgif"));
-        ui_file_export_togif_revolving.setText(Dictionary.getString("revolving-gif"));
-        ui_file_export_togif_folding.setText(Dictionary.getString("folding-gif"));
-        ui_file_export_toself.setText(Dictionary.getString("exportjar"));
-        ui_file_export_crease.setText(Dictionary.getString("exportpng"));
-        ui_file_properties.setText(Dictionary.getString("properties"));
-        ui_edit.setText(Dictionary.getString("edit"));
-        ui_edit_undo.setText(Dictionary.getString("undo"));
-        ui_edit_redo.setText(Dictionary.getString("redo"));
-        ui_edit_plane.setText(Dictionary.getString("planethrough"));
-        ui_edit_angle.setText(Dictionary.getString("anglebisector"));
-        ui_edit_neusis.setText(Dictionary.getString("neusis"));
-        ui_snap_label.setText(Dictionary.getString("fineness"));
-        ui_view.setText(Dictionary.getString("view"));
-        ui_view_paper.setText(Dictionary.getString("papertex"));
-        ui_view_paper_image.setText(Dictionary.getString("teximage"));
-        ui_view_paper_gradient.setText(Dictionary.getString("texgradient"));
-        ui_view_paper_plain.setText(Dictionary.getString("texplain"));
-        ui_view_paper_none.setText(Dictionary.getString("texnone"));
-        ui_view_use.setText(Dictionary.getString("antialias"));
-        ui_view_show.setText(Dictionary.getString("showprev"));
-        ui_view_zoom.setText(Dictionary.getString("zoomonscroll"));
-        ui_view_best.setText(Dictionary.getString("bestfit"));
-        ui_help_show.setText(Dictionary.getString("showtooltip"));
-        ui_view_timeline.setText(Dictionary.getString("timeline"));
-        ui_view_options.setText(Dictionary.getString("options"));
-        ui_help.setText(Dictionary.getString("help"));
-        ui_help_user.setText(Dictionary.getString("userguide"));
-        ui_help_about.setText(Dictionary.getString("about"));
-        ui_help_lang.setText(Dictionary.getString("language"));
-        jTabbedPane1.setTitleAt(0, Dictionary.getString("editor"));
-        jTabbedPane1.setTitleAt(1, Dictionary.getString("scripting"));
-        oPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(Dictionary.getString("3dview")));
-        pPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(Dictionary.getString("creasepat")));
-        ui_select.setText(Dictionary.getString("target"));
-        ui_plane.setText(Dictionary.getString("planethrough"));
-        ui_angle.setText(Dictionary.getString("angle-bisector"));
+        ui_file.setText(Dictionary.getString("ui.file"));
+        ui_file_new.setText(Dictionary.getString("ui.file.new"));
+        ui_file_new_square.setText(Dictionary.getString("ui.file.new.square"));
+        ui_file_new_a4.setText(Dictionary.getString("ui.file.new.a4"));
+        ui_file_new_hexagonal.setText(Dictionary.getString("ui.file.new.hexagonal"));
+        ui_file_new_dollar.setText(Dictionary.getString("ui.file.new.dollar"));
+        ui_file_new_bases.setText(Dictionary.getString("ui.file.new.bases"));
+        ui_file_example.setText(Dictionary.getString("ui.file.example"));
+        ui_file_open.setText(Dictionary.getString("ui.file.open"));
+        ui_file_save.setText(Dictionary.getString("ui.file.save"));
+        ui_file_saveas.setText(Dictionary.getString("ui.file.saveas"));
+        ui_file_export.setText(Dictionary.getString("ui.file.export"));
+        ui_file_export_topdf.setText(Dictionary.getString("ui.file.export.topdf"));
+        ui_file_export_toopenctm.setText(Dictionary.getString("ui.file.export.toopenctm"));
+        ui_file_export_togif.setText(Dictionary.getString("ui.file.export.togif"));
+        ui_file_export_togif_revolving.setText(Dictionary.getString("ui.file.export.togif.revolving"));
+        ui_file_export_togif_folding.setText(Dictionary.getString("ui.file.export.togif.folding"));
+        ui_file_export_toself.setText(Dictionary.getString("ui.file.export.tostandalone"));
+        ui_file_export_crease.setText(Dictionary.getString("ui.file.export.crease"));
+        ui_file_properties.setText(Dictionary.getString("ui.file.properties"));
+        
+        ui_edit.setText(Dictionary.getString("ui.edit"));
+        ui_edit_undo.setText(Dictionary.getString("ui.edit.undo"));
+        ui_edit_redo.setText(Dictionary.getString("ui.edit.redo"));
+        ui_edit_plane.setText(Dictionary.getString("ui.edit.plane"));
+        ui_edit_angle.setText(Dictionary.getString("ui.edit.angle"));
+        ui_edit_neusis.setText(Dictionary.getString("ui.edit.neusis"));
+        
+        ui_view.setText(Dictionary.getString("ui.view"));
+        ui_view_paper.setText(Dictionary.getString("ui.view.paper"));
+        ui_view_paper_image.setText(Dictionary.getString("ui.view.paper.image"));
+        ui_view_paper_gradient.setText(Dictionary.getString("ui.view.paper.gradient"));
+        ui_view_paper_plain.setText(Dictionary.getString("ui.view.paper.plain"));
+        ui_view_paper_none.setText(Dictionary.getString("ui.view.paper.none"));
+        ui_view_use.setText(Dictionary.getString("ui.view.use"));
+        ui_view_show.setText(Dictionary.getString("ui.view.show"));
+        ui_view_zoom.setText(Dictionary.getString("ui.view.zoom"));
+        ui_view_best.setText(Dictionary.getString("ui.view.best"));
+        ui_view_timeline.setText(Dictionary.getString("ui.view.timeline"));
+        ui_view_options.setText(Dictionary.getString("ui.view.options"));
+        
+        ui_help.setText(Dictionary.getString("ui.help"));
+        ui_help_user.setText(Dictionary.getString("ui.help.user"));
+        ui_help_show.setText(Dictionary.getString("ui.help.show"));
+        ui_help_lang.setText(Dictionary.getString("ui.help.language"));
+        ui_help_about.setText(Dictionary.getString("ui.help.about"));
+        
+        jTabbedPane1.setTitleAt(0, Dictionary.getString("ui.editor"));
+        jTabbedPane1.setTitleAt(1, Dictionary.getString("ui.scripting"));
+        
+        oPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(Dictionary.getString("ui.3dview")));
+        pPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(Dictionary.getString("ui.crease")));
+        ui_select.setText(Dictionary.getString("ui.select"));
+        ui_plane.setText(Dictionary.getString("ui.through"));
+        ui_angle.setText(Dictionary.getString("ui.angle"));
+        
+        ui_snap.setText(Dictionary.getString("ui.snap"));
         ui_snap_1.setToolTipText(Dictionary.getString("tooltip_snap_1"));
         ui_snap_2.setToolTipText(Dictionary.getString("tooltip_snap_2"));
         ui_snap_3.setToolTipText(Dictionary.getString("tooltip_snap_3"));
@@ -657,7 +663,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         ui_plane = new javax.swing.JToggleButton();
         ui_angle = new javax.swing.JToggleButton();
         ui_leftbar = new javax.swing.JToolBar();
-        ui_snap_label = new javax.swing.JLabel();
+        ui_snap = new javax.swing.JLabel();
         ui_snap_separator = new javax.swing.JToolBar.Separator();
         ui_snap_1 = new javax.swing.JToggleButton();
         ui_snap_2 = new javax.swing.JToggleButton();
@@ -882,8 +888,8 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         ui_leftbar.setMinimumSize(new java.awt.Dimension(175, 30));
         ui_leftbar.setPreferredSize(new java.awt.Dimension(175, 33));
 
-        ui_snap_label.setText("Snap fineness");
-        ui_leftbar.add(ui_snap_label);
+        ui_snap.setText("Snap fineness");
+        ui_leftbar.add(ui_snap);
 
         ui_snap_separator.setForeground(new java.awt.Color(238, 238, 238));
         ui_snap_separator.setToolTipText("");
@@ -4028,7 +4034,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
     private javax.swing.JToggleButton ui_snap_2;
     private javax.swing.JToggleButton ui_snap_3;
     private javax.swing.JToggleButton ui_snap_4;
-    private javax.swing.JLabel ui_snap_label;
+    private javax.swing.JLabel ui_snap;
     private javax.swing.JToolBar.Separator ui_snap_separator;
     private javax.swing.JSplitPane ui_toolbars;
     private javax.swing.JMenu ui_view;
