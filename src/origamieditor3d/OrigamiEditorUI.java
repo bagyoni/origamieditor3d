@@ -36,10 +36,13 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
     final static public String Version = "1.3.1";
     final static public String UserguideLink = "http://origamieditor3d.sourceforge.net/userguide/en/index.html";
     
+    final private OrigamiScriptTerminal terminal1;
+    final private DialogManager dialogManager1;
+    
     private Integer mouseDragX, mouseDragY;
     private int rotation_angle;
     private Integer liner1X, liner1Y, liner2X, liner2Y;
-    final private OrigamiScriptTerminal terminal;
+    
     private ControlState EditorState, SecondaryState;
     private boolean alignOn;
     private int alignment_radius;
@@ -47,19 +50,11 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
     private boolean alwaysInMiddle;
     private boolean neusisOn;
     private int foldNumber;
-    private String filename;
+    private String filepath;
     
     final private javax.swing.JFrame settings;
-    final private javax.swing.JDialog timeline;
-    private javax.swing.JFileChooser chooser;
-    private javax.swing.JFileChooser save;
-    private javax.swing.JFileChooser open;
-    private javax.swing.JFileChooser ctm_export;
-    private javax.swing.JFileChooser pdf_export;
-    private javax.swing.JFileChooser gif_export;
-    private javax.swing.JFileChooser jar_export;
-    private javax.swing.JFileChooser png_export;
-    private javax.swing.JFileChooser texture_open;
+    final private javax.swing.JDialog ui_timeline;
+
     private java.awt.image.BufferedImage tex;
     
     private boolean saved;
@@ -77,43 +72,22 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
     public OrigamiEditorUI() {
 
         setIconImage(
-                java.awt.Toolkit.getDefaultToolkit().getImage(getClass().getClassLoader().getResource("res/icon.png")));
+                java.awt.Toolkit.getDefaultToolkit()
+                .getImage(getClass().getClassLoader().getResource("res/icon.png")));
 
+        //Initialize terminal and dialog manager
+        terminal1 = new OrigamiScriptTerminal(OrigamiScriptTerminal.Access.USER);
+        dialogManager1 = new DialogManager(this);
+        
         // Look for an update
-        try {
-            java.util.Scanner inf = new java.util.Scanner(
-                    new java.net.URL("http://origamieditor3d.sourceforge.net/info.txt").openStream());
-            String line;
-            while (!(line = inf.nextLine().replace(" ", "")).startsWith("latest_version="))
-                ;
-            String ver = line.substring(line.indexOf("\"") + 1, line.lastIndexOf("\""));
-            if (!Version.equals(ver)) {
-                Object[] options = { Dictionary.getString("yes"), Dictionary.getString("no") };
-                if (javax.swing.JOptionPane.showOptionDialog(this, Dictionary.getString("update"),
-                        Dictionary.getString("question"), javax.swing.JOptionPane.YES_NO_OPTION,
-                        javax.swing.JOptionPane.QUESTION_MESSAGE, null, options,
-                        options[0]) == javax.swing.JOptionPane.YES_OPTION) {
-                    inf.reset();
-                    while (!(line = inf.nextLine().replace(" ", "")).startsWith("download_link="))
-                        ;
-                    String dl_url = line.substring(line.indexOf("\"") + 1, line.lastIndexOf("\""));
-                    if (Desktop.isDesktopSupported() ? Desktop.getDesktop().isSupported(Desktop.Action.BROWSE) : false) {
-                        Desktop.getDesktop().browse(new java.net.URI(dl_url));
-                        System.exit(0);
-                    }
-                    else {
-                        javax.swing.JTextArea copyable = new javax.swing.JTextArea(Dictionary.getString("browser-fail", dl_url));
-                        copyable.setEditable(false);
-                        javax.swing.JOptionPane.showMessageDialog(this, copyable, Dictionary.getString("error"), javax.swing.JOptionPane.ERROR_MESSAGE);
-                    }
-                }
-            }
-            inf.close();
-        }
-        catch (Exception ex) {
-        }
-
+        dialogManager1.lookForUpdate();
+        
+        //Initialize UI
         initComponents();
+        relabel();
+        Instructor.getString("asdasd");
+        setTitle("Origami Editor 3D");
+        setLocationRelativeTo(null);
 
         // Redirect standard output to the terminal log
         java.io.OutputStream sysout = new java.io.OutputStream() {
@@ -133,8 +107,6 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         };
         System.setOut(new java.io.PrintStream(sysout));
 
-        ui_file_example.getPopupMenu().setLayout(new java.awt.GridLayout(0, 2));
-
         // Load base model entries into the menu
         final BaseModels bases = new BaseModels();
         final java.util.ArrayList<String> basenames = bases.names();
@@ -147,15 +119,11 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                 public void actionPerformed(java.awt.event.ActionEvent evt) {
 
                     if (!saved) {
-                        Object[] options = { Dictionary.getString("close"), Dictionary.getString("dontclose") };
-                        if (javax.swing.JOptionPane.showOptionDialog(OrigamiEditorUI.this,
-                                Dictionary.getString("nosave"), Dictionary.getString("question"),
-                                javax.swing.JOptionPane.YES_NO_OPTION, javax.swing.JOptionPane.QUESTION_MESSAGE, null,
-                                options, options[1]) != javax.swing.JOptionPane.YES_OPTION) {
+                        if (!dialogManager1.canICloseFile()) {
                             return;
                         }
                     }
-                    filename = null;
+                    filepath = null;
                     try (java.io.InputStream fis = bases.getFile(basenames.get(ind))) {
 
                         java.util.ArrayList<Byte> bytesb = new java.util.ArrayList<>();
@@ -168,24 +136,24 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                             bytes[i] = bytesb.get(i);
                         }
 
-                        terminal.TerminalOrigami = OrigamiIO.read_gen2(new java.io.ByteArrayInputStream(bytes));
-                        terminal.historyReset();
+                        terminal1.TerminalOrigami = OrigamiIO.read_gen2(new java.io.ByteArrayInputStream(bytes));
+                        terminal1.historyReset();
 
-                        oPanel1.update(terminal.TerminalOrigami);
-                        pPanel1.update(terminal.TerminalOrigami);
+                        oPanel1.update(terminal1.TerminalOrigami);
+                        pPanel1.update(terminal1.TerminalOrigami);
 
-                        oPanel1.PanelCamera.unadjust(terminal.TerminalOrigami);
-                        if (terminal.TerminalOrigami.circumscribedSquareSize() > 0) {
+                        oPanel1.PanelCamera.unadjust(terminal1.TerminalOrigami);
+                        if (terminal1.TerminalOrigami.circumscribedSquareSize() > 0) {
                             oPanel1.PanelCamera.setZoom(0.8 * Math.min(oPanel1.getWidth(), oPanel1.getHeight())
-                                    / terminal.TerminalOrigami.circumscribedSquareSize());
+                                    / terminal1.TerminalOrigami.circumscribedSquareSize());
                         }
-                        pPanel1.PanelCamera.unadjust(terminal.TerminalOrigami);
-                        if (terminal.TerminalOrigami.circumscribedSquareSize() > 0) {
+                        pPanel1.PanelCamera.unadjust(terminal1.TerminalOrigami);
+                        if (terminal1.TerminalOrigami.circumscribedSquareSize() > 0) {
                             pPanel1.PanelCamera.setZoom(0.8 * Math.min(pPanel1.getWidth(), pPanel1.getHeight())
-                                    / terminal.TerminalOrigami.circumscribedSquareSize());
+                                    / terminal1.TerminalOrigami.circumscribedSquareSize());
                         }
                         if (alwaysInMiddle) {
-                            oPanel1.PanelCamera.adjust(terminal.TerminalOrigami);
+                            oPanel1.PanelCamera.adjust(terminal1.TerminalOrigami);
                         }
                         oPanel1.PanelCamera.setOrthogonalView(0);
                         rotation_angle = 0;
@@ -196,17 +164,18 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                     catch (Exception ex) {
                         javax.swing.JOptionPane.showMessageDialog(OrigamiEditorUI.this, Dictionary.getString("h005"));
                     }
-                    foldNumber = terminal.TerminalOrigami.history_pointer();
+                    foldNumber = terminal1.TerminalOrigami.history_pointer();
                     changeListenerShutUp = true;
-                    timeSlider.setMaximum(terminal.TerminalOrigami.history().size());
+                    timeSlider.setMaximum(terminal1.TerminalOrigami.history().size());
                     changeListenerShutUp = false;
-                    timeSlider.setValue(terminal.TerminalOrigami.history_pointer());
+                    timeSlider.setValue(terminal1.TerminalOrigami.history_pointer());
                 }
             });
             ui_file_new_bases.add(baseitem);
         }
         
         // Load example model entries into the menu
+        ui_file_example.getPopupMenu().setLayout(new java.awt.GridLayout(0, 2));
         final ExampleModels models = new ExampleModels();
         final java.util.ArrayList<String> modnames = models.names();
         for (int i = 0; i < modnames.size(); i++) {
@@ -217,15 +186,11 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                 public void actionPerformed(java.awt.event.ActionEvent evt) {
 
                     if (!saved) {
-                        Object[] options = { Dictionary.getString("close"), Dictionary.getString("dontclose") };
-                        if (javax.swing.JOptionPane.showOptionDialog(OrigamiEditorUI.this,
-                                Dictionary.getString("nosave"), Dictionary.getString("question"),
-                                javax.swing.JOptionPane.YES_NO_OPTION, javax.swing.JOptionPane.QUESTION_MESSAGE, null,
-                                options, options[1]) != javax.swing.JOptionPane.YES_OPTION) {
+                        if (!dialogManager1.canICloseFile()) {
                             return;
                         }
                     }
-                    filename = null;
+                    filepath = null;
                     try (java.io.InputStream fis = models.getFile(modnames.get(ind))) {
 
                         java.util.ArrayList<Byte> bytesb = new java.util.ArrayList<>();
@@ -238,24 +203,24 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                             bytes[i] = bytesb.get(i);
                         }
 
-                        terminal.TerminalOrigami = OrigamiIO.read_gen2(new java.io.ByteArrayInputStream(bytes));
-                        terminal.historyReset();
+                        terminal1.TerminalOrigami = OrigamiIO.read_gen2(new java.io.ByteArrayInputStream(bytes));
+                        terminal1.historyReset();
 
-                        oPanel1.update(terminal.TerminalOrigami);
-                        pPanel1.update(terminal.TerminalOrigami);
+                        oPanel1.update(terminal1.TerminalOrigami);
+                        pPanel1.update(terminal1.TerminalOrigami);
 
-                        oPanel1.PanelCamera.unadjust(terminal.TerminalOrigami);
-                        if (terminal.TerminalOrigami.circumscribedSquareSize() > 0) {
+                        oPanel1.PanelCamera.unadjust(terminal1.TerminalOrigami);
+                        if (terminal1.TerminalOrigami.circumscribedSquareSize() > 0) {
                             oPanel1.PanelCamera.setZoom(0.8 * Math.min(oPanel1.getWidth(), oPanel1.getHeight())
-                                    / terminal.TerminalOrigami.circumscribedSquareSize());
+                                    / terminal1.TerminalOrigami.circumscribedSquareSize());
                         }
-                        pPanel1.PanelCamera.unadjust(terminal.TerminalOrigami);
-                        if (terminal.TerminalOrigami.circumscribedSquareSize() > 0) {
+                        pPanel1.PanelCamera.unadjust(terminal1.TerminalOrigami);
+                        if (terminal1.TerminalOrigami.circumscribedSquareSize() > 0) {
                             pPanel1.PanelCamera.setZoom(0.8 * Math.min(pPanel1.getWidth(), pPanel1.getHeight())
-                                    / terminal.TerminalOrigami.circumscribedSquareSize());
+                                    / terminal1.TerminalOrigami.circumscribedSquareSize());
                         }
                         if (alwaysInMiddle) {
-                            oPanel1.PanelCamera.adjust(terminal.TerminalOrigami);
+                            oPanel1.PanelCamera.adjust(terminal1.TerminalOrigami);
                         }
                         oPanel1.PanelCamera.setOrthogonalView(0);
                         rotation_angle = 0;
@@ -266,36 +231,27 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                     catch (Exception ex) {
                         javax.swing.JOptionPane.showMessageDialog(OrigamiEditorUI.this, Dictionary.getString("h005"));
                     }
-                    foldNumber = terminal.TerminalOrigami.history_pointer();
+                    foldNumber = terminal1.TerminalOrigami.history_pointer();
                     changeListenerShutUp = true;
-                    timeSlider.setMaximum(terminal.TerminalOrigami.history().size());
+                    timeSlider.setMaximum(terminal1.TerminalOrigami.history().size());
                     changeListenerShutUp = false;
-                    timeSlider.setValue(terminal.TerminalOrigami.history_pointer());
+                    timeSlider.setValue(terminal1.TerminalOrigami.history_pointer());
                 }
             });
             ui_file_example.add(modelitem);
         }
-
-        relabel();
-        Instructor.getString("asdasd");
-        setTitle("Origami Editor 3D");
-        setLocationRelativeTo(null);
 
         // Confirmation dialog on closing
         addWindowListener(new java.awt.event.WindowAdapter() {
             @Override
             public void windowClosing(java.awt.event.WindowEvent e) {
                 if (!saved) {
-                    Object[] options = { Dictionary.getString("close"), Dictionary.getString("dontclose") };
-                    if (javax.swing.JOptionPane.showOptionDialog(OrigamiEditorUI.this, Dictionary.getString("nosave"),
-                            Dictionary.getString("question"), javax.swing.JOptionPane.YES_NO_OPTION,
-                            javax.swing.JOptionPane.QUESTION_MESSAGE, null, options,
-                            options[1]) != javax.swing.JOptionPane.YES_OPTION) {
+                    if (!dialogManager1.canICloseFile()) {
                         return;
                     }
                 }
                 settings.dispose();
-                timeline.dispose();
+                ui_timeline.dispose();
                 OrigamiEditorUI.this.dispose();
                 System.exit(0);
             }
@@ -314,7 +270,6 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         zoomOnScroll = true;
         alwaysInMiddle = true;
         neusisOn = false;
-        terminal = new OrigamiScriptTerminal(OrigamiScriptTerminal.Access.USER);
         
         oPanel1.antialiasOn();
         oPanel1.setFrontColor(Camera.paper_front_color);
@@ -324,25 +279,25 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         pPanel1.PanelCamera.yshift = pPanel1.getHeight() / 2;
         try {
 
-            terminal.execute("version 1");
-            terminal.execute("paper square new");
+            terminal1.execute("version 1");
+            terminal1.execute("paper square new");
         }
         catch (Exception exc) {
         }
-        oPanel1.PanelCamera.unadjust(terminal.TerminalOrigami);
+        oPanel1.PanelCamera.unadjust(terminal1.TerminalOrigami);
         oPanel1.PanelCamera.setZoom(0.8 * Math.min(oPanel1.getWidth(), oPanel1.getHeight())
-                / terminal.TerminalOrigami.circumscribedSquareSize());
-        pPanel1.PanelCamera.unadjust(terminal.TerminalOrigami);
+                / terminal1.TerminalOrigami.circumscribedSquareSize());
+        pPanel1.PanelCamera.unadjust(terminal1.TerminalOrigami);
         pPanel1.PanelCamera.setZoom(0.8 * Math.min(pPanel1.getWidth(), pPanel1.getHeight())
-                / terminal.TerminalOrigami.circumscribedSquareSize());
+                / terminal1.TerminalOrigami.circumscribedSquareSize());
 
         ui_panels.setDividerLocation(0.5);
         ui_panels.setResizeWeight(0.5);
 
-        oPanel1.update(terminal.TerminalOrigami);
+        oPanel1.update(terminal1.TerminalOrigami);
         oPanel1.repaint();
 
-        pPanel1.update(terminal.TerminalOrigami);
+        pPanel1.update(terminal1.TerminalOrigami);
         pPanel1.repaint();
 
         javax.swing.ToolTipManager.sharedInstance().setInitialDelay(0);
@@ -354,7 +309,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         pPanel1.setMinimumSize(new java.awt.Dimension(100, 100));
         this.setMinimumSize(new java.awt.Dimension(200, 200));
 
-        filename = null;
+        filepath = null;
         tex = null;
 
         // initialize options menu
@@ -428,20 +383,9 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         settings.setLocationRelativeTo(null);
         settings.pack();
 
-        // initialize file chooser(s)
-        chooser = new javax.swing.JFileChooser();
-        texture_open = chooser;
-        open = chooser;
-        save = chooser;
-        ctm_export = chooser;
-        pdf_export = chooser;
-        gif_export = chooser;
-        jar_export = chooser;
-        png_export = chooser;
-
         // initialize timeline
-        timeline = new javax.swing.JDialog(this, Dictionary.getString("ui.timeline"));
-        timeline.setDefaultCloseOperation(javax.swing.JFrame.DISPOSE_ON_CLOSE);
+        ui_timeline = new javax.swing.JDialog(this, Dictionary.getString("ui.timeline"));
+        ui_timeline.setDefaultCloseOperation(javax.swing.JFrame.DISPOSE_ON_CLOSE);
         timeSlider = new javax.swing.JSlider();
         timeSlider.setMinimum(0);
         timeSlider.setMaximum(0);
@@ -455,49 +399,49 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                 }
                 EditorState = ControlState.LOCKED;
 
-                if (terminal.TerminalOrigami.history().size() < 100) {
+                if (terminal1.TerminalOrigami.history().size() < 100) {
                     if (foldNumber < timeSlider.getValue()) {
-                        terminal.TerminalOrigami.redo(timeSlider.getValue() - foldNumber);
+                        terminal1.TerminalOrigami.redo(timeSlider.getValue() - foldNumber);
                     }
                     else {
-                        terminal.TerminalOrigami.undo(foldNumber - timeSlider.getValue());
+                        terminal1.TerminalOrigami.undo(foldNumber - timeSlider.getValue());
                     }
                     foldNumber = timeSlider.getValue();
-                    oPanel1.update(terminal.TerminalOrigami);
+                    oPanel1.update(terminal1.TerminalOrigami);
                 }
                 else { // Stop eating the CPU when it gets too complex
                     if (!timeSlider.getValueIsAdjusting()) {
                         if (foldNumber < timeSlider.getValue()) {
-                            terminal.TerminalOrigami.redo(timeSlider.getValue() - foldNumber);
+                            terminal1.TerminalOrigami.redo(timeSlider.getValue() - foldNumber);
                         }
                         else {
-                            terminal.TerminalOrigami.undo(foldNumber - timeSlider.getValue());
+                            terminal1.TerminalOrigami.undo(foldNumber - timeSlider.getValue());
                         }
                         foldNumber = timeSlider.getValue();
-                        oPanel1.update(terminal.TerminalOrigami);
+                        oPanel1.update(terminal1.TerminalOrigami);
                     }
                 }
-                if (terminal.TerminalOrigami.history().size() == timeSlider.getValue()) {
+                if (terminal1.TerminalOrigami.history().size() == timeSlider.getValue()) {
                     EditorState = ControlState.STANDBY;
                 }
                 if (alwaysInMiddle) {
-                    oPanel1.PanelCamera.adjust(terminal.TerminalOrigami);
+                    oPanel1.PanelCamera.adjust(terminal1.TerminalOrigami);
                 }
                 defaultify();
             }
         });
-        timeline.getContentPane().add(timeSlider);
-        timeline.setSize(getWidth(), 50);
+        ui_timeline.getContentPane().add(timeSlider);
+        ui_timeline.setSize(getWidth(), 50);
         addComponentListener(new java.awt.event.ComponentAdapter() {
             @Override
             public void componentResized(java.awt.event.ComponentEvent e) {
-                timeline.setSize(getWidth(), 50);
+                ui_timeline.setSize(getWidth(), 50);
                 super.componentResized(e);
             }
         });
-        timeline.setResizable(false);
-        timeline.setLocation(getLocation().x, getLocation().y + getHeight());
-        timeline.setVisible(true);
+        ui_timeline.setResizable(false);
+        ui_timeline.setLocation(getLocation().x, getLocation().y + getHeight());
+        ui_timeline.setVisible(true);
         changeListenerShutUp = false;
 
         // initialize folding options popup menu
@@ -564,7 +508,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                 @Override
                 public void actionPerformed(java.awt.event.ActionEvent evt) {
                     try {
-                        terminal.execute(locales.getString(locname));
+                        terminal1.execute(locales.getString(locname));
                         relabel();
                     }
                     catch (Exception ex) {
@@ -1397,9 +1341,9 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
     //
     private void oPanel1ComponentResized(java.awt.event.ComponentEvent evt) {// GEN-FIRST:event_oPanel1ComponentResized
 
-        if (terminal.TerminalOrigami.circumscribedSquareSize() > 0) {
+        if (terminal1.TerminalOrigami.circumscribedSquareSize() > 0) {
             oPanel1.PanelCamera.setZoom(0.8 * Math.min(oPanel1.getWidth(), oPanel1.getHeight())
-                    / terminal.TerminalOrigami.circumscribedSquareSize());
+                    / terminal1.TerminalOrigami.circumscribedSquareSize());
         }
         oPanel1.PanelCamera.xshift = oPanel1.getWidth() / 2;
         oPanel1.PanelCamera.yshift = oPanel1.getHeight() / 2;
@@ -1419,23 +1363,23 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
 
                 try {
 
-                    terminal.execute(jTextField1.getText());
+                    terminal1.execute(jTextField1.getText());
 
-                    oPanel1.update(terminal.TerminalOrigami);
-                    pPanel1.update(terminal.TerminalOrigami);
+                    oPanel1.update(terminal1.TerminalOrigami);
+                    pPanel1.update(terminal1.TerminalOrigami);
 
-                    oPanel1.PanelCamera.unadjust(terminal.TerminalOrigami);
+                    oPanel1.PanelCamera.unadjust(terminal1.TerminalOrigami);
                     if (alwaysInMiddle) {
-                        oPanel1.PanelCamera.adjust(terminal.TerminalOrigami);
+                        oPanel1.PanelCamera.adjust(terminal1.TerminalOrigami);
                     }
-                    if (terminal.TerminalOrigami.circumscribedSquareSize() > 0) {
+                    if (terminal1.TerminalOrigami.circumscribedSquareSize() > 0) {
                         oPanel1.PanelCamera.setZoom(0.8 * Math.min(oPanel1.getWidth(), oPanel1.getHeight())
-                                / terminal.TerminalOrigami.circumscribedSquareSize());
+                                / terminal1.TerminalOrigami.circumscribedSquareSize());
                     }
-                    pPanel1.PanelCamera.unadjust(terminal.TerminalOrigami);
-                    if (terminal.TerminalOrigami.circumscribedSquareSize() > 0) {
+                    pPanel1.PanelCamera.unadjust(terminal1.TerminalOrigami);
+                    if (terminal1.TerminalOrigami.circumscribedSquareSize() > 0) {
                         pPanel1.PanelCamera.setZoom(0.8 * Math.min(pPanel1.getWidth(), pPanel1.getHeight())
-                                / terminal.TerminalOrigami.circumscribedSquareSize());
+                                / terminal1.TerminalOrigami.circumscribedSquareSize());
                     }
 
                     System.out.println(OrigamiScriptTerminal.obfuscate(jTextField1.getText()));
@@ -1451,15 +1395,15 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
 
                 jTextField1.setText(null);
                 terminal_log.setText("");
-                for (String sor : terminal.history()) {
+                for (String sor : terminal1.history()) {
                     System.out.println(sor);
                 }
             }
-            foldNumber = terminal.TerminalOrigami.history_pointer();
+            foldNumber = terminal1.TerminalOrigami.history_pointer();
             changeListenerShutUp = true;
-            timeSlider.setMaximum(terminal.TerminalOrigami.history().size());
+            timeSlider.setMaximum(terminal1.TerminalOrigami.history().size());
             changeListenerShutUp = false;
-            timeSlider.setValue(terminal.TerminalOrigami.history_pointer());
+            timeSlider.setValue(terminal1.TerminalOrigami.history_pointer());
             saved = false;
         }
     }// GEN-LAST:event_jTextField1KeyTyped
@@ -1470,7 +1414,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
     private void pPanel1ComponentResized(java.awt.event.ComponentEvent evt) {// GEN-FIRST:event_pPanel1ComponentResized
 
         pPanel1.PanelCamera.setZoom(0.8 * Math.min(pPanel1.getWidth(), pPanel1.getHeight())
-                / terminal.TerminalOrigami.circumscribedSquareSize());
+                / terminal1.TerminalOrigami.circumscribedSquareSize());
         pPanel1.PanelCamera.xshift = pPanel1.getWidth() / 2;
         pPanel1.PanelCamera.yshift = pPanel1.getHeight() / 2;
     }// GEN-LAST:event_pPanel1ComponentResized
@@ -1599,11 +1543,11 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
             oPanel1.repaint();
             EditorState = ControlState.TRI3;
         }
-        foldNumber = terminal.TerminalOrigami.history_pointer();
+        foldNumber = terminal1.TerminalOrigami.history_pointer();
         changeListenerShutUp = true;
-        timeSlider.setMaximum(terminal.TerminalOrigami.history().size());
+        timeSlider.setMaximum(terminal1.TerminalOrigami.history().size());
         changeListenerShutUp = false;
-        timeSlider.setValue(terminal.TerminalOrigami.history_pointer());
+        timeSlider.setValue(terminal1.TerminalOrigami.history_pointer());
     }// GEN-LAST:event_pPanel1MouseClicked
 
     //
@@ -1617,9 +1561,9 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                     || EditorState == ControlState.TRI1 || EditorState == ControlState.TRI2
                     || EditorState == ControlState.TRI3) {
 
-                if (terminal.TerminalOrigami.circumscribedSquareSize() > 0) {
+                if (terminal1.TerminalOrigami.circumscribedSquareSize() > 0) {
                     oPanel1.PanelCamera.setZoom(0.8 * Math.min(oPanel1.getWidth(), oPanel1.getHeight())
-                            / terminal.TerminalOrigami.circumscribedSquareSize());
+                            / terminal1.TerminalOrigami.circumscribedSquareSize());
                 }
                 oPanel1.PanelCamera.nextOrthogonalView();
                 oPanel1.repaint();
@@ -1679,19 +1623,19 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                                         pPanel1.PanelCamera.zoom()).projection0(pPanel1.PanelCamera.camera_pos())[1])
                                 / pPanel1.PanelCamera.zoom();
 
-                        terminal.execute("plane [" + vonalzoPT[0] + " " + vonalzoPT[1] + " " + vonalzoPT[2] + "] ["
+                        terminal1.execute("plane [" + vonalzoPT[0] + " " + vonalzoPT[1] + " " + vonalzoPT[2] + "] ["
                                 + vonalzoNV[0] + " " + vonalzoNV[1] + " " + vonalzoNV[2] + "]" + (char) 10 + "target ["
                                 + magX + " " + magY + "]" + (char) 10 + "angle " + rotation_angle + (char) 10 + "rotate");
-                        oPanel1.update(terminal.TerminalOrigami);
+                        oPanel1.update(terminal1.TerminalOrigami);
                     }
                     catch (Exception ex) {
-                        oPanel1.update(terminal.TerminalOrigami);
-                        pPanel1.update(terminal.TerminalOrigami);
+                        oPanel1.update(terminal1.TerminalOrigami);
+                        pPanel1.update(terminal1.TerminalOrigami);
                         javax.swing.JOptionPane.showMessageDialog(this, ex.getMessage().replace('/', (char) 10),
                                 "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
                     }
                     if (alwaysInMiddle) {
-                        oPanel1.PanelCamera.adjust(terminal.TerminalOrigami);
+                        oPanel1.PanelCamera.adjust(terminal1.TerminalOrigami);
                     }
                     pPanel1.reset();
                     oPanel1.reset();
@@ -1700,20 +1644,20 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                 else {
 
                     try {
-                        terminal.execute("plane [" + vonalzoPT[0] + " " + vonalzoPT[1] + " " + vonalzoPT[2] + "] ["
+                        terminal1.execute("plane [" + vonalzoPT[0] + " " + vonalzoPT[1] + " " + vonalzoPT[2] + "] ["
                                 + vonalzoNV[0] + " " + vonalzoNV[1] + " " + vonalzoNV[2] + "]" + (char) 10 + "angle "
                                 + rotation_angle + (char) 10 + "rotate");
-                        oPanel1.update(terminal.TerminalOrigami);
+                        oPanel1.update(terminal1.TerminalOrigami);
                     }
                     catch (Exception ex) {
-                        oPanel1.update(terminal.TerminalOrigami);
-                        pPanel1.update(terminal.TerminalOrigami);
+                        oPanel1.update(terminal1.TerminalOrigami);
+                        pPanel1.update(terminal1.TerminalOrigami);
                         javax.swing.JOptionPane.showMessageDialog(this, ex.getMessage().replace('/', (char) 10),
                                 "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
                     }
                 }
                 if (alwaysInMiddle) {
-                    oPanel1.PanelCamera.adjust(terminal.TerminalOrigami);
+                    oPanel1.PanelCamera.adjust(terminal1.TerminalOrigami);
                 }
                 rotation_angle = 0;
                 oPanel1.hideProtractor();
@@ -1742,7 +1686,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                                         pPanel1.PanelCamera.zoom()).projection0(pPanel1.PanelCamera.camera_pos())[1])
                                 / pPanel1.PanelCamera.zoom();
 
-                        terminal.execute(pszo + " [" + (((double) pPanel1.linerTriangle()[0][0]
+                        terminal1.execute(pszo + " [" + (((double) pPanel1.linerTriangle()[0][0]
                                 - pPanel1.PanelCamera.xshift
                                 + new Camera(pPanel1.PanelCamera.xshift, pPanel1.PanelCamera.yshift,
                                         pPanel1.PanelCamera.zoom()).projection0(pPanel1.PanelCamera.camera_pos())[0])
@@ -1779,16 +1723,16 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                                         / pPanel1.PanelCamera.zoom())
                                 + "]" + (char) 10 + "target [" + magX + " " + magY + "]" + (char) 10 + "angle "
                                 + rotation_angle + (char) 10 + "rotate");
-                        oPanel1.update(terminal.TerminalOrigami);
+                        oPanel1.update(terminal1.TerminalOrigami);
                     }
                     catch (Exception ex) {
-                        oPanel1.update(terminal.TerminalOrigami);
-                        pPanel1.update(terminal.TerminalOrigami);
+                        oPanel1.update(terminal1.TerminalOrigami);
+                        pPanel1.update(terminal1.TerminalOrigami);
                         javax.swing.JOptionPane.showMessageDialog(this, ex.getMessage().replace('/', (char) 10),
                                 "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
                     }
                     if (alwaysInMiddle) {
-                        oPanel1.PanelCamera.adjust(terminal.TerminalOrigami);
+                        oPanel1.PanelCamera.adjust(terminal1.TerminalOrigami);
                     }
                     pPanel1.reset();
                     oPanel1.reset();
@@ -1796,7 +1740,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                 }
                 else {
                     try {
-                        terminal.execute(pszo + " [" + (((double) pPanel1.linerTriangle()[0][0]
+                        terminal1.execute(pszo + " [" + (((double) pPanel1.linerTriangle()[0][0]
                                 - pPanel1.PanelCamera.xshift
                                 + new Camera(pPanel1.PanelCamera.xshift, pPanel1.PanelCamera.yshift,
                                         pPanel1.PanelCamera.zoom()).projection0(pPanel1.PanelCamera.camera_pos())[0])
@@ -1832,24 +1776,24 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                                                         .projection0(pPanel1.PanelCamera.camera_pos())[1])
                                         / pPanel1.PanelCamera.zoom())
                                 + "]" + (char) 10 + "angle " + rotation_angle + (char) 10 + "rotate");
-                        oPanel1.update(terminal.TerminalOrigami);
+                        oPanel1.update(terminal1.TerminalOrigami);
                     }
                     catch (Exception ex) {
-                        oPanel1.update(terminal.TerminalOrigami);
-                        pPanel1.update(terminal.TerminalOrigami);
+                        oPanel1.update(terminal1.TerminalOrigami);
+                        pPanel1.update(terminal1.TerminalOrigami);
                         javax.swing.JOptionPane.showMessageDialog(this, ex.getMessage().replace('/', (char) 10),
                                 "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
                     }
                 }
                 if (alwaysInMiddle) {
-                    oPanel1.PanelCamera.adjust(terminal.TerminalOrigami);
+                    oPanel1.PanelCamera.adjust(terminal1.TerminalOrigami);
                 }
                 defaultify();
                 saved = false;
             }
             else {
                 if (alwaysInMiddle) {
-                    oPanel1.PanelCamera.adjust(terminal.TerminalOrigami);
+                    oPanel1.PanelCamera.adjust(terminal1.TerminalOrigami);
                 }
                 defaultify();
             }
@@ -1884,15 +1828,15 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         }
         else {
             if (alwaysInMiddle) {
-                oPanel1.PanelCamera.adjust(terminal.TerminalOrigami);
+                oPanel1.PanelCamera.adjust(terminal1.TerminalOrigami);
             }
             defaultify();
         }
-        foldNumber = terminal.TerminalOrigami.history_pointer();
+        foldNumber = terminal1.TerminalOrigami.history_pointer();
         changeListenerShutUp = true;
-        timeSlider.setMaximum(terminal.TerminalOrigami.history().size());
+        timeSlider.setMaximum(terminal1.TerminalOrigami.history().size());
         changeListenerShutUp = false;
-        timeSlider.setValue(terminal.TerminalOrigami.history_pointer());
+        timeSlider.setValue(terminal1.TerminalOrigami.history_pointer());
         if (alignOn) {
             oPanel1.resetAlignmentPoint();
         }
@@ -1954,34 +1898,34 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                                     pPanel1.PanelCamera.zoom()).projection0(pPanel1.PanelCamera.camera_pos())[1])
                             / pPanel1.PanelCamera.zoom();
 
-                    terminal.execute("plane [" + vonalzoPT[0] + " " + vonalzoPT[1] + " " + vonalzoPT[2] + "] ["
+                    terminal1.execute("plane [" + vonalzoPT[0] + " " + vonalzoPT[1] + " " + vonalzoPT[2] + "] ["
                             + vonalzoNV[0] + " " + vonalzoNV[1] + " " + vonalzoNV[2] + "]" + (char) 10 + "target ["
                             + magX + " " + magY + "]" + (char) 10 + "reflect");
-                    oPanel1.update(terminal.TerminalOrigami);
+                    oPanel1.update(terminal1.TerminalOrigami);
                 }
                 catch (Exception exc) {
                     terminal_log.setText(terminal_log.getText() + (char) 10 + exc);
                 }
                 if (alwaysInMiddle) {
-                    oPanel1.PanelCamera.adjust(terminal.TerminalOrigami);
+                    oPanel1.PanelCamera.adjust(terminal1.TerminalOrigami);
                 }
             }
             else {
 
                 try {
-                    terminal.execute("plane [" + vonalzoPT[0] + " " + vonalzoPT[1] + " " + vonalzoPT[2] + "] ["
+                    terminal1.execute("plane [" + vonalzoPT[0] + " " + vonalzoPT[1] + " " + vonalzoPT[2] + "] ["
                             + vonalzoNV[0] + " " + vonalzoNV[1] + " " + vonalzoNV[2] + "]" + (char) 10 + "reflect");
-                    oPanel1.update(terminal.TerminalOrigami);
+                    oPanel1.update(terminal1.TerminalOrigami);
                 }
                 catch (Exception ex) {
-                    oPanel1.update(terminal.TerminalOrigami);
-                    pPanel1.update(terminal.TerminalOrigami);
+                    oPanel1.update(terminal1.TerminalOrigami);
+                    pPanel1.update(terminal1.TerminalOrigami);
                     javax.swing.JOptionPane.showMessageDialog(this, ex.getMessage().replace('/', (char) 10), "Error",
                             javax.swing.JOptionPane.ERROR_MESSAGE);
                 }
             }
             if (alwaysInMiddle) {
-                oPanel1.PanelCamera.adjust(terminal.TerminalOrigami);
+                oPanel1.PanelCamera.adjust(terminal1.TerminalOrigami);
             }
             defaultify();
             saved = false;
@@ -2008,7 +1952,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                                     pPanel1.PanelCamera.zoom()).projection0(pPanel1.PanelCamera.camera_pos())[1])
                             / pPanel1.PanelCamera.zoom();
 
-                    terminal.execute(pszo + " [" + (((double) pPanel1.linerTriangle()[0][0] - pPanel1.PanelCamera.xshift
+                    terminal1.execute(pszo + " [" + (((double) pPanel1.linerTriangle()[0][0] - pPanel1.PanelCamera.xshift
                             + new Camera(pPanel1.PanelCamera.xshift, pPanel1.PanelCamera.yshift,
                                     pPanel1.PanelCamera.zoom()).projection0(pPanel1.PanelCamera.camera_pos())[0])
                             / pPanel1.PanelCamera.zoom())
@@ -2043,22 +1987,22 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                                                     .projection0(pPanel1.PanelCamera.camera_pos())[1])
                                     / pPanel1.PanelCamera.zoom())
                             + "]" + (char) 10 + "target [" + magX + " " + magY + "]" + (char) 10 + "reflect");
-                    oPanel1.update(terminal.TerminalOrigami);
+                    oPanel1.update(terminal1.TerminalOrigami);
                 }
                 catch (Exception ex) {
-                    oPanel1.update(terminal.TerminalOrigami);
-                    pPanel1.update(terminal.TerminalOrigami);
+                    oPanel1.update(terminal1.TerminalOrigami);
+                    pPanel1.update(terminal1.TerminalOrigami);
                     javax.swing.JOptionPane.showMessageDialog(this, ex.getMessage().replace('/', (char) 10), "Error",
                             javax.swing.JOptionPane.ERROR_MESSAGE);
                 }
                 if (alwaysInMiddle) {
-                    oPanel1.PanelCamera.adjust(terminal.TerminalOrigami);
+                    oPanel1.PanelCamera.adjust(terminal1.TerminalOrigami);
                 }
             }
             else {
 
                 try {
-                    terminal.execute(pszo + " [" + (((double) pPanel1.linerTriangle()[0][0] - pPanel1.PanelCamera.xshift
+                    terminal1.execute(pszo + " [" + (((double) pPanel1.linerTriangle()[0][0] - pPanel1.PanelCamera.xshift
                             + new Camera(pPanel1.PanelCamera.xshift, pPanel1.PanelCamera.yshift,
                                     pPanel1.PanelCamera.zoom()).projection0(pPanel1.PanelCamera.camera_pos())[0])
                             / pPanel1.PanelCamera.zoom())
@@ -2093,27 +2037,27 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                                                     .projection0(pPanel1.PanelCamera.camera_pos())[1])
                                     / pPanel1.PanelCamera.zoom())
                             + "]" + (char) 10 + "reflect");
-                    oPanel1.update(terminal.TerminalOrigami);
+                    oPanel1.update(terminal1.TerminalOrigami);
                 }
                 catch (Exception ex) {
-                    oPanel1.update(terminal.TerminalOrigami);
-                    pPanel1.update(terminal.TerminalOrigami);
+                    oPanel1.update(terminal1.TerminalOrigami);
+                    pPanel1.update(terminal1.TerminalOrigami);
                     javax.swing.JOptionPane.showMessageDialog(this, ex.getMessage().replace('/', (char) 10), "Error",
                             javax.swing.JOptionPane.ERROR_MESSAGE);
                 }
             }
             if (alwaysInMiddle) {
-                oPanel1.PanelCamera.adjust(terminal.TerminalOrigami);
+                oPanel1.PanelCamera.adjust(terminal1.TerminalOrigami);
             }
             defaultify();
             saved = false;
         }
 
-        foldNumber = terminal.TerminalOrigami.history_pointer();
+        foldNumber = terminal1.TerminalOrigami.history_pointer();
         changeListenerShutUp = true;
-        timeSlider.setMaximum(terminal.TerminalOrigami.history().size());
+        timeSlider.setMaximum(terminal1.TerminalOrigami.history().size());
         changeListenerShutUp = false;
-        timeSlider.setValue(terminal.TerminalOrigami.history_pointer());
+        timeSlider.setValue(terminal1.TerminalOrigami.history_pointer());
         if (alignOn) {
             oPanel1.resetAlignmentPoint();
         }
@@ -2194,34 +2138,34 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                                     pPanel1.PanelCamera.zoom()).projection0(pPanel1.PanelCamera.camera_pos())[1])
                             / pPanel1.PanelCamera.zoom();
 
-                    terminal.execute("plane [" + vonalzoPT[0] + " " + vonalzoPT[1] + " " + vonalzoPT[2] + "] ["
+                    terminal1.execute("plane [" + vonalzoPT[0] + " " + vonalzoPT[1] + " " + vonalzoPT[2] + "] ["
                             + vonalzoNV[0] + " " + vonalzoNV[1] + " " + vonalzoNV[2] + "]" + (char) 10 + "target ["
                             + magX + " " + magY + "]" + (char) 10 + "cut");
-                    oPanel1.update(terminal.TerminalOrigami);
+                    oPanel1.update(terminal1.TerminalOrigami);
                 }
                 catch (Exception exc) {
                     terminal_log.setText(terminal_log.getText() + (char) 10 + exc);
                 }
                 if (alwaysInMiddle) {
-                    oPanel1.PanelCamera.adjust(terminal.TerminalOrigami);
+                    oPanel1.PanelCamera.adjust(terminal1.TerminalOrigami);
                 }
             }
             else {
 
                 try {
-                    terminal.execute("plane [" + vonalzoPT[0] + " " + vonalzoPT[1] + " " + vonalzoPT[2] + "] ["
+                    terminal1.execute("plane [" + vonalzoPT[0] + " " + vonalzoPT[1] + " " + vonalzoPT[2] + "] ["
                             + vonalzoNV[0] + " " + vonalzoNV[1] + " " + vonalzoNV[2] + "]" + (char) 10 + "cut");
-                    oPanel1.update(terminal.TerminalOrigami);
+                    oPanel1.update(terminal1.TerminalOrigami);
                 }
                 catch (Exception ex) {
-                    oPanel1.update(terminal.TerminalOrigami);
-                    pPanel1.update(terminal.TerminalOrigami);
+                    oPanel1.update(terminal1.TerminalOrigami);
+                    pPanel1.update(terminal1.TerminalOrigami);
                     javax.swing.JOptionPane.showMessageDialog(this, ex.getMessage().replace('/', (char) 10), "Error",
                             javax.swing.JOptionPane.ERROR_MESSAGE);
                 }
             }
             if (alwaysInMiddle) {
-                oPanel1.PanelCamera.adjust(terminal.TerminalOrigami);
+                oPanel1.PanelCamera.adjust(terminal1.TerminalOrigami);
             }
             defaultify();
             saved = false;
@@ -2248,7 +2192,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                                     pPanel1.PanelCamera.zoom()).projection0(pPanel1.PanelCamera.camera_pos())[1])
                             / pPanel1.PanelCamera.zoom();
 
-                    terminal.execute(pszo + " [" + (((double) pPanel1.linerTriangle()[0][0] - pPanel1.PanelCamera.xshift
+                    terminal1.execute(pszo + " [" + (((double) pPanel1.linerTriangle()[0][0] - pPanel1.PanelCamera.xshift
                             + new Camera(pPanel1.PanelCamera.xshift, pPanel1.PanelCamera.yshift,
                                     pPanel1.PanelCamera.zoom()).projection0(pPanel1.PanelCamera.camera_pos())[0])
                             / pPanel1.PanelCamera.zoom())
@@ -2283,22 +2227,22 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                                                     .projection0(pPanel1.PanelCamera.camera_pos())[1])
                                     / pPanel1.PanelCamera.zoom())
                             + "]" + (char) 10 + "target [" + magX + " " + magY + "]" + (char) 10 + "cut");
-                    oPanel1.update(terminal.TerminalOrigami);
+                    oPanel1.update(terminal1.TerminalOrigami);
                 }
                 catch (Exception ex) {
-                    oPanel1.update(terminal.TerminalOrigami);
-                    pPanel1.update(terminal.TerminalOrigami);
+                    oPanel1.update(terminal1.TerminalOrigami);
+                    pPanel1.update(terminal1.TerminalOrigami);
                     javax.swing.JOptionPane.showMessageDialog(this, ex.getMessage().replace('/', (char) 10), "Error",
                             javax.swing.JOptionPane.ERROR_MESSAGE);
                 }
                 if (alwaysInMiddle) {
-                    oPanel1.PanelCamera.adjust(terminal.TerminalOrigami);
+                    oPanel1.PanelCamera.adjust(terminal1.TerminalOrigami);
                 }
             }
             else {
 
                 try {
-                    terminal.execute(pszo + " [" + (((double) pPanel1.linerTriangle()[0][0] - pPanel1.PanelCamera.xshift
+                    terminal1.execute(pszo + " [" + (((double) pPanel1.linerTriangle()[0][0] - pPanel1.PanelCamera.xshift
                             + new Camera(pPanel1.PanelCamera.xshift, pPanel1.PanelCamera.yshift,
                                     pPanel1.PanelCamera.zoom()).projection0(pPanel1.PanelCamera.camera_pos())[0])
                             / pPanel1.PanelCamera.zoom())
@@ -2333,28 +2277,28 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                                                     .projection0(pPanel1.PanelCamera.camera_pos())[1])
                                     / pPanel1.PanelCamera.zoom())
                             + "]" + (char) 10 + "cut");
-                    oPanel1.update(terminal.TerminalOrigami);
+                    oPanel1.update(terminal1.TerminalOrigami);
                 }
                 catch (Exception ex) {
-                    oPanel1.update(terminal.TerminalOrigami);
-                    pPanel1.update(terminal.TerminalOrigami);
+                    oPanel1.update(terminal1.TerminalOrigami);
+                    pPanel1.update(terminal1.TerminalOrigami);
                     javax.swing.JOptionPane.showMessageDialog(this, ex.getMessage().replace('/', (char) 10), "Error",
                             javax.swing.JOptionPane.ERROR_MESSAGE);
                 }
             }
             EditorState = ControlState.STANDBY;
             if (alwaysInMiddle) {
-                oPanel1.PanelCamera.adjust(terminal.TerminalOrigami);
+                oPanel1.PanelCamera.adjust(terminal1.TerminalOrigami);
             }
             defaultify();
             saved = false;
         }
 
-        foldNumber = terminal.TerminalOrigami.history_pointer();
+        foldNumber = terminal1.TerminalOrigami.history_pointer();
         changeListenerShutUp = true;
-        timeSlider.setMaximum(terminal.TerminalOrigami.history().size());
+        timeSlider.setMaximum(terminal1.TerminalOrigami.history().size());
         changeListenerShutUp = false;
-        timeSlider.setValue(terminal.TerminalOrigami.history_pointer());
+        timeSlider.setValue(terminal1.TerminalOrigami.history_pointer());
         if (alignOn) {
             oPanel1.resetAlignmentPoint();
         }
@@ -2413,24 +2357,10 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
     //
     private void ui_file_export_topdfActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_ui_file_export_topdfActionPerformed
 
-        pdf_export.resetChoosableFileFilters();
-        pdf_export.setAcceptAllFileFilterUsed(false);
-        pdf_export.addChoosableFileFilter(
-                new javax.swing.filechooser.FileNameExtensionFilter(Dictionary.getString("pdf"), "pdf"));
+        final String fpath = dialogManager1.getSaveFilePath("pdf");
+        if (fpath != null) {
 
-        if (pdf_export.showSaveDialog(this) == javax.swing.JFileChooser.APPROVE_OPTION) {
-
-            if (new java.io.File(pdf_export.getSelectedFile().getPath().endsWith(".pdf")
-                    ? pdf_export.getSelectedFile().getPath() : pdf_export.getSelectedFile().getPath() + ".pdf")
-                            .exists()) {
-                if (javax.swing.JOptionPane.showConfirmDialog(null, Dictionary.getString("overwrite"),
-                        Dictionary.getString("question"),
-                        javax.swing.JOptionPane.YES_NO_OPTION) == javax.swing.JOptionPane.NO_OPTION) {
-                    ui_file_export_topdfActionPerformed(evt);
-                    return;
-                }
-            }
-            if (!chooser.getSelectedFile().getName().matches("[\\w\\.]+")) {
+            if (!new java.io.File(fpath).getName().matches("[\\w\\.]+")) {
                 javax.swing.JOptionPane.showMessageDialog(null, Dictionary.getString("noword"),
                         Dictionary.getString("warning"), javax.swing.JOptionPane.WARNING_MESSAGE);
             }
@@ -2458,14 +2388,11 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
 
                         try {
 
-                            terminal.execute(
-                                    "title [" + pdf_export.getSelectedFile().getName().replace(".pdf", "")
-                                            + "] filename [" + pdf_export.getSelectedFile().getPath()
-                                            + (pdf_export.getSelectedFile().getPath().endsWith(".pdf")
-                                                    ? "] export-autopdf" : ".pdf] export-autopdf"),
+                            terminal1.execute(
+                                    "title [" + fpath  + "] filename [" + fpath + "] export-autopdf",
                                     OrigamiScriptTerminal.Access.ROOT);
-                            oPanel1.update(terminal.TerminalOrigami);
-                            pPanel1.update(terminal.TerminalOrigami);
+                            oPanel1.update(terminal1.TerminalOrigami);
+                            pPanel1.update(terminal1.TerminalOrigami);
                             defaultify();
                             rotation_angle = 0;
                         }
@@ -2494,8 +2421,8 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                 }
             }
             catch (Exception ex) {
-                oPanel1.update(terminal.TerminalOrigami);
-                pPanel1.update(terminal.TerminalOrigami);
+                oPanel1.update(terminal1.TerminalOrigami);
+                pPanel1.update(terminal1.TerminalOrigami);
                 javax.swing.JOptionPane.showMessageDialog(this, ex.getMessage().replace('/', (char) 10), "Error",
                         javax.swing.JOptionPane.ERROR_MESSAGE);
             }
@@ -2511,35 +2438,35 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
             return;
         }
         try {
-            terminal.execute("undo");
+            terminal1.execute("undo");
         }
         catch (Exception exc) {
         }
 
-        oPanel1.update(terminal.TerminalOrigami);
-        pPanel1.update(terminal.TerminalOrigami);
+        oPanel1.update(terminal1.TerminalOrigami);
+        pPanel1.update(terminal1.TerminalOrigami);
 
-        oPanel1.PanelCamera.unadjust(terminal.TerminalOrigami);
-        if (terminal.TerminalOrigami.circumscribedSquareSize() > 0) {
+        oPanel1.PanelCamera.unadjust(terminal1.TerminalOrigami);
+        if (terminal1.TerminalOrigami.circumscribedSquareSize() > 0) {
             oPanel1.PanelCamera.setZoom(0.8 * Math.min(oPanel1.getWidth(), oPanel1.getHeight())
-                    / terminal.TerminalOrigami.circumscribedSquareSize());
+                    / terminal1.TerminalOrigami.circumscribedSquareSize());
         }
-        pPanel1.PanelCamera.unadjust(terminal.TerminalOrigami);
-        if (terminal.TerminalOrigami.circumscribedSquareSize() > 0) {
+        pPanel1.PanelCamera.unadjust(terminal1.TerminalOrigami);
+        if (terminal1.TerminalOrigami.circumscribedSquareSize() > 0) {
             pPanel1.PanelCamera.setZoom(0.8 * Math.min(pPanel1.getWidth(), pPanel1.getHeight())
-                    / terminal.TerminalOrigami.circumscribedSquareSize());
+                    / terminal1.TerminalOrigami.circumscribedSquareSize());
         }
         if (alwaysInMiddle) {
-            oPanel1.PanelCamera.adjust(terminal.TerminalOrigami);
+            oPanel1.PanelCamera.adjust(terminal1.TerminalOrigami);
         }
         defaultify();
         rotation_angle = 0;
         saved = false;
-        foldNumber = terminal.TerminalOrigami.history_pointer();
+        foldNumber = terminal1.TerminalOrigami.history_pointer();
         changeListenerShutUp = true;
-        timeSlider.setMaximum(terminal.TerminalOrigami.history().size());
+        timeSlider.setMaximum(terminal1.TerminalOrigami.history().size());
         changeListenerShutUp = false;
-        timeSlider.setValue(terminal.TerminalOrigami.history_pointer());
+        timeSlider.setValue(terminal1.TerminalOrigami.history_pointer());
     }// GEN-LAST:event_ui_edit_undoActionPerformed
 
     //
@@ -2553,7 +2480,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
             if (zoomOnScroll && oPanel1.PanelCamera.zoom() - 0.1 * evt.getWheelRotation() <= Camera.maximal_zoom
                     && oPanel1.PanelCamera.zoom() - 0.1 * evt.getWheelRotation() >= 0.8
                             * Math.min(oPanel1.getWidth(), oPanel1.getHeight())
-                            / terminal.TerminalOrigami.circumscribedSquareSize()) {
+                            / terminal1.TerminalOrigami.circumscribedSquareSize()) {
                 oPanel1.PanelCamera.setZoom(oPanel1.PanelCamera.zoom() - 0.1 * evt.getWheelRotation());
             }
             oPanel1.repaint();
@@ -2566,43 +2493,26 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
     //
     private void ui_file_saveasActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_ui_file_saveasActionPerformed
 
-        save.resetChoosableFileFilters();
-        save.setAcceptAllFileFilterUsed(false);
-        save.addChoosableFileFilter(
-                new javax.swing.filechooser.FileNameExtensionFilter(Dictionary.getString("ori"), "ori"));
-
-        if (save.showSaveDialog(this) == javax.swing.JFileChooser.APPROVE_OPTION) {
-            if (new java.io.File(save.getSelectedFile().getPath().endsWith(".ori") ? save.getSelectedFile().getPath()
-                    : save.getSelectedFile().getPath() + ".ori").exists()) {
-                if (javax.swing.JOptionPane.showConfirmDialog(null, Dictionary.getString("overwrite"),
-                        Dictionary.getString("question"),
-                        javax.swing.JOptionPane.YES_NO_OPTION) == javax.swing.JOptionPane.NO_OPTION) {
-
-                    ui_file_saveasActionPerformed(evt);
-                    return;
-                }
+        String fpath = dialogManager1.getSaveFilePath("ori");
+        
+        if (fpath != null) {
+            
+            try {
+                terminal1.execute("filename [" + fpath + "] export-ori",
+                        OrigamiScriptTerminal.Access.ROOT);
+                oPanel1.update(terminal1.TerminalOrigami);
+                pPanel1.update(terminal1.TerminalOrigami);
+                defaultify();
+                rotation_angle = 0;
+                filepath = fpath;
+                setTitle(new java.io.File(fpath).getName() + " - Origami Editor 3D");
+                saved = true;
             }
-
-            if (save.getFileFilter() == save.getChoosableFileFilters()[0]) {
-
-                try {
-                    terminal.execute("filename [" + save.getSelectedFile().getPath()
-                            + (save.getSelectedFile().getPath().endsWith(".ori") ? "] export-ori" : ".ori] export-ori"),
-                            OrigamiScriptTerminal.Access.ROOT);
-                    oPanel1.update(terminal.TerminalOrigami);
-                    pPanel1.update(terminal.TerminalOrigami);
-                    defaultify();
-                    rotation_angle = 0;
-                    filename = save.getSelectedFile().getPath();
-                    setTitle(save.getSelectedFile().getName() + " - Origami Editor 3D");
-                    saved = true;
-                }
-                catch (Exception ex) {
-                    oPanel1.update(terminal.TerminalOrigami);
-                    pPanel1.update(terminal.TerminalOrigami);
-                    javax.swing.JOptionPane.showMessageDialog(this, ex.getMessage().replace('/', (char) 10), "Error",
-                            javax.swing.JOptionPane.ERROR_MESSAGE);
-                }
+            catch (Exception ex) {
+                oPanel1.update(terminal1.TerminalOrigami);
+                pPanel1.update(terminal1.TerminalOrigami);
+                javax.swing.JOptionPane.showMessageDialog(this, ex.getMessage().replace('/', (char) 10), "Error",
+                        javax.swing.JOptionPane.ERROR_MESSAGE);
             }
         }
     }// GEN-LAST:event_ui_file_saveasActionPerformed
@@ -2612,42 +2522,27 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
     //
     private void ui_file_export_toopenctmActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_ui_file_export_toopenctmActionPerformed
 
-        ctm_export.resetChoosableFileFilters();
-        ctm_export.setAcceptAllFileFilterUsed(false);
-        ctm_export.addChoosableFileFilter(
-                new javax.swing.filechooser.FileNameExtensionFilter(Dictionary.getString("ctm"), "ctm"));
-
-        if (ctm_export.showSaveDialog(this) == javax.swing.JFileChooser.APPROVE_OPTION) {
-            if (new java.io.File(ctm_export.getSelectedFile().getPath().endsWith(".ctm")
-                    ? ctm_export.getSelectedFile().getPath() : ctm_export.getSelectedFile().getPath() + ".ctm")
-                            .exists()) {
-                if (javax.swing.JOptionPane.showConfirmDialog(null, Dictionary.getString("overwrite"),
-                        Dictionary.getString("question"),
-                        javax.swing.JOptionPane.YES_NO_OPTION) == javax.swing.JOptionPane.NO_OPTION) {
-
-                    ui_file_export_toopenctmActionPerformed(evt);
-                    return;
-                }
-            }
-            if (!chooser.getSelectedFile().getName().matches("[\\w\\.]+")) {
+        String fpath = dialogManager1.getSaveFilePath("ctm");
+        
+        if (fpath != null) {
+            
+            if (!new java.io.File(fpath).getName().matches("[\\w\\.]+")) {
                 javax.swing.JOptionPane.showMessageDialog(null, Dictionary.getString("noword"),
                         Dictionary.getString("warning"), javax.swing.JOptionPane.WARNING_MESSAGE);
             }
 
             try {
-                terminal.execute("filename [" + ctm_export.getSelectedFile().getPath()
-                        + (ctm_export.getSelectedFile().getPath().endsWith(".ctm") ? "] export-ctm"
-                                : ".ctm] export-ctm"),
+                terminal1.execute("filename [" + fpath + "] export-ctm",
                         OrigamiScriptTerminal.Access.ROOT);
-                oPanel1.update(terminal.TerminalOrigami);
-                pPanel1.update(terminal.TerminalOrigami);
+                oPanel1.update(terminal1.TerminalOrigami);
+                pPanel1.update(terminal1.TerminalOrigami);
                 pPanel1.reset();
                 defaultify();
                 rotation_angle = 0;
             }
             catch (Exception ex) {
-                oPanel1.update(terminal.TerminalOrigami);
-                pPanel1.update(terminal.TerminalOrigami);
+                oPanel1.update(terminal1.TerminalOrigami);
+                pPanel1.update(terminal1.TerminalOrigami);
                 javax.swing.JOptionPane.showMessageDialog(this, ex.getMessage().replace('/', (char) 10), "Error",
                         javax.swing.JOptionPane.ERROR_MESSAGE);
             }
@@ -2660,99 +2555,90 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
     private void ui_file_openActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_ui_file_openActionPerformed
 
         if (!saved) {
-            Object[] options = { Dictionary.getString("close"), Dictionary.getString("dontclose") };
-            if (javax.swing.JOptionPane.showOptionDialog(this, Dictionary.getString("nosave"),
-                    Dictionary.getString("question"), javax.swing.JOptionPane.YES_NO_OPTION,
-                    javax.swing.JOptionPane.QUESTION_MESSAGE, null, options,
-                    options[1]) != javax.swing.JOptionPane.YES_OPTION) {
+            if (!dialogManager1.canICloseFile()) {
                 return;
             }
         }
+        
+        String fpath = dialogManager1.getOpenFilePath("ori", "txt");
+        
+        if (fpath != null) {
 
-        open.resetChoosableFileFilters();
-        open.setAcceptAllFileFilterUsed(false);
-        open.addChoosableFileFilter(
-                new javax.swing.filechooser.FileNameExtensionFilter(Dictionary.getString("ori"), "ori"));
-        open.addChoosableFileFilter(
-                new javax.swing.filechooser.FileNameExtensionFilter(Dictionary.getString("txt"), "txt"));
-
-        if (open.showOpenDialog(this) == javax.swing.JFileChooser.APPROVE_OPTION) {
-
-            if (open.getFileFilter() == open.getChoosableFileFilters()[0]) {
+            if (fpath.endsWith(".ori")) {
 
                 try {
-                    terminal.execute("filename [" + open.getSelectedFile().getPath() + "] open",
+                    terminal1.execute("filename [" + fpath + "] open",
                             OrigamiScriptTerminal.Access.ROOT);
-                    oPanel1.update(terminal.TerminalOrigami);
-                    pPanel1.update(terminal.TerminalOrigami);
+                    oPanel1.update(terminal1.TerminalOrigami);
+                    pPanel1.update(terminal1.TerminalOrigami);
 
-                    oPanel1.PanelCamera.unadjust(terminal.TerminalOrigami);
-                    if (terminal.TerminalOrigami.circumscribedSquareSize() > 0) {
+                    oPanel1.PanelCamera.unadjust(terminal1.TerminalOrigami);
+                    if (terminal1.TerminalOrigami.circumscribedSquareSize() > 0) {
                         oPanel1.PanelCamera.setZoom(0.8 * Math.min(oPanel1.getWidth(), oPanel1.getHeight())
-                                / terminal.TerminalOrigami.circumscribedSquareSize());
+                                / terminal1.TerminalOrigami.circumscribedSquareSize());
                     }
-                    pPanel1.PanelCamera.unadjust(terminal.TerminalOrigami);
-                    if (terminal.TerminalOrigami.circumscribedSquareSize() > 0) {
+                    pPanel1.PanelCamera.unadjust(terminal1.TerminalOrigami);
+                    if (terminal1.TerminalOrigami.circumscribedSquareSize() > 0) {
                         pPanel1.PanelCamera.setZoom(0.8 * Math.min(pPanel1.getWidth(), pPanel1.getHeight())
-                                / terminal.TerminalOrigami.circumscribedSquareSize());
+                                / terminal1.TerminalOrigami.circumscribedSquareSize());
                     }
                     if (alwaysInMiddle) {
-                        oPanel1.PanelCamera.adjust(terminal.TerminalOrigami);
+                        oPanel1.PanelCamera.adjust(terminal1.TerminalOrigami);
                     }
                     oPanel1.PanelCamera.setOrthogonalView(0);
                     rotation_angle = 0;
                     defaultify();
-                    filename = open.getSelectedFile().getPath();
-                    setTitle(open.getSelectedFile().getName() + " - Origami Editor 3D");
+                    filepath = fpath;
+                    setTitle(new java.io.File(fpath).getName() + " - Origami Editor 3D");
                     saved = true;
                 }
                 catch (Exception ex) {
-                    oPanel1.update(terminal.TerminalOrigami);
-                    pPanel1.update(terminal.TerminalOrigami);
+                    oPanel1.update(terminal1.TerminalOrigami);
+                    pPanel1.update(terminal1.TerminalOrigami);
                     javax.swing.JOptionPane.showMessageDialog(this, ex.getMessage().replace('/', (char) 10), "Error",
                             javax.swing.JOptionPane.ERROR_MESSAGE);
                 }
             }
-            else if (open.getFileFilter() == open.getChoosableFileFilters()[1]) {
+            else if (fpath.endsWith(".txt")) {
 
                 try {
-                    terminal.execute("filename [" + open.getSelectedFile().getPath() + "] load",
+                    terminal1.execute("filename [" + fpath + "] load",
                             OrigamiScriptTerminal.Access.ROOT);
-                    oPanel1.update(terminal.TerminalOrigami);
-                    pPanel1.update(terminal.TerminalOrigami);
+                    oPanel1.update(terminal1.TerminalOrigami);
+                    pPanel1.update(terminal1.TerminalOrigami);
 
-                    oPanel1.PanelCamera.unadjust(terminal.TerminalOrigami);
-                    if (terminal.TerminalOrigami.circumscribedSquareSize() > 0) {
+                    oPanel1.PanelCamera.unadjust(terminal1.TerminalOrigami);
+                    if (terminal1.TerminalOrigami.circumscribedSquareSize() > 0) {
                         oPanel1.PanelCamera.setZoom(0.8 * Math.min(oPanel1.getWidth(), oPanel1.getHeight())
-                                / terminal.TerminalOrigami.circumscribedSquareSize());
+                                / terminal1.TerminalOrigami.circumscribedSquareSize());
                     }
-                    pPanel1.PanelCamera.unadjust(terminal.TerminalOrigami);
-                    if (terminal.TerminalOrigami.circumscribedSquareSize() > 0) {
+                    pPanel1.PanelCamera.unadjust(terminal1.TerminalOrigami);
+                    if (terminal1.TerminalOrigami.circumscribedSquareSize() > 0) {
                         pPanel1.PanelCamera.setZoom(0.8 * Math.min(pPanel1.getWidth(), pPanel1.getHeight())
-                                / terminal.TerminalOrigami.circumscribedSquareSize());
+                                / terminal1.TerminalOrigami.circumscribedSquareSize());
                     }
                     if (alwaysInMiddle) {
-                        oPanel1.PanelCamera.adjust(terminal.TerminalOrigami);
+                        oPanel1.PanelCamera.adjust(terminal1.TerminalOrigami);
                     }
                     oPanel1.PanelCamera.setOrthogonalView(0);
                     rotation_angle = 0;
                     defaultify();
-                    setTitle(open.getSelectedFile().getName() + " - Origami Editor 3D");
+                    setTitle(new java.io.File(fpath) + " - Origami Editor 3D");
                     saved = true;
                 }
                 catch (Exception ex) {
-                    oPanel1.update(terminal.TerminalOrigami);
-                    pPanel1.update(terminal.TerminalOrigami);
+                    oPanel1.update(terminal1.TerminalOrigami);
+                    pPanel1.update(terminal1.TerminalOrigami);
                     javax.swing.JOptionPane.showMessageDialog(this, ex.getMessage().replace('/', (char) 10), "Error",
                             javax.swing.JOptionPane.ERROR_MESSAGE);
                 }
             }
         }
-        foldNumber = terminal.TerminalOrigami.history_pointer();
+        foldNumber = terminal1.TerminalOrigami.history_pointer();
         changeListenerShutUp = true;
-        timeSlider.setMaximum(terminal.TerminalOrigami.history().size());
+        timeSlider.setMaximum(terminal1.TerminalOrigami.history().size());
         changeListenerShutUp = false;
-        timeSlider.setValue(terminal.TerminalOrigami.history_pointer());
+        timeSlider.setValue(terminal1.TerminalOrigami.history_pointer());
     }// GEN-LAST:event_ui_file_openActionPerformed
 
     private void ui_edit_planeActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_ui_edit_planeActionPerformed
@@ -2769,8 +2655,8 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         }
         try {
 
-            if (!terminal.history().isEmpty()) {
-                terminal.execute("redo");
+            if (!terminal1.history().isEmpty()) {
+                terminal1.execute("redo");
             }
         }
         catch (Exception ex) {
@@ -2779,18 +2665,18 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                     javax.swing.JOptionPane.ERROR_MESSAGE);
         }
         if (alwaysInMiddle) {
-            oPanel1.PanelCamera.adjust(terminal.TerminalOrigami);
+            oPanel1.PanelCamera.adjust(terminal1.TerminalOrigami);
         }
-        oPanel1.update(terminal.TerminalOrigami);
-        pPanel1.update(terminal.TerminalOrigami);
+        oPanel1.update(terminal1.TerminalOrigami);
+        pPanel1.update(terminal1.TerminalOrigami);
         defaultify();
         rotation_angle = 0;
         saved = false;
-        foldNumber = terminal.TerminalOrigami.history_pointer();
+        foldNumber = terminal1.TerminalOrigami.history_pointer();
         changeListenerShutUp = true;
-        timeSlider.setMaximum(terminal.TerminalOrigami.history().size());
+        timeSlider.setMaximum(terminal1.TerminalOrigami.history().size());
         changeListenerShutUp = false;
-        timeSlider.setValue(terminal.TerminalOrigami.history_pointer());
+        timeSlider.setValue(terminal1.TerminalOrigami.history_pointer());
     }// GEN-LAST:event_ui_edit_redoActionPerformed
 
     //
@@ -2799,31 +2685,27 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
     private void ui_file_new_hexagonalActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_ui_file_new_hexagonalActionPerformed
 
         if (!saved) {
-            Object[] options = { Dictionary.getString("close"), Dictionary.getString("dontclose") };
-            if (javax.swing.JOptionPane.showOptionDialog(this, Dictionary.getString("nosave"),
-                    Dictionary.getString("question"), javax.swing.JOptionPane.YES_NO_OPTION,
-                    javax.swing.JOptionPane.QUESTION_MESSAGE, null, options,
-                    options[1]) != javax.swing.JOptionPane.YES_OPTION) {
+            if (!dialogManager1.canICloseFile()) {
                 return;
             }
         }
         try {
 
-            filename = null;
-            terminal.execute("paper hexagon new");
+            filepath = null;
+            terminal1.execute("paper hexagon new");
 
-            oPanel1.update(terminal.TerminalOrigami);
-            pPanel1.update(terminal.TerminalOrigami);
+            oPanel1.update(terminal1.TerminalOrigami);
+            pPanel1.update(terminal1.TerminalOrigami);
 
-            oPanel1.PanelCamera.unadjust(terminal.TerminalOrigami);
-            if (terminal.TerminalOrigami.circumscribedSquareSize() > 0) {
+            oPanel1.PanelCamera.unadjust(terminal1.TerminalOrigami);
+            if (terminal1.TerminalOrigami.circumscribedSquareSize() > 0) {
                 oPanel1.PanelCamera.setZoom(0.8 * Math.min(oPanel1.getWidth(), oPanel1.getHeight())
-                        / terminal.TerminalOrigami.circumscribedSquareSize());
+                        / terminal1.TerminalOrigami.circumscribedSquareSize());
             }
-            pPanel1.PanelCamera.unadjust(terminal.TerminalOrigami);
-            if (terminal.TerminalOrigami.circumscribedSquareSize() > 0) {
+            pPanel1.PanelCamera.unadjust(terminal1.TerminalOrigami);
+            if (terminal1.TerminalOrigami.circumscribedSquareSize() > 0) {
                 pPanel1.PanelCamera.setZoom(0.8 * Math.min(pPanel1.getWidth(), pPanel1.getHeight())
-                        / terminal.TerminalOrigami.circumscribedSquareSize());
+                        / terminal1.TerminalOrigami.circumscribedSquareSize());
             }
 
             defaultify();
@@ -2835,11 +2717,11 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
             javax.swing.JOptionPane.showMessageDialog(this, ex.getMessage().replace('/', (char) 10), "Error",
                     javax.swing.JOptionPane.ERROR_MESSAGE);
         }
-        foldNumber = terminal.TerminalOrigami.history_pointer();
+        foldNumber = terminal1.TerminalOrigami.history_pointer();
         changeListenerShutUp = true;
-        timeSlider.setMaximum(terminal.TerminalOrigami.history().size());
+        timeSlider.setMaximum(terminal1.TerminalOrigami.history().size());
         changeListenerShutUp = false;
-        timeSlider.setValue(terminal.TerminalOrigami.history_pointer());
+        timeSlider.setValue(terminal1.TerminalOrigami.history_pointer());
     }// GEN-LAST:event_ui_file_new_hexagonalActionPerformed
 
     //
@@ -2848,31 +2730,27 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
     private void ui_file_new_squareActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_ui_file_new_squareActionPerformed
 
         if (!saved) {
-            Object[] options = { Dictionary.getString("close"), Dictionary.getString("dontclose") };
-            if (javax.swing.JOptionPane.showOptionDialog(this, Dictionary.getString("nosave"),
-                    Dictionary.getString("question"), javax.swing.JOptionPane.YES_NO_OPTION,
-                    javax.swing.JOptionPane.QUESTION_MESSAGE, null, options,
-                    options[1]) != javax.swing.JOptionPane.YES_OPTION) {
+            if (!dialogManager1.canICloseFile()) {
                 return;
             }
         }
         try {
 
-            filename = null;
-            terminal.execute("paper square new");
+            filepath = null;
+            terminal1.execute("paper square new");
 
-            oPanel1.update(terminal.TerminalOrigami);
-            pPanel1.update(terminal.TerminalOrigami);
+            oPanel1.update(terminal1.TerminalOrigami);
+            pPanel1.update(terminal1.TerminalOrigami);
 
-            oPanel1.PanelCamera.unadjust(terminal.TerminalOrigami);
-            if (terminal.TerminalOrigami.circumscribedSquareSize() > 0) {
+            oPanel1.PanelCamera.unadjust(terminal1.TerminalOrigami);
+            if (terminal1.TerminalOrigami.circumscribedSquareSize() > 0) {
                 oPanel1.PanelCamera.setZoom(0.8 * Math.min(oPanel1.getWidth(), oPanel1.getHeight())
-                        / terminal.TerminalOrigami.circumscribedSquareSize());
+                        / terminal1.TerminalOrigami.circumscribedSquareSize());
             }
-            pPanel1.PanelCamera.unadjust(terminal.TerminalOrigami);
-            if (terminal.TerminalOrigami.circumscribedSquareSize() > 0) {
+            pPanel1.PanelCamera.unadjust(terminal1.TerminalOrigami);
+            if (terminal1.TerminalOrigami.circumscribedSquareSize() > 0) {
                 pPanel1.PanelCamera.setZoom(0.8 * Math.min(pPanel1.getWidth(), pPanel1.getHeight())
-                        / terminal.TerminalOrigami.circumscribedSquareSize());
+                        / terminal1.TerminalOrigami.circumscribedSquareSize());
             }
             defaultify();
             setTitle("Origami Editor 3D");
@@ -2883,11 +2761,11 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
             javax.swing.JOptionPane.showMessageDialog(this, ex.getMessage().replace('/', (char) 10), "Error",
                     javax.swing.JOptionPane.ERROR_MESSAGE);
         }
-        foldNumber = terminal.TerminalOrigami.history_pointer();
+        foldNumber = terminal1.TerminalOrigami.history_pointer();
         changeListenerShutUp = true;
-        timeSlider.setMaximum(terminal.TerminalOrigami.history().size());
+        timeSlider.setMaximum(terminal1.TerminalOrigami.history().size());
         changeListenerShutUp = false;
-        timeSlider.setValue(terminal.TerminalOrigami.history_pointer());
+        timeSlider.setValue(terminal1.TerminalOrigami.history_pointer());
     }// GEN-LAST:event_ui_file_new_squareActionPerformed
 
     //
@@ -2896,31 +2774,27 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
     private void ui_file_new_a4ActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_ui_file_new_a4ActionPerformed
 
         if (!saved) {
-            Object[] options = { Dictionary.getString("close"), Dictionary.getString("dontclose") };
-            if (javax.swing.JOptionPane.showOptionDialog(this, Dictionary.getString("nosave"),
-                    Dictionary.getString("question"), javax.swing.JOptionPane.YES_NO_OPTION,
-                    javax.swing.JOptionPane.QUESTION_MESSAGE, null, options,
-                    options[1]) != javax.swing.JOptionPane.YES_OPTION) {
+            if (!dialogManager1.canICloseFile()) {
                 return;
             }
         }
         try {
 
-            filename = null;
-            terminal.execute("paper a4 new");
+            filepath = null;
+            terminal1.execute("paper a4 new");
 
-            oPanel1.update(terminal.TerminalOrigami);
-            pPanel1.update(terminal.TerminalOrigami);
+            oPanel1.update(terminal1.TerminalOrigami);
+            pPanel1.update(terminal1.TerminalOrigami);
 
-            oPanel1.PanelCamera.unadjust(terminal.TerminalOrigami);
-            if (terminal.TerminalOrigami.circumscribedSquareSize() > 0) {
+            oPanel1.PanelCamera.unadjust(terminal1.TerminalOrigami);
+            if (terminal1.TerminalOrigami.circumscribedSquareSize() > 0) {
                 oPanel1.PanelCamera.setZoom(0.8 * Math.min(oPanel1.getWidth(), oPanel1.getHeight())
-                        / terminal.TerminalOrigami.circumscribedSquareSize());
+                        / terminal1.TerminalOrigami.circumscribedSquareSize());
             }
-            pPanel1.PanelCamera.unadjust(terminal.TerminalOrigami);
-            if (terminal.TerminalOrigami.circumscribedSquareSize() > 0) {
+            pPanel1.PanelCamera.unadjust(terminal1.TerminalOrigami);
+            if (terminal1.TerminalOrigami.circumscribedSquareSize() > 0) {
                 pPanel1.PanelCamera.setZoom(0.8 * Math.min(pPanel1.getWidth(), pPanel1.getHeight())
-                        / terminal.TerminalOrigami.circumscribedSquareSize());
+                        / terminal1.TerminalOrigami.circumscribedSquareSize());
             }
             defaultify();
             setTitle("Origami Editor 3D");
@@ -2931,11 +2805,11 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
             javax.swing.JOptionPane.showMessageDialog(this, ex.getMessage().replace('/', (char) 10), "Error",
                     javax.swing.JOptionPane.ERROR_MESSAGE);
         }
-        foldNumber = terminal.TerminalOrigami.history_pointer();
+        foldNumber = terminal1.TerminalOrigami.history_pointer();
         changeListenerShutUp = true;
-        timeSlider.setMaximum(terminal.TerminalOrigami.history().size());
+        timeSlider.setMaximum(terminal1.TerminalOrigami.history().size());
         changeListenerShutUp = false;
-        timeSlider.setValue(terminal.TerminalOrigami.history_pointer());
+        timeSlider.setValue(terminal1.TerminalOrigami.history_pointer());
     }// GEN-LAST:event_ui_file_new_a4ActionPerformed
 
     //
@@ -2944,31 +2818,27 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
     private void ui_file_new_dollarActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_ui_file_new_dollarActionPerformed
 
         if (!saved) {
-            Object[] options = { Dictionary.getString("close"), Dictionary.getString("dontclose") };
-            if (javax.swing.JOptionPane.showOptionDialog(this, Dictionary.getString("nosave"),
-                    Dictionary.getString("question"), javax.swing.JOptionPane.YES_NO_OPTION,
-                    javax.swing.JOptionPane.QUESTION_MESSAGE, null, options,
-                    options[1]) != javax.swing.JOptionPane.YES_OPTION) {
+            if (!dialogManager1.canICloseFile()) {
                 return;
             }
         }
         try {
 
-            filename = null;
-            terminal.execute("paper usd new");
+            filepath = null;
+            terminal1.execute("paper usd new");
 
-            oPanel1.update(terminal.TerminalOrigami);
-            pPanel1.update(terminal.TerminalOrigami);
+            oPanel1.update(terminal1.TerminalOrigami);
+            pPanel1.update(terminal1.TerminalOrigami);
 
-            oPanel1.PanelCamera.unadjust(terminal.TerminalOrigami);
-            if (terminal.TerminalOrigami.circumscribedSquareSize() > 0) {
+            oPanel1.PanelCamera.unadjust(terminal1.TerminalOrigami);
+            if (terminal1.TerminalOrigami.circumscribedSquareSize() > 0) {
                 oPanel1.PanelCamera.setZoom(0.8 * Math.min(oPanel1.getWidth(), oPanel1.getHeight())
-                        / terminal.TerminalOrigami.circumscribedSquareSize());
+                        / terminal1.TerminalOrigami.circumscribedSquareSize());
             }
-            pPanel1.PanelCamera.unadjust(terminal.TerminalOrigami);
-            if (terminal.TerminalOrigami.circumscribedSquareSize() > 0) {
+            pPanel1.PanelCamera.unadjust(terminal1.TerminalOrigami);
+            if (terminal1.TerminalOrigami.circumscribedSquareSize() > 0) {
                 pPanel1.PanelCamera.setZoom(0.8 * Math.min(pPanel1.getWidth(), pPanel1.getHeight())
-                        / terminal.TerminalOrigami.circumscribedSquareSize());
+                        / terminal1.TerminalOrigami.circumscribedSquareSize());
             }
             defaultify();
             setTitle("Origami Editor 3D");
@@ -2979,11 +2849,11 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
             javax.swing.JOptionPane.showMessageDialog(this, ex.getMessage().replace('/', (char) 10), "Error",
                     javax.swing.JOptionPane.ERROR_MESSAGE);
         }
-        foldNumber = terminal.TerminalOrigami.history_pointer();
+        foldNumber = terminal1.TerminalOrigami.history_pointer();
         changeListenerShutUp = true;
-        timeSlider.setMaximum(terminal.TerminalOrigami.history().size());
+        timeSlider.setMaximum(terminal1.TerminalOrigami.history().size());
         changeListenerShutUp = false;
-        timeSlider.setValue(terminal.TerminalOrigami.history_pointer());
+        timeSlider.setValue(terminal1.TerminalOrigami.history_pointer());
     }// GEN-LAST:event_ui_file_new_dollarActionPerformed
 
     //
@@ -3060,62 +2930,44 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
     ///
     private void ui_file_saveActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_ui_file_saveActionPerformed
 
-        save.resetChoosableFileFilters();
-        save.setAcceptAllFileFilterUsed(false);
-        save.addChoosableFileFilter(
-                new javax.swing.filechooser.FileNameExtensionFilter(Dictionary.getString("ori"), "ori"));
+        if (filepath == null) {
 
-        if (filename == null) {
-            if (save.showSaveDialog(this) == javax.swing.JFileChooser.APPROVE_OPTION) {
-                if (new java.io.File(save.getSelectedFile().getPath().endsWith(".ori")
-                        ? save.getSelectedFile().getPath() : save.getSelectedFile().getPath() + ".ori").exists()) {
-                    if (javax.swing.JOptionPane.showConfirmDialog(null, Dictionary.getString("overwrite"),
-                            Dictionary.getString("question"),
-                            javax.swing.JOptionPane.YES_NO_OPTION) == javax.swing.JOptionPane.NO_OPTION) {
+            String fpath = dialogManager1.getSaveFilePath("ori");
 
-                        ui_file_saveActionPerformed(evt);
-                        return;
-                    }
+            if (fpath != null) {
+
+                try {
+                    terminal1.execute("filename [" + fpath + "] export-ori",
+                            OrigamiScriptTerminal.Access.ROOT);
+                    oPanel1.update(terminal1.TerminalOrigami);
+                    pPanel1.update(terminal1.TerminalOrigami);
+                    defaultify();
+                    rotation_angle = 0;
+                    filepath = fpath;
+                    setTitle(new java.io.File(fpath).getName() + " - Origami Editor 3D");
+                    saved = true;
                 }
-
-                if (save.getFileFilter() == save.getChoosableFileFilters()[0]) {
-
-                    try {
-                        terminal.execute("filename [" + save.getSelectedFile().getPath()
-                                + (save.getSelectedFile().getPath().endsWith(".ori") ? "] export-ori"
-                                        : ".ori] export-ori"),
-                                OrigamiScriptTerminal.Access.ROOT);
-                        oPanel1.update(terminal.TerminalOrigami);
-                        pPanel1.update(terminal.TerminalOrigami);
-                        defaultify();
-                        rotation_angle = 0;
-                        filename = save.getSelectedFile().getPath();
-                        setTitle(save.getSelectedFile().getName() + " - Origami Editor 3D");
-                        saved = true;
-                    }
-                    catch (Exception ex) {
-                        oPanel1.update(terminal.TerminalOrigami);
-                        pPanel1.update(terminal.TerminalOrigami);
-                        javax.swing.JOptionPane.showMessageDialog(this, ex.getMessage().replace('/', (char) 10),
-                                "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
-                    }
+                catch (Exception ex) {
+                    oPanel1.update(terminal1.TerminalOrigami);
+                    pPanel1.update(terminal1.TerminalOrigami);
+                    javax.swing.JOptionPane.showMessageDialog(this, ex.getMessage().replace('/', (char) 10),
+                            "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
                 }
             }
         }
         else {
             try {
-                terminal.execute(
-                        "filename [" + filename + (filename.endsWith(".ori") ? "] export-ori" : ".ori] export-ori"),
+                terminal1.execute("filename [" + filepath + "] export-ori",
                         OrigamiScriptTerminal.Access.ROOT);
-                oPanel1.update(terminal.TerminalOrigami);
-                pPanel1.update(terminal.TerminalOrigami);
+                oPanel1.update(terminal1.TerminalOrigami);
+                pPanel1.update(terminal1.TerminalOrigami);
                 defaultify();
                 rotation_angle = 0;
                 saved = true;
             }
             catch (Exception ex) {
-                oPanel1.update(terminal.TerminalOrigami);
-                pPanel1.update(terminal.TerminalOrigami);
+                oPanel1.update(terminal1.TerminalOrigami);
+                pPanel1.update(terminal1.TerminalOrigami);
                 javax.swing.JOptionPane.showMessageDialog(this, ex.getMessage().replace('/', (char) 10), "Error",
                         javax.swing.JOptionPane.ERROR_MESSAGE);
             }
@@ -3129,14 +2981,14 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
 
         alwaysInMiddle = !alwaysInMiddle;
         if (alwaysInMiddle) {
-            oPanel1.PanelCamera.adjust(terminal.TerminalOrigami);
+            oPanel1.PanelCamera.adjust(terminal1.TerminalOrigami);
             oPanel1.linerOff();
             pPanel1.linerOff();
             oPanel1.repaint();
             pPanel1.repaint();
         }
         else {
-            oPanel1.PanelCamera.unadjust(terminal.TerminalOrigami);
+            oPanel1.PanelCamera.unadjust(terminal1.TerminalOrigami);
             oPanel1.linerOff();
             pPanel1.linerOff();
             oPanel1.repaint();
@@ -3199,11 +3051,6 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
     //
     private void ui_view_paper_imageActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_ui_view_paper_imageActionPerformed
 
-        texture_open.resetChoosableFileFilters();
-        texture_open.setAcceptAllFileFilterUsed(false);
-        texture_open.addChoosableFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(
-                Dictionary.getString("img"), javax.imageio.ImageIO.getReaderFormatNames()));
-
         ui_view_paper_image.setSelected(false);
         if (tex == null) {
 
@@ -3211,28 +3058,30 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                     Dictionary.getString("notex"), javax.swing.JOptionPane.YES_NO_OPTION,
                     javax.swing.JOptionPane.QUESTION_MESSAGE, null, null, null) == 0) {
 
-                if (texture_open.showOpenDialog(this) == javax.swing.JFileChooser.APPROVE_OPTION) {
+                String fpath = dialogManager1.getOpenImagePath();
+
+                if (fpath != null) {
 
                     try {
-                        terminal.execute("filename [" + texture_open.getSelectedFile().getPath() + "] load-texture");
-                        tex = terminal.paper_texture();
-                        if (tex.getHeight() < (int) terminal.TerminalOrigami.paperHeight()
-                                || tex.getWidth() < (int) terminal.TerminalOrigami.paperWidth()) {
+                        terminal1.execute("filename [" + fpath + "] load-texture");
+                        tex = terminal1.paper_texture();
+                        if (tex.getHeight() < (int) terminal1.TerminalOrigami.paperHeight()
+                                || tex.getWidth() < (int) terminal1.TerminalOrigami.paperWidth()) {
 
                             String uzenet = Dictionary.getString("smalltex") + (char) 10
                                     + java.text.MessageFormat.format(Dictionary.getString("idealtex"),
-                                            terminal.TerminalOrigami.paperWidth(),
-                                            terminal.TerminalOrigami.paperHeight());
+                                            terminal1.TerminalOrigami.paperWidth(),
+                                            terminal1.TerminalOrigami.paperHeight());
                             javax.swing.JOptionPane.showMessageDialog(this, uzenet, "Warning",
                                     javax.swing.JOptionPane.WARNING_MESSAGE);
                         }
-                        else if (tex.getHeight() > (int) terminal.TerminalOrigami.paperHeight()
-                                || tex.getWidth() > (int) terminal.TerminalOrigami.paperWidth()) {
+                        else if (tex.getHeight() > (int) terminal1.TerminalOrigami.paperHeight()
+                                || tex.getWidth() > (int) terminal1.TerminalOrigami.paperWidth()) {
 
                             String uzenet = Dictionary.getString("largetex") + (char) 10
                                     + java.text.MessageFormat.format(Dictionary.getString("idealtex"),
-                                            terminal.TerminalOrigami.paperWidth(),
-                                            terminal.TerminalOrigami.paperHeight());
+                                            terminal1.TerminalOrigami.paperWidth(),
+                                            terminal1.TerminalOrigami.paperHeight());
                             javax.swing.JOptionPane.showMessageDialog(this, uzenet, "Warning",
                                     javax.swing.JOptionPane.WARNING_MESSAGE);
                         }
@@ -3242,7 +3091,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                         ui_view_paper_plain.setSelected(false);
                         ui_view_paper_none.setSelected(false);
                         ui_view_paper_gradient.setSelected(false);
-                        oPanel1.update(terminal.TerminalOrigami);
+                        oPanel1.update(terminal1.TerminalOrigami);
                         oPanel1.repaint();
 
                     }
@@ -3260,28 +3109,30 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                     Dictionary.getString("havetex"), javax.swing.JOptionPane.YES_NO_OPTION,
                     javax.swing.JOptionPane.QUESTION_MESSAGE, null, null, null) == 0) {
 
-                if (texture_open.showOpenDialog(this) == javax.swing.JFileChooser.APPROVE_OPTION) {
+                String fpath = dialogManager1.getOpenFilePath(javax.imageio.ImageIO.getReaderFormatNames());
+
+                if (fpath != null) {
 
                     try {
-                        terminal.execute("filename [" + texture_open.getSelectedFile().getPath() + "] load-texture");
-                        tex = terminal.paper_texture();
-                        if (tex.getHeight() < (int) terminal.TerminalOrigami.paperHeight()
-                                || tex.getWidth() < (int) terminal.TerminalOrigami.paperWidth()) {
+                        terminal1.execute("filename [" + fpath + "] load-texture");
+                        tex = terminal1.paper_texture();
+                        if (tex.getHeight() < (int) terminal1.TerminalOrigami.paperHeight()
+                                || tex.getWidth() < (int) terminal1.TerminalOrigami.paperWidth()) {
 
                             String uzenet = Dictionary.getString("smalltex") + (char) 10
                                     + java.text.MessageFormat.format(Dictionary.getString("idealtex"),
-                                            terminal.TerminalOrigami.paperWidth(),
-                                            terminal.TerminalOrigami.paperHeight());
+                                            terminal1.TerminalOrigami.paperWidth(),
+                                            terminal1.TerminalOrigami.paperHeight());
                             javax.swing.JOptionPane.showMessageDialog(this, uzenet, "Warning",
                                     javax.swing.JOptionPane.WARNING_MESSAGE);
                         }
-                        else if (tex.getHeight() > (int) terminal.TerminalOrigami.paperHeight()
-                                || tex.getWidth() > (int) terminal.TerminalOrigami.paperWidth()) {
+                        else if (tex.getHeight() > (int) terminal1.TerminalOrigami.paperHeight()
+                                || tex.getWidth() > (int) terminal1.TerminalOrigami.paperWidth()) {
 
                             String uzenet = Dictionary.getString("largetex") + (char) 10
                                     + java.text.MessageFormat.format(Dictionary.getString("idealtex"),
-                                            terminal.TerminalOrigami.paperWidth(),
-                                            terminal.TerminalOrigami.paperHeight());
+                                            terminal1.TerminalOrigami.paperWidth(),
+                                            terminal1.TerminalOrigami.paperHeight());
                             javax.swing.JOptionPane.showMessageDialog(this, uzenet, "Warning",
                                     javax.swing.JOptionPane.WARNING_MESSAGE);
                         }
@@ -3291,7 +3142,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                         ui_view_paper_plain.setSelected(false);
                         ui_view_paper_none.setSelected(false);
                         ui_view_paper_gradient.setSelected(false);
-                        oPanel1.update(terminal.TerminalOrigami);
+                        oPanel1.update(terminal1.TerminalOrigami);
                         oPanel1.repaint();
                     }
                     catch (Exception ex) {
@@ -3309,7 +3160,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
             ui_view_paper_plain.setSelected(false);
             ui_view_paper_none.setSelected(false);
             ui_view_paper_gradient.setSelected(false);
-            oPanel1.update(terminal.TerminalOrigami);
+            oPanel1.update(terminal1.TerminalOrigami);
             oPanel1.repaint();
         }
     }// GEN-LAST:event_ui_view_paper_imageActionPerformed
@@ -3331,7 +3182,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
     // TIMELINE / IDŐVONAL
     //
     private void ui_view_timelineActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_ui_view_timelineActionPerformed
-        timeline.setVisible(true);
+        ui_timeline.setVisible(true);
     }// GEN-LAST:event_ui_view_timelineActionPerformed
 
     //
@@ -3401,24 +3252,10 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
     //
     private void ui_file_export_togif_revolvingActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_ui_file_export_togif_revolvingActionPerformed
 
-        gif_export.resetChoosableFileFilters();
-        gif_export.setAcceptAllFileFilterUsed(false);
-        gif_export.addChoosableFileFilter(
-                new javax.swing.filechooser.FileNameExtensionFilter(Dictionary.getString("gif"), "gif"));
+        final String fpath = dialogManager1.getSaveFilePath("gif");
 
-        if (gif_export.showSaveDialog(this) == javax.swing.JFileChooser.APPROVE_OPTION) {
-            if (new java.io.File(gif_export.getSelectedFile().getPath().endsWith(".gif")
-                    ? gif_export.getSelectedFile().getPath() : gif_export.getSelectedFile().getPath() + ".gif")
-                            .exists()) {
-                if (javax.swing.JOptionPane.showConfirmDialog(null, Dictionary.getString("overwrite"),
-                        Dictionary.getString("question"),
-                        javax.swing.JOptionPane.YES_NO_OPTION) == javax.swing.JOptionPane.NO_OPTION) {
-
-                    ui_file_export_togif_revolvingActionPerformed(evt);
-                    return;
-                }
-            }
-
+        if (fpath != null) {
+            
             try {
 
                 final javax.swing.JDialog exporting = new javax.swing.JDialog(this);
@@ -3442,21 +3279,19 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
 
                         try {
 
-                            terminal.execute(
+                            terminal1.execute(
                                     "camera [" + oPanel1.PanelCamera.camera_dir()[0] + " "
                                             + oPanel1.PanelCamera.camera_dir()[1] + " "
-                                            + oPanel1.PanelCamera.camera_dir()[2] + "] " + "["
+                                            + oPanel1.PanelCamera.camera_dir()[2] + "] ["
                                             + oPanel1.PanelCamera.axis_x()[0] + " " + oPanel1.PanelCamera.axis_x()[1]
-                                            + " " + oPanel1.PanelCamera.axis_x()[2] + "] " + "["
+                                            + " " + oPanel1.PanelCamera.axis_x()[2] + "] ["
                                             + oPanel1.PanelCamera.axis_y()[0] + " " + oPanel1.PanelCamera.axis_y()[1]
-                                            + " " + oPanel1.PanelCamera.axis_y()[2] + "] " + "color "
-                                            + oPanel1.getFrontColor() + " " + "filename ["
-                                            + gif_export.getSelectedFile().getPath()
-                                            + (gif_export.getSelectedFile().getPath().endsWith(".gif")
-                                                    ? "] export-revolving-gif" : ".gif] export-revolving-gif"),
+                                            + " " + oPanel1.PanelCamera.axis_y()[2] + "] color "
+                                            + oPanel1.getFrontColor() + " filename ["
+                                            + fpath + "] export-revolving-gif",
                                     OrigamiScriptTerminal.Access.ROOT);
-                            oPanel1.update(terminal.TerminalOrigami);
-                            pPanel1.update(terminal.TerminalOrigami);
+                            oPanel1.update(terminal1.TerminalOrigami);
+                            pPanel1.update(terminal1.TerminalOrigami);
                             defaultify();
                             rotation_angle = 0;
                         }
@@ -3486,8 +3321,8 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
             }
             catch (Exception ex) {
 
-                oPanel1.update(terminal.TerminalOrigami);
-                pPanel1.update(terminal.TerminalOrigami);
+                oPanel1.update(terminal1.TerminalOrigami);
+                pPanel1.update(terminal1.TerminalOrigami);
                 javax.swing.JOptionPane.showMessageDialog(this, ex.getMessage().replace('/', (char) 10), "Error",
                         javax.swing.JOptionPane.ERROR_MESSAGE);
             }
@@ -3499,24 +3334,10 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
     //
     private void ui_file_export_togif_foldingActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_ui_file_export_togif_foldingActionPerformed
 
-        gif_export.resetChoosableFileFilters();
-        gif_export.setAcceptAllFileFilterUsed(false);
-        gif_export.addChoosableFileFilter(
-                new javax.swing.filechooser.FileNameExtensionFilter(Dictionary.getString("gif"), "gif"));
-
-        if (gif_export.showSaveDialog(this) == javax.swing.JFileChooser.APPROVE_OPTION) {
-            if (new java.io.File(gif_export.getSelectedFile().getPath().endsWith(".gif")
-                    ? gif_export.getSelectedFile().getPath() : gif_export.getSelectedFile().getPath() + ".gif")
-                            .exists()) {
-                if (javax.swing.JOptionPane.showConfirmDialog(null, Dictionary.getString("overwrite"),
-                        Dictionary.getString("question"),
-                        javax.swing.JOptionPane.YES_NO_OPTION) == javax.swing.JOptionPane.NO_OPTION) {
-
-                    ui_file_export_togif_foldingActionPerformed(evt);
-                    return;
-                }
-            }
-
+        final String fpath = dialogManager1.getSaveFilePath("gif");
+        
+        if (fpath != null) {
+            
             try {
 
                 final javax.swing.JDialog exporting = new javax.swing.JDialog(this);
@@ -3540,18 +3361,19 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
 
                         try {
 
-                            terminal.execute("camera [" + oPanel1.PanelCamera.camera_dir()[0] + " "
-                                    + oPanel1.PanelCamera.camera_dir()[1] + " " + oPanel1.PanelCamera.camera_dir()[2]
-                                    + "] " + "[" + oPanel1.PanelCamera.axis_x()[0] + " "
-                                    + oPanel1.PanelCamera.axis_x()[1] + " " + oPanel1.PanelCamera.axis_x()[2] + "] "
-                                    + "[" + oPanel1.PanelCamera.axis_y()[0] + " " + oPanel1.PanelCamera.axis_y()[1]
-                                    + " " + oPanel1.PanelCamera.axis_y()[2] + "] " + "color " + oPanel1.getFrontColor()
-                                    + " " + "filename [" + gif_export.getSelectedFile().getPath()
-                                    + (gif_export.getSelectedFile().getPath().endsWith(".gif") ? "] export-gif"
-                                            : ".gif] export-gif"),
+                            terminal1.execute(
+                                    "camera [" + oPanel1.PanelCamera.camera_dir()[0] + " "
+                                            + oPanel1.PanelCamera.camera_dir()[1] + " "
+                                            + oPanel1.PanelCamera.camera_dir()[2] + "] ["
+                                            + oPanel1.PanelCamera.axis_x()[0] + " " + oPanel1.PanelCamera.axis_x()[1]
+                                            + " " + oPanel1.PanelCamera.axis_x()[2] + "] ["
+                                            + oPanel1.PanelCamera.axis_y()[0] + " " + oPanel1.PanelCamera.axis_y()[1]
+                                            + " " + oPanel1.PanelCamera.axis_y()[2] + "] color "
+                                            + oPanel1.getFrontColor() + " filename ["
+                                            + fpath + "] export-folding-gif",
                                     OrigamiScriptTerminal.Access.ROOT);
-                            oPanel1.update(terminal.TerminalOrigami);
-                            pPanel1.update(terminal.TerminalOrigami);
+                            oPanel1.update(terminal1.TerminalOrigami);
+                            pPanel1.update(terminal1.TerminalOrigami);
                             defaultify();
                             rotation_angle = 0;
                         }
@@ -3580,8 +3402,8 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                 }
             }
             catch (Exception ex) {
-                oPanel1.update(terminal.TerminalOrigami);
-                pPanel1.update(terminal.TerminalOrigami);
+                oPanel1.update(terminal1.TerminalOrigami);
+                pPanel1.update(terminal1.TerminalOrigami);
                 javax.swing.JOptionPane.showMessageDialog(this, ex.getMessage().replace('/', (char) 10), "Error",
                         javax.swing.JOptionPane.ERROR_MESSAGE);
             }
@@ -3593,37 +3415,21 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
     //
     private void ui_file_export_creaseActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_ui_file_export_creaseActionPerformed
 
-        png_export.resetChoosableFileFilters();
-        png_export.setAcceptAllFileFilterUsed(false);
-        png_export.addChoosableFileFilter(
-                new javax.swing.filechooser.FileNameExtensionFilter(Dictionary.getString("png"), "png"));
-
-        if (png_export.showSaveDialog(this) == javax.swing.JFileChooser.APPROVE_OPTION) {
-            if (new java.io.File(png_export.getSelectedFile().getPath().endsWith(".png")
-                    ? png_export.getSelectedFile().getPath() : png_export.getSelectedFile().getPath() + ".png")
-                            .exists()) {
-                if (javax.swing.JOptionPane.showConfirmDialog(null, Dictionary.getString("overwrite"),
-                        Dictionary.getString("question"),
-                        javax.swing.JOptionPane.YES_NO_OPTION) == javax.swing.JOptionPane.NO_OPTION) {
-
-                    ui_file_export_creaseActionPerformed(evt);
-                    return;
-                }
-            }
-
+        String fpath = dialogManager1.getSaveFilePath("png");
+        
+        if (fpath != null) {
+            
             try {
-                terminal.execute("filename [" + png_export.getSelectedFile().getPath()
-                        + (png_export.getSelectedFile().getPath().endsWith(".png") ? "] export-png"
-                                : ".png] export-png"),
+                terminal1.execute("filename [" + fpath + "] export-png",
                         OrigamiScriptTerminal.Access.ROOT);
-                oPanel1.update(terminal.TerminalOrigami);
-                pPanel1.update(terminal.TerminalOrigami);
+                oPanel1.update(terminal1.TerminalOrigami);
+                pPanel1.update(terminal1.TerminalOrigami);
                 defaultify();
                 rotation_angle = 0;
             }
             catch (Exception ex) {
-                oPanel1.update(terminal.TerminalOrigami);
-                pPanel1.update(terminal.TerminalOrigami);
+                oPanel1.update(terminal1.TerminalOrigami);
+                pPanel1.update(terminal1.TerminalOrigami);
                 javax.swing.JOptionPane.showMessageDialog(this, ex.getMessage().replace('/', (char) 10), "Error",
                         javax.swing.JOptionPane.ERROR_MESSAGE);
             }
@@ -3785,18 +3591,18 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         properties.getContentPane().add(new javax.swing.JLabel(" "), c);
         c.gridx = 1;
         c.gridy = 0;
-        properties.getContentPane().add(new javax.swing.JLabel("Generation " + terminal.TerminalOrigami.generation()),
+        properties.getContentPane().add(new javax.swing.JLabel("Generation " + terminal1.TerminalOrigami.generation()),
                 c);
         c.gridy = 1;
         properties.getContentPane().add(new javax.swing.JLabel(" "), c);
         c.gridy = 2;
         properties.getContentPane()
-                .add(new javax.swing.JLabel(Dictionary.getString(terminal.TerminalOrigami.papertype().toString())), c);
+                .add(new javax.swing.JLabel(Dictionary.getString(terminal1.TerminalOrigami.papertype().toString())), c);
         c.gridy = 3;
         properties.getContentPane().add(new javax.swing.JLabel(" "), c);
         c.gridy = 4;
         properties.getContentPane()
-                .add(new javax.swing.JLabel(Integer.toString(terminal.TerminalOrigami.history().size())), c);
+                .add(new javax.swing.JLabel(Integer.toString(terminal1.TerminalOrigami.history().size())), c);
         c.gridy = 5;
         properties.getContentPane().add(new javax.swing.JLabel(" "), c);
         c.gridy = 6;
@@ -3814,7 +3620,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
             @Override
             public void run() {
 
-                int dif = Origami.difficultyLevel(terminal.TerminalOrigami.difficulty());
+                int dif = Origami.difficultyLevel(terminal1.TerminalOrigami.difficulty());
                 String difname = null;
                 switch (dif) {
                     case 0:
@@ -3868,37 +3674,21 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
     //
     private void ui_file_export_toselfActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_ui_file_export_toselfActionPerformed
 
-        jar_export.resetChoosableFileFilters();
-        jar_export.setAcceptAllFileFilterUsed(false);
-        jar_export.addChoosableFileFilter(
-                new javax.swing.filechooser.FileNameExtensionFilter(Dictionary.getString("ori.jar"), "ori.jar"));
-
-        if (jar_export.showSaveDialog(this) == javax.swing.JFileChooser.APPROVE_OPTION) {
-            if (new java.io.File(jar_export.getSelectedFile().getPath().endsWith(".ori.jar")
-                    ? jar_export.getSelectedFile().getPath() : jar_export.getSelectedFile().getPath() + ".ori.jar")
-                            .exists()) {
-                if (javax.swing.JOptionPane.showConfirmDialog(null, Dictionary.getString("overwrite"),
-                        Dictionary.getString("question"),
-                        javax.swing.JOptionPane.YES_NO_OPTION) == javax.swing.JOptionPane.NO_OPTION) {
-
-                    ui_file_export_toselfActionPerformed(evt);
-                    return;
-                }
-            }
-
+        String fpath = dialogManager1.getSaveFilePath("ori.jar");
+        
+        if (fpath != null) {
+            
             try {
-                terminal.execute("filename [" + jar_export.getSelectedFile().getPath()
-                        + (jar_export.getSelectedFile().getPath().endsWith(".ori.jar") ? "] export-jar"
-                                : ".ori.jar] export-jar"),
+                terminal1.execute("filename [" + fpath + "] export-jar",
                         OrigamiScriptTerminal.Access.ROOT);
-                oPanel1.update(terminal.TerminalOrigami);
-                pPanel1.update(terminal.TerminalOrigami);
+                oPanel1.update(terminal1.TerminalOrigami);
+                pPanel1.update(terminal1.TerminalOrigami);
                 defaultify();
                 rotation_angle = 0;
             }
             catch (Exception ex) {
-                oPanel1.update(terminal.TerminalOrigami);
-                pPanel1.update(terminal.TerminalOrigami);
+                oPanel1.update(terminal1.TerminalOrigami);
+                pPanel1.update(terminal1.TerminalOrigami);
                 javax.swing.JOptionPane.showMessageDialog(this, ex.getMessage().replace('/', (char) 10), "Error",
                         javax.swing.JOptionPane.ERROR_MESSAGE);
             }
@@ -3910,7 +3700,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         int v1ujX = -1;
         int v1ujY = -1;
 
-        for (int[] osztohely : oPanel1.PanelCamera.alignmentPoints(terminal.TerminalOrigami, snap2, snap3, snap4)) {
+        for (int[] osztohely : oPanel1.PanelCamera.alignmentPoints(terminal1.TerminalOrigami, snap2, snap3, snap4)) {
 
             if ((liner1X - oPanel1.PanelCamera.xshift - osztohely[0])
                     * (liner1X - oPanel1.PanelCamera.xshift - osztohely[0])
@@ -3935,7 +3725,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         int v2ujX = -1;
         int v2ujY = -1;
 
-        for (int[] osztohely : oPanel1.PanelCamera.alignmentPoints(terminal.TerminalOrigami, snap2, snap3, snap4)) {
+        for (int[] osztohely : oPanel1.PanelCamera.alignmentPoints(terminal1.TerminalOrigami, snap2, snap3, snap4)) {
 
             if ((liner2X - oPanel1.PanelCamera.xshift - osztohely[0])
                     * (liner2X - oPanel1.PanelCamera.xshift - osztohely[0])
@@ -3960,7 +3750,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         int ujX = -1;
         int ujY = -1;
 
-        for (int[] osztohely : pPanel1.PanelCamera.alignmentPoints2d(terminal.TerminalOrigami)) {
+        for (int[] osztohely : pPanel1.PanelCamera.alignmentPoints2d(terminal1.TerminalOrigami)) {
 
             if ((x - pPanel1.PanelCamera.xshift - osztohely[0]) * (x - pPanel1.PanelCamera.xshift - osztohely[0])
                     + (y - pPanel1.PanelCamera.yshift - osztohely[1])
