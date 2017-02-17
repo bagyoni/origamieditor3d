@@ -19,7 +19,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 
-import origamieditor3d.OrigamiEditorUI;
+import origamieditor3d.Constants;
 import origamieditor3d.resources.Instructor;
 
 /**
@@ -544,7 +544,7 @@ public class Export {
             stream += (char) 10;
             stream += "14 TL";
             stream += (char) 10;
-            stream += Instructor.getString("disclaimer", OrigamiEditorUI.Version);
+            stream += Instructor.getString("disclaimer", Constants.Version);
             stream += (char) 10;
             stream += "ET";
             stream += (char) 10;
@@ -862,8 +862,8 @@ public class Export {
             stream += "/F1 12 Tf";
             stream += (char) 10;
             stream += Integer.toString((int) (page_width - 2 * figure_frame) / 4) + " "
-                    + Integer.toString(722 - Instructor.getString("disclaimer", OrigamiEditorUI.Version).length() * 14
-                            + Instructor.getString("disclaimer", OrigamiEditorUI.Version).replace(") '", ") ").length() * 14)
+                    + Integer.toString(722 - Instructor.getString("disclaimer", Constants.Version).length() * 14
+                            + Instructor.getString("disclaimer", Constants.Version).replace(") '", ") ").length() * 14)
                     + " Td";
             stream += (char) 10;
             stream += "12 TL";
@@ -895,8 +895,8 @@ public class Export {
             stream += "/F1 12 Tf";
             stream += (char) 10;
             stream += Integer.toString((int) (page_width - 2 * figure_frame) / 4) + " "
-                    + Integer.toString(736 - Instructor.getString("disclaimer", OrigamiEditorUI.Version).length() * 14
-                            + Instructor.getString("disclaimer", OrigamiEditorUI.Version).replace(") '", ") ").length() * 14)
+                    + Integer.toString(736 - Instructor.getString("disclaimer", Constants.Version).length() * 14
+                            + Instructor.getString("disclaimer", Constants.Version).replace(") '", ") ").length() * 14)
                     + " Td";
             stream += (char) 10;
             stream += Instructor.getString("steps", cellak_szama - 2) + "Tj";

@@ -22,9 +22,9 @@ public class DialogManager {
     
     public boolean canICloseFile() {
         
-        Object[] options = { Dictionary.getString("close"), Dictionary.getString("dontclose") };
+        Object[] options = { Dictionary.getString("dialog.unsaved.close"), Dictionary.getString("dialog.unsaved.dontclose") };
         
-        if (JOptionPane.showOptionDialog(associated_ui, Dictionary.getString("nosave"),
+        if (JOptionPane.showOptionDialog(associated_ui, Dictionary.getString("dialog.unsaved"),
                 Dictionary.getString("question"), JOptionPane.YES_NO_OPTION,
                 JOptionPane.QUESTION_MESSAGE, null, options, options[1])
                 == JOptionPane.YES_OPTION) {

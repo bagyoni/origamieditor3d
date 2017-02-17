@@ -72,7 +72,7 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
 
     public enum DisplayMode {
 
-        SIMA, UV, SEMMI, GRADIENT
+        PLAIN, UV, WIREFRAME, GRADIENT
     }
 
     @Override
@@ -268,7 +268,7 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
                     PanelCamera.drawEdges(g, new Color(0, 0, 0, .5f), PanelOrigami);
                     break;
 
-                case SIMA:
+                case PLAIN:
                     PanelCamera.drawFaces(g, paper_front_color, PanelOrigami);
                     if (antialiasOn) {
                         gx2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -276,7 +276,7 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
                     PanelCamera.drawEdges(g, new Color(0, 0, 0, .5f), PanelOrigami);
                     break;
 
-                case SEMMI:
+                case WIREFRAME:
                     if (antialiasOn) {
                         gx2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                     }
