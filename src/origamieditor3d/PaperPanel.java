@@ -116,7 +116,7 @@ public class PaperPanel extends JPanel implements BasicEditing {
     }
 
     @Override
-    public void linerOn(Camera refcam, int x1, int y1, int x2, int y2) {
+    public void rulerOn(Camera refcam, int x1, int y1, int x2, int y2) {
 
         double pontX = ((double) x2 - refcam.xshift) / refcam.zoom();
         double pontY = ((double) y2 - refcam.yshift) / refcam.zoom();
@@ -146,7 +146,7 @@ public class PaperPanel extends JPanel implements BasicEditing {
     }
 
     @Override
-    public void linerOff() {
+    public void rulerOff() {
         liner_point = (liner_normal = null);
     }
 
@@ -188,7 +188,7 @@ public class PaperPanel extends JPanel implements BasicEditing {
                         liner_normal = Geometry.vector_product(Geometry.vector(pt2, pt1),
                                 Geometry.vector(pt3, pt1));
                     } else {
-                        linerOff();
+                        rulerOff();
                     }
                 } else if (linerMode == LinerMode.Angle_bisector) {
                     liner_point = pt2;
@@ -196,7 +196,7 @@ public class PaperPanel extends JPanel implements BasicEditing {
                             Geometry.length_to_100(Geometry.vector(pt1, pt2)),
                             Geometry.length_to_100(Geometry.vector(pt3, pt2)));
                     if (Geometry.vector_length(liner_normal) == 0.) {
-                        linerOff();
+                        rulerOff();
                     }
                 }
             } catch (Exception ex) {

@@ -32,8 +32,8 @@ public interface BasicEditing {
     public void resetTracker();
 
     public void setLinerMode(LinerMode mode);
-    public void linerOn(Camera refcam, int x1, int y1, int x2, int y2);
-    public void linerOff();
+    public void rulerOn(Camera refcam, int x1, int y1, int x2, int y2);
+    public void rulerOff();
 
     public void tiltTriangleTo(Camera refcam, Integer... xy);
     public void resetTriangle();

@@ -16,7 +16,6 @@ import java.awt.Color;
 import java.awt.Desktop;
 
 import origamieditor3d.origami.Camera;
-import origamieditor3d.origami.Geometry;
 import origamieditor3d.origami.Origami;
 import origamieditor3d.origami.OrigamiIO;
 import origamieditor3d.origami.OrigamiScriptTerminal;
@@ -39,7 +38,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
     
     private Integer mouseDragX, mouseDragY;
     private int rotation_angle;
-    private Integer liner1X, liner1Y, liner2X, liner2Y;
+    private Integer ruler1X, ruler1Y, ruler2X, ruler2Y;
     
     private ControlState EditorState, SecondaryState;
     private boolean alignOn;
@@ -65,7 +64,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
 
     private enum ControlState {
 
-        STANDBY, LOCKED, LINER1, LINER2, LINER_ROT, TRI0, TRI1, TRI2, TRI3, TRI_ROT, PLANETHRU, ANGLE_BISECT
+        STANDBY, LOCKED, RULER1, RULER2, RULER_ROT, TRI0, TRI1, TRI2, TRI3, TRI_ROT, PLANETHRU, ANGLE_BISECT
     }
 
     public OrigamiEditorUI() {
@@ -260,10 +259,10 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         mouseDragX = null;
         mouseDragY = null;
         rotation_angle = 0;
-        liner1X = null;
-        liner1Y = null;
-        liner2X = null;
-        liner2Y = null;
+        ruler1X = null;
+        ruler1Y = null;
+        ruler2X = null;
+        ruler2Y = null;
         EditorState = (SecondaryState = ControlState.STANDBY);
         alignment_radius = 100;
         zoomOnScroll = true;
@@ -1567,48 +1566,11 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                 oPanel1.PanelCamera.nextOrthogonalView();
                 oPanel1.repaint();
             }
-            else if (EditorState == ControlState.LINER_ROT) {
+            else if (EditorState == ControlState.RULER_ROT) {
 
-                double pontX = ((double) liner2X - oPanel1.PanelCamera.xshift) / oPanel1.PanelCamera.zoom();
-                double pontY = ((double) liner2Y - oPanel1.PanelCamera.yshift) / oPanel1.PanelCamera.zoom();
-                double pont1X = ((double) liner1X - oPanel1.PanelCamera.xshift) / oPanel1.PanelCamera.zoom();
-                double pont1Y = ((double) liner1Y - oPanel1.PanelCamera.yshift) / oPanel1.PanelCamera.zoom();
-
-                double[] vonalzoNV = new double[] {
-                        oPanel1.PanelCamera.axis_x()[0] * (liner2Y - liner1Y)
-                                + oPanel1.PanelCamera.axis_y()[0] * (liner1X - liner2X),
-                        oPanel1.PanelCamera.axis_x()[1] * (liner2Y - liner1Y)
-                                + oPanel1.PanelCamera.axis_y()[1] * (liner1X - liner2X),
-                        oPanel1.PanelCamera.axis_x()[2] * (liner2Y - liner1Y)
-                                + oPanel1.PanelCamera.axis_y()[2] * (liner1X - liner2X) };
-                double[] vonalzoPT = new double[] {
-                        oPanel1.PanelCamera.axis_x()[0] / oPanel1.PanelCamera.zoom() * pontX
-                                + oPanel1.PanelCamera.axis_y()[0] / oPanel1.PanelCamera.zoom() * pontY
-                                + oPanel1.PanelCamera.camera_pos()[0],
-                        oPanel1.PanelCamera.axis_x()[1] / oPanel1.PanelCamera.zoom() * pontX
-                                + oPanel1.PanelCamera.axis_y()[1] / oPanel1.PanelCamera.zoom() * pontY
-                                + oPanel1.PanelCamera.camera_pos()[1],
-                        oPanel1.PanelCamera.axis_x()[2] / oPanel1.PanelCamera.zoom() * pontX
-                                + oPanel1.PanelCamera.axis_y()[2] / oPanel1.PanelCamera.zoom() * pontY
-                                + oPanel1.PanelCamera.camera_pos()[2] };
-                double[] vonalzoPT1 = new double[] {
-                        oPanel1.PanelCamera.axis_x()[0] / oPanel1.PanelCamera.zoom() * pont1X
-                                + oPanel1.PanelCamera.axis_y()[0] / oPanel1.PanelCamera.zoom() * pont1Y
-                                + oPanel1.PanelCamera.camera_pos()[0],
-                        oPanel1.PanelCamera.axis_x()[1] / oPanel1.PanelCamera.zoom() * pont1X
-                                + oPanel1.PanelCamera.axis_y()[1] / oPanel1.PanelCamera.zoom() * pont1Y
-                                + oPanel1.PanelCamera.camera_pos()[1],
-                        oPanel1.PanelCamera.axis_x()[2] / oPanel1.PanelCamera.zoom() * pont1X
-                                + oPanel1.PanelCamera.axis_y()[2] / oPanel1.PanelCamera.zoom() * pont1Y
-                                + oPanel1.PanelCamera.camera_pos()[2] };
-                if (neusisOn) {
-                    vonalzoNV = Geometry.vector(vonalzoPT, vonalzoPT1);
-                }
-                if (Geometry.scalar_product(oPanel1.PanelCamera.camera_pos(), vonalzoNV)
-                        - Geometry.scalar_product(vonalzoPT, vonalzoNV) > 0) {
-                    vonalzoNV = new double[] { -vonalzoNV[0], -vonalzoNV[1], -vonalzoNV[2] };
-                }
-
+                double[] vonalzoNV = oPanel1.getRulerNormalvector();
+                double[] vonalzoPT = oPanel1.getRulerPoint();
+                
                 if (pPanel1.isTracked()) {
 
                     try {
@@ -1799,30 +1761,30 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         }
         else if (EditorState == ControlState.STANDBY) {
 
-            liner1X = evt.getX();
-            liner1Y = evt.getY();
+            ruler1X = evt.getX();
+            ruler1Y = evt.getY();
             if (alignOn) {
                 snap1(alignment_radius);
             }
-            EditorState = ControlState.LINER1;
+            EditorState = ControlState.RULER1;
             oPanel1.setToolTipText(Dictionary.getString("tooltip.opanel.liner1"));
             javax.swing.ToolTipManager.sharedInstance().mouseMoved(new java.awt.event.MouseEvent(oPanel1, 0,
                     System.currentTimeMillis(), 0, evt.getX(), evt.getY(), 0, false));
         }
-        else if (EditorState == ControlState.LINER1) {
+        else if (EditorState == ControlState.RULER1) {
 
-            liner2X = evt.getX();
-            liner2Y = evt.getY();
+            ruler2X = evt.getX();
+            ruler2Y = evt.getY();
             if (alignOn) {
                 snap2(alignment_radius);
             }
-            EditorState = ControlState.LINER2;
+            EditorState = ControlState.RULER2;
             oPanel1.setToolTipText(null);
 
             ui_foldingops.show(oPanel1, evt.getX(), evt.getY());
 
         }
-        else if (EditorState == ControlState.LINER2 || EditorState == ControlState.TRI3) {
+        else if (EditorState == ControlState.RULER2 || EditorState == ControlState.TRI3) {
             ui_foldingops.show(oPanel1, evt.getX(), evt.getY());
         }
         else {
@@ -1843,47 +1805,10 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
 
     private void ui_foldingops_reflect_actionPerformed(java.awt.event.ActionEvent evt) {
 
-        if (EditorState == ControlState.LINER2) {
+        if (EditorState == ControlState.RULER2) {
 
-            double pontX = ((double) liner2X - oPanel1.PanelCamera.xshift) / oPanel1.PanelCamera.zoom();
-            double pontY = ((double) liner2Y - oPanel1.PanelCamera.yshift) / oPanel1.PanelCamera.zoom();
-            double pont1X = ((double) liner1X - oPanel1.PanelCamera.xshift) / oPanel1.PanelCamera.zoom();
-            double pont1Y = ((double) liner1Y - oPanel1.PanelCamera.yshift) / oPanel1.PanelCamera.zoom();
-
-            double[] vonalzoNV = new double[] {
-                    oPanel1.PanelCamera.axis_x()[0] * (liner2Y - liner1Y)
-                            + oPanel1.PanelCamera.axis_y()[0] * (liner1X - liner2X),
-                    oPanel1.PanelCamera.axis_x()[1] * (liner2Y - liner1Y)
-                            + oPanel1.PanelCamera.axis_y()[1] * (liner1X - liner2X),
-                    oPanel1.PanelCamera.axis_x()[2] * (liner2Y - liner1Y)
-                            + oPanel1.PanelCamera.axis_y()[2] * (liner1X - liner2X) };
-            double[] vonalzoPT = new double[] {
-                    oPanel1.PanelCamera.axis_x()[0] / oPanel1.PanelCamera.zoom() * pontX
-                            + oPanel1.PanelCamera.axis_y()[0] / oPanel1.PanelCamera.zoom() * pontY
-                            + oPanel1.PanelCamera.camera_pos()[0],
-                    oPanel1.PanelCamera.axis_x()[1] / oPanel1.PanelCamera.zoom() * pontX
-                            + oPanel1.PanelCamera.axis_y()[1] / oPanel1.PanelCamera.zoom() * pontY
-                            + oPanel1.PanelCamera.camera_pos()[1],
-                    oPanel1.PanelCamera.axis_x()[2] / oPanel1.PanelCamera.zoom() * pontX
-                            + oPanel1.PanelCamera.axis_y()[2] / oPanel1.PanelCamera.zoom() * pontY
-                            + oPanel1.PanelCamera.camera_pos()[2] };
-            double[] vonalzoPT1 = new double[] {
-                    oPanel1.PanelCamera.axis_x()[0] / oPanel1.PanelCamera.zoom() * pont1X
-                            + oPanel1.PanelCamera.axis_y()[0] / oPanel1.PanelCamera.zoom() * pont1Y
-                            + oPanel1.PanelCamera.camera_pos()[0],
-                    oPanel1.PanelCamera.axis_x()[1] / oPanel1.PanelCamera.zoom() * pont1X
-                            + oPanel1.PanelCamera.axis_y()[1] / oPanel1.PanelCamera.zoom() * pont1Y
-                            + oPanel1.PanelCamera.camera_pos()[1],
-                    oPanel1.PanelCamera.axis_x()[2] / oPanel1.PanelCamera.zoom() * pont1X
-                            + oPanel1.PanelCamera.axis_y()[2] / oPanel1.PanelCamera.zoom() * pont1Y
-                            + oPanel1.PanelCamera.camera_pos()[2] };
-            if (neusisOn) {
-                vonalzoNV = Geometry.vector(vonalzoPT, vonalzoPT1);
-            }
-            if (Geometry.scalar_product(oPanel1.PanelCamera.camera_pos(), vonalzoNV)
-                    - Geometry.scalar_product(vonalzoPT, vonalzoNV) > 0) {
-                vonalzoNV = new double[] { -vonalzoNV[0], -vonalzoNV[1], -vonalzoNV[2] };
-            }
+            double[] vonalzoNV = oPanel1.getRulerNormalvector();
+            double[] vonalzoPT = oPanel1.getRulerPoint();
 
             if (pPanel1.isTracked()) {
                 try {
@@ -2064,9 +1989,9 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
 
     private void ui_foldingops_rotate_actionPerformed(java.awt.event.ActionEvent evt) {
 
-        if (EditorState == ControlState.LINER2) {
+        if (EditorState == ControlState.RULER2) {
 
-            EditorState = ControlState.LINER_ROT;
+            EditorState = ControlState.RULER_ROT;
             rotation_angle = 0;
             oPanel1.displayProtractor(rotation_angle);
             oPanel1.repaint();
@@ -2082,47 +2007,10 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
 
     private void ui_foldingops_cut_actionPerformed(java.awt.event.ActionEvent evt) {
 
-        if (EditorState == ControlState.LINER2) {
+        if (EditorState == ControlState.RULER2) {
 
-            double pontX = ((double) liner2X - oPanel1.PanelCamera.xshift) / oPanel1.PanelCamera.zoom();
-            double pontY = ((double) liner2Y - oPanel1.PanelCamera.yshift) / oPanel1.PanelCamera.zoom();
-            double pont1X = ((double) liner1X - oPanel1.PanelCamera.xshift) / oPanel1.PanelCamera.zoom();
-            double pont1Y = ((double) liner1Y - oPanel1.PanelCamera.yshift) / oPanel1.PanelCamera.zoom();
-
-            double[] vonalzoNV = new double[] {
-                    oPanel1.PanelCamera.axis_x()[0] * (liner2Y - liner1Y)
-                            + oPanel1.PanelCamera.axis_y()[0] * (liner1X - liner2X),
-                    oPanel1.PanelCamera.axis_x()[1] * (liner2Y - liner1Y)
-                            + oPanel1.PanelCamera.axis_y()[1] * (liner1X - liner2X),
-                    oPanel1.PanelCamera.axis_x()[2] * (liner2Y - liner1Y)
-                            + oPanel1.PanelCamera.axis_y()[2] * (liner1X - liner2X) };
-            double[] vonalzoPT = new double[] {
-                    oPanel1.PanelCamera.axis_x()[0] / oPanel1.PanelCamera.zoom() * pontX
-                            + oPanel1.PanelCamera.axis_y()[0] / oPanel1.PanelCamera.zoom() * pontY
-                            + oPanel1.PanelCamera.camera_pos()[0],
-                    oPanel1.PanelCamera.axis_x()[1] / oPanel1.PanelCamera.zoom() * pontX
-                            + oPanel1.PanelCamera.axis_y()[1] / oPanel1.PanelCamera.zoom() * pontY
-                            + oPanel1.PanelCamera.camera_pos()[1],
-                    oPanel1.PanelCamera.axis_x()[2] / oPanel1.PanelCamera.zoom() * pontX
-                            + oPanel1.PanelCamera.axis_y()[2] / oPanel1.PanelCamera.zoom() * pontY
-                            + oPanel1.PanelCamera.camera_pos()[2] };
-            double[] vonalzoPT1 = new double[] {
-                    oPanel1.PanelCamera.axis_x()[0] / oPanel1.PanelCamera.zoom() * pont1X
-                            + oPanel1.PanelCamera.axis_y()[0] / oPanel1.PanelCamera.zoom() * pont1Y
-                            + oPanel1.PanelCamera.camera_pos()[0],
-                    oPanel1.PanelCamera.axis_x()[1] / oPanel1.PanelCamera.zoom() * pont1X
-                            + oPanel1.PanelCamera.axis_y()[1] / oPanel1.PanelCamera.zoom() * pont1Y
-                            + oPanel1.PanelCamera.camera_pos()[1],
-                    oPanel1.PanelCamera.axis_x()[2] / oPanel1.PanelCamera.zoom() * pont1X
-                            + oPanel1.PanelCamera.axis_y()[2] / oPanel1.PanelCamera.zoom() * pont1Y
-                            + oPanel1.PanelCamera.camera_pos()[2] };
-            if (neusisOn) {
-                vonalzoNV = Geometry.vector(vonalzoPT, vonalzoPT1);
-            }
-            if (Geometry.scalar_product(oPanel1.PanelCamera.camera_pos(), vonalzoNV)
-                    - Geometry.scalar_product(vonalzoPT, vonalzoNV) > 0) {
-                vonalzoNV = new double[] { -vonalzoNV[0], -vonalzoNV[1], -vonalzoNV[2] };
-            }
+            double[] vonalzoNV = oPanel1.getRulerNormalvector();
+            double[] vonalzoPT = oPanel1.getRulerPoint();
 
             if (pPanel1.isTracked()) {
 
@@ -2310,32 +2198,32 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
 
         if (EditorState == ControlState.STANDBY && alignOn) {
 
-            liner1X = evt.getX();
-            liner1Y = evt.getY();
+            ruler1X = evt.getX();
+            ruler1Y = evt.getY();
             if (snap1(alignment_radius)) {
-                oPanel1.setAlignmentPoint(liner1X, liner1Y);
+                oPanel1.setAlignmentPoint(ruler1X, ruler1Y);
             }
             else {
                 oPanel1.resetAlignmentPoint();
             }
         }
-        else if (EditorState == ControlState.LINER1) {
+        else if (EditorState == ControlState.RULER1) {
 
-            liner2X = evt.getX();
-            liner2Y = evt.getY();
+            ruler2X = evt.getX();
+            ruler2Y = evt.getY();
             if (alignOn) {
                 if (snap2(alignment_radius)) {
-                    oPanel1.setAlignmentPoint(liner2X, liner2Y);
+                    oPanel1.setAlignmentPoint(ruler2X, ruler2Y);
                 }
                 else {
                     oPanel1.resetAlignmentPoint();
                 }
             }
-            oPanel1.linerOn(null, liner1X, liner1Y, liner2X, liner2Y);
-            pPanel1.linerOn(oPanel1.PanelCamera, liner1X, liner1Y, liner2X, liner2Y);
+            oPanel1.rulerOn(null, ruler1X, ruler1Y, ruler2X, ruler2Y);
+            pPanel1.rulerOn(oPanel1.PanelCamera, ruler1X, ruler1Y, ruler2X, ruler2Y);
             pPanel1.repaint();
         }
-        else if (EditorState == ControlState.LINER_ROT || EditorState == ControlState.TRI_ROT) {
+        else if (EditorState == ControlState.RULER_ROT || EditorState == ControlState.TRI_ROT) {
 
             if (evt.getX() != oPanel1.getWidth() / 2 || evt.getY() != oPanel1.getHeight() / 2) {
 
@@ -2388,7 +2276,8 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                         try {
 
                             terminal1.execute(
-                                    "title [" + fpath  + "] filename [" + fpath + "] export-autopdf",
+                                    "title [" + new java.io.File(fpath).getName().replace(".pdf", "")
+                                    + "] filename [" + fpath + "] export-autopdf",
                                     OrigamiScriptTerminal.Access.ROOT);
                             oPanel1.update(terminal1.TerminalOrigami);
                             pPanel1.update(terminal1.TerminalOrigami);
@@ -2473,8 +2362,8 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
     //
     private void oPanel1MouseWheelMoved(java.awt.event.MouseWheelEvent evt) {// GEN-FIRST:event_oPanel1MouseWheelMoved
 
-        if (EditorState != ControlState.LINER1 && EditorState != ControlState.LINER2
-                && EditorState != ControlState.LINER_ROT && EditorState != ControlState.TRI_ROT) {
+        if (EditorState != ControlState.RULER1 && EditorState != ControlState.RULER2
+                && EditorState != ControlState.RULER_ROT && EditorState != ControlState.TRI_ROT) {
 
             if (zoomOnScroll && oPanel1.PanelCamera.zoom() - 0.1 * evt.getWheelRotation() <= Camera.maximal_zoom
                     && oPanel1.PanelCamera.zoom() - 0.1 * evt.getWheelRotation() >= 0.8
@@ -2981,15 +2870,15 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         alwaysInMiddle = !alwaysInMiddle;
         if (alwaysInMiddle) {
             oPanel1.PanelCamera.adjust(terminal1.TerminalOrigami);
-            oPanel1.linerOff();
-            pPanel1.linerOff();
+            oPanel1.rulerOff();
+            pPanel1.rulerOff();
             oPanel1.repaint();
             pPanel1.repaint();
         }
         else {
             oPanel1.PanelCamera.unadjust(terminal1.TerminalOrigami);
-            oPanel1.linerOff();
-            pPanel1.linerOff();
+            oPanel1.rulerOff();
+            pPanel1.rulerOff();
             oPanel1.repaint();
             pPanel1.repaint();
         }
@@ -3426,8 +3315,8 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
     //
     private void ui_planeActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_ui_planeActionPerformed
 
-        oPanel1.linerOff();
-        pPanel1.linerOff();
+        oPanel1.rulerOff();
+        pPanel1.rulerOff();
         oPanel1.hideProtractor();
         rotation_angle = 0;
         oPanel1.resetTriangle();
@@ -3452,8 +3341,8 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
     //
     private void ui_angleActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_ui_angleActionPerformed
 
-        oPanel1.linerOff();
-        pPanel1.linerOff();
+        oPanel1.rulerOff();
+        pPanel1.rulerOff();
         oPanel1.hideProtractor();
         rotation_angle = 0;
         oPanel1.resetTriangle();
@@ -3663,10 +3552,10 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
 
         for (int[] osztohely : oPanel1.PanelCamera.alignmentPoints(terminal1.TerminalOrigami, snap2, snap3, snap4)) {
 
-            if ((liner1X - oPanel1.PanelCamera.xshift - osztohely[0])
-                    * (liner1X - oPanel1.PanelCamera.xshift - osztohely[0])
-                    + (liner1Y - oPanel1.PanelCamera.yshift - osztohely[1])
-                            * (liner1Y - oPanel1.PanelCamera.yshift - osztohely[1]) < radius) {
+            if ((ruler1X - oPanel1.PanelCamera.xshift - osztohely[0])
+                    * (ruler1X - oPanel1.PanelCamera.xshift - osztohely[0])
+                    + (ruler1Y - oPanel1.PanelCamera.yshift - osztohely[1])
+                            * (ruler1Y - oPanel1.PanelCamera.yshift - osztohely[1]) < radius) {
 
                 v1ujX = osztohely[0] + oPanel1.PanelCamera.xshift;
                 v1ujY = osztohely[1] + oPanel1.PanelCamera.yshift;
@@ -3674,8 +3563,8 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
             }
         }
         if (v1ujX != -1) {
-            liner1X = v1ujX;
-            liner1Y = v1ujY;
+            ruler1X = v1ujX;
+            ruler1Y = v1ujY;
             return true;
         }
         return false;
@@ -3688,10 +3577,10 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
 
         for (int[] osztohely : oPanel1.PanelCamera.alignmentPoints(terminal1.TerminalOrigami, snap2, snap3, snap4)) {
 
-            if ((liner2X - oPanel1.PanelCamera.xshift - osztohely[0])
-                    * (liner2X - oPanel1.PanelCamera.xshift - osztohely[0])
-                    + (liner2Y - oPanel1.PanelCamera.yshift - osztohely[1])
-                            * (liner2Y - oPanel1.PanelCamera.yshift - osztohely[1]) < sugar) {
+            if ((ruler2X - oPanel1.PanelCamera.xshift - osztohely[0])
+                    * (ruler2X - oPanel1.PanelCamera.xshift - osztohely[0])
+                    + (ruler2Y - oPanel1.PanelCamera.yshift - osztohely[1])
+                            * (ruler2Y - oPanel1.PanelCamera.yshift - osztohely[1]) < sugar) {
 
                 v2ujX = osztohely[0] + oPanel1.PanelCamera.xshift;
                 v2ujY = osztohely[1] + oPanel1.PanelCamera.yshift;
@@ -3699,8 +3588,8 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
             }
         }
         if (v2ujX != -1) {
-            liner2X = v2ujX;
-            liner2Y = v2ujY;
+            ruler2X = v2ujX;
+            ruler2Y = v2ujY;
             return true;
         }
         return false;
@@ -3811,8 +3700,8 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         ui_select.setSelected(true);
         ui_plane.setSelected(false);
         ui_angle.setSelected(false);
-        oPanel1.linerOff();
-        pPanel1.linerOff();
+        oPanel1.rulerOff();
+        pPanel1.rulerOff();
         oPanel1.reset();
         pPanel1.reset();
         oPanel1.repaint();
