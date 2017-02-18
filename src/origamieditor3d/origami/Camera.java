@@ -115,10 +115,15 @@ public class Camera {
     public java.util.List<int[]> alignmentPoints(Origami origami, int... denoms) {
 
         java.util.List<int[]> nsectors = new ArrayList<>();
-        for (int i = 0; i < origami.vertices_size(); i++) {
-
-            nsectors.add(new int[]{(int) projection(origami.vertices().get(i))[0],
-                (int) projection(origami.vertices().get(i))[1]});
+        
+        for (int i = 0; i < origami.polygons_size(); i++) {
+            if (origami.isNonDegenerate(i)) {
+                for (int ii = 0; ii < origami.polygons().get(i).size(); ii++) {
+                    
+                    double[] vert = origami.vertices().get(origami.polygons().get(i).get(ii));
+                    nsectors.add(new int[]{(int) projection(vert)[0], (int) projection(vert)[1]});
+                }
+            }
         }
         for (int n : denoms) {
             for (int i = 0; i < origami.polygons_size(); i++) {

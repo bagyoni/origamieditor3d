@@ -49,7 +49,7 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
         paper_front_color = 0xFFFFFF;
         previewOn = false;
         displaymode = DisplayMode.GRADIENT;
-        linerMode = LinerMode.Normal;
+        linerMode = RulerMode.Normal;
         antialiasOn = true;
     }
     private Origami PanelOrigami;
@@ -67,7 +67,7 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
     private boolean previewOn;
     private DisplayMode displaymode;
     private Integer protractor_angle;
-    private LinerMode linerMode;
+    private RulerMode linerMode;
     private boolean antialiasOn;
 
     public enum DisplayMode {
@@ -148,7 +148,7 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
     }
 
     @Override
-    public void setLinerMode(LinerMode mode) {
+    public void setRulerMode(RulerMode mode) {
         linerMode = mode;
     }
 
@@ -344,7 +344,7 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
                         + this.PanelCamera.axis_y()[2] / this.PanelCamera.zoom() * pont1Y
                         + this.PanelCamera.camera_pos()[2]
                 };
-                if (linerMode == LinerMode.Neusis) {
+                if (linerMode == RulerMode.Neusis) {
                     vonalzoNV = Geometry.vector(vonalzoPT, vonalzoPT1);
                 }
 
@@ -352,7 +352,7 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
             }
 
             g.setColor(Color.red);
-            if (linerMode == LinerMode.Neusis) {
+            if (linerMode == RulerMode.Neusis) {
                 int maxdim = Math.max(this.getWidth(), this.getHeight())
                         /Math.max(Math.max(Math.abs(ruler_y1 - ruler_y2), Math.abs(ruler_x1 - ruler_x2)), 1) + 1;
                 g.drawLine(ruler_x2 + maxdim * (ruler_y1 - ruler_y2), ruler_y2 + maxdim * (ruler_x2 - ruler_x1),
@@ -459,7 +459,7 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
     
     public double[] getRulerNormalvector() {
         
-        if (linerOn && linerMode == LinerMode.Normal) {
+        if (linerOn && linerMode == RulerMode.Normal) {
             
             double[] rulerNV = new double[] {
                 PanelCamera.axis_x()[0] * (ruler_y2 - ruler_y1)
@@ -475,7 +475,7 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
             }
             return rulerNV;
         }
-        if (linerOn && linerMode == LinerMode.Neusis) {
+        if (linerOn && linerMode == RulerMode.Neusis) {
             
             double[] rulerPT = getRulerPoint();
             double[] rulerNV = Geometry.vector(rulerPT, getRulerPoint1());

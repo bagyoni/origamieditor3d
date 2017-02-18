@@ -37,7 +37,7 @@ public class PaperPanel extends JPanel implements BasicEditing {
     private double[] liner_point, liner_normal;
     private Integer[][] liner_triangle;
     private int liner_grab_index;
-    private LinerMode linerMode;
+    private RulerMode linerMode;
 
     public Integer tracker_x() {
         return tracker_x;
@@ -76,7 +76,7 @@ public class PaperPanel extends JPanel implements BasicEditing {
         liner_grab_index = 0;
         liner_point = null;
         liner_normal = null;
-        linerMode = LinerMode.Normal;
+        linerMode = RulerMode.Normal;
     }
 
     @Override
@@ -111,7 +111,7 @@ public class PaperPanel extends JPanel implements BasicEditing {
     }
 
     @Override
-    public void setLinerMode(LinerMode mode) {
+    public void setRulerMode(RulerMode mode) {
         linerMode = mode;
     }
 
@@ -138,7 +138,7 @@ public class PaperPanel extends JPanel implements BasicEditing {
             refcam.axis_x()[1] / refcam.zoom() * pont1X + refcam.axis_y()[1] / refcam.zoom() * pont1Y + refcam.camera_pos()[1],
             refcam.axis_x()[2] / refcam.zoom() * pont1X + refcam.axis_y()[2] / refcam.zoom() * pont1Y + refcam.camera_pos()[2]
         };
-        if (linerMode == LinerMode.Neusis) {
+        if (linerMode == RulerMode.Neusis) {
             vonalzoNV = Geometry.vector(vonalzoPT, vonalzoPT1);
         }
         liner_point = vonalzoPT;
@@ -180,7 +180,7 @@ public class PaperPanel extends JPanel implements BasicEditing {
                                     ((double) liner_triangle[2][1] - PanelCamera.yshift + PanelCamera.projection0(PanelCamera.camera_pos())[1]) / PanelCamera.zoom()
                                 }).trackPoint();
 
-                if (linerMode == LinerMode.Planethrough) {
+                if (linerMode == RulerMode.Planethrough) {
                     if (Geometry.vector_length(Geometry.vector_product(
                             Geometry.vector(pt2, pt1), Geometry.vector(pt3, pt1))) != 0d) {
 
@@ -190,7 +190,7 @@ public class PaperPanel extends JPanel implements BasicEditing {
                     } else {
                         rulerOff();
                     }
-                } else if (linerMode == LinerMode.Angle_bisector) {
+                } else if (linerMode == RulerMode.Angle_bisector) {
                     liner_point = pt2;
                     liner_normal = Geometry.vector(
                             Geometry.length_to_100(Geometry.vector(pt1, pt2)),

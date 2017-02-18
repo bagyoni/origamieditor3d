@@ -64,7 +64,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
 
     private enum ControlState {
 
-        STANDBY, LOCKED, RULER1, RULER2, RULER_ROT, TRI0, TRI1, TRI2, TRI3, TRI_ROT, PLANETHRU, ANGLE_BISECT
+        STANDBY, RULER1, RULER2, RULER_ROT, TRI0, TRI1, TRI2, TRI3, TRI_ROT, PLANETHRU, ANGLE_BISECT
     }
 
     public OrigamiEditorUI() {
@@ -392,11 +392,10 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         timeSlider.addChangeListener(new javax.swing.event.ChangeListener() {
             @Override
             public void stateChanged(javax.swing.event.ChangeEvent e) {
+                
                 if (foldNumber == timeSlider.getValue() || changeListenerShutUp) {
                     return;
                 }
-                EditorState = ControlState.LOCKED;
-
                 if (terminal1.TerminalOrigami.history().size() < 100) {
                     if (foldNumber < timeSlider.getValue()) {
                         terminal1.TerminalOrigami.redo(timeSlider.getValue() - foldNumber);
@@ -418,9 +417,6 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                         foldNumber = timeSlider.getValue();
                         oPanel1.update(terminal1.TerminalOrigami);
                     }
-                }
-                if (terminal1.TerminalOrigami.history().size() == timeSlider.getValue()) {
-                    EditorState = ControlState.STANDBY;
                 }
                 if (alwaysInMiddle) {
                     oPanel1.PanelCamera.adjust(terminal1.TerminalOrigami);
@@ -1322,8 +1318,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
     private void oPanel1MouseDragged(java.awt.event.MouseEvent evt) {// GEN-FIRST:event_oPanel1MouseDragged
 
         if (EditorState == ControlState.STANDBY || EditorState == ControlState.TRI0 || EditorState == ControlState.TRI1
-                || EditorState == ControlState.TRI2 || EditorState == ControlState.TRI3
-                || EditorState == ControlState.LOCKED) {
+                || EditorState == ControlState.TRI2 || EditorState == ControlState.TRI3) {
 
             oPanel1.resetAlignmentPoint();
             oPanel1.PanelCamera.rotate((mouseDragX - evt.getX()) / (float) oPanel1.PanelCamera.zoom() / 2,
@@ -2322,9 +2317,6 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
     //
     private void ui_edit_undoActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_ui_edit_undoActionPerformed
 
-        if (EditorState == ControlState.LOCKED) {
-            return;
-        }
         try {
             terminal1.execute("undo");
         }
@@ -2538,9 +2530,6 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
     //
     private void ui_edit_redoActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_ui_edit_redoActionPerformed
 
-        if (EditorState == ControlState.LOCKED) {
-            return;
-        }
         try {
 
             if (!terminal1.history().isEmpty()) {
@@ -2891,16 +2880,16 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
 
         if (ui_edit_neusis.isSelected()) {
 
-            oPanel1.setLinerMode(BasicEditing.LinerMode.Neusis);
-            pPanel1.setLinerMode(BasicEditing.LinerMode.Neusis);
+            oPanel1.setRulerMode(BasicEditing.RulerMode.Neusis);
+            pPanel1.setRulerMode(BasicEditing.RulerMode.Neusis);
             neusisOn = true;
             ui_view_show.setSelected(true);
             oPanel1.previewOn();
         }
         else {
 
-            oPanel1.setLinerMode(BasicEditing.LinerMode.Normal);
-            pPanel1.setLinerMode(BasicEditing.LinerMode.Normal);
+            oPanel1.setRulerMode(BasicEditing.RulerMode.Normal);
+            pPanel1.setRulerMode(BasicEditing.RulerMode.Normal);
             neusisOn = false;
             ui_view_show.setSelected(false);
             oPanel1.previewOff();
@@ -3303,7 +3292,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         ui_plane.setSelected(false);
         ui_angle.setSelected(false);
         targetOn = true;
-        pPanel1.setLinerMode(neusisOn ? BasicEditing.LinerMode.Neusis : BasicEditing.LinerMode.Normal);
+        pPanel1.setRulerMode(neusisOn ? BasicEditing.RulerMode.Neusis : BasicEditing.RulerMode.Normal);
         pPanel1.setToolTipText(Dictionary.getString("tooltip.ppanel.select"));
         oPanel1.setToolTipText(Dictionary.getString("tooltip.opanel.standby"));
         oPanel1.repaint();
@@ -3326,7 +3315,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
 
         EditorState = ControlState.TRI0;
         SecondaryState = ControlState.PLANETHRU;
-        pPanel1.setLinerMode(BasicEditing.LinerMode.Planethrough);
+        pPanel1.setRulerMode(BasicEditing.RulerMode.Planethrough);
         pPanel1.setToolTipText(Dictionary.getString("tooltip.ppanel.3points1"));
         oPanel1.setToolTipText(Dictionary.getString("tooltip.opanel.3points"));
 
@@ -3352,7 +3341,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
 
         EditorState = ControlState.TRI0;
         SecondaryState = ControlState.ANGLE_BISECT;
-        pPanel1.setLinerMode(BasicEditing.LinerMode.Angle_bisector);
+        pPanel1.setRulerMode(BasicEditing.RulerMode.Angle_bisector);
         pPanel1.setToolTipText(Dictionary.getString("tooltip.ppanel.3points1"));
         oPanel1.setToolTipText(Dictionary.getString("tooltip.opanel.3points"));
 

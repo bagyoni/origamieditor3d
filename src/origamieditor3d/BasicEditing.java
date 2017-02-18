@@ -20,7 +20,7 @@ import origamieditor3d.origami.Origami;
  */
 public interface BasicEditing {
 
-    public enum LinerMode {
+    public enum RulerMode {
         Normal, Neusis, Planethrough, Angle_bisector
     }
 
@@ -31,7 +31,7 @@ public interface BasicEditing {
     public void setTracker(Camera refcam, int x, int y);
     public void resetTracker();
 
-    public void setLinerMode(LinerMode mode);
+    public void setRulerMode(RulerMode mode);
     public void rulerOn(Camera refcam, int x1, int y1, int x2, int y2);
     public void rulerOff();
 
