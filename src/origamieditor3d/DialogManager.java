@@ -78,7 +78,7 @@ public class DialogManager {
             file_dialog.addChoosableFileFilter(new FileNameExtensionFilter(Dictionary.getString(ext), ext));
         }
         
-        if (file_dialog.showSaveDialog(associated_ui) == javax.swing.JFileChooser.APPROVE_OPTION) {
+        if (file_dialog.showOpenDialog(associated_ui) == javax.swing.JFileChooser.APPROVE_OPTION) {
             if (file_dialog.getFileFilter() == file_dialog.getChoosableFileFilters()[0]) {
                 
                 String fpath = file_dialog.getSelectedFile().getPath();
@@ -94,7 +94,7 @@ public class DialogManager {
         file_dialog.setAcceptAllFileFilterUsed(false);
         file_dialog.addChoosableFileFilter(new FileNameExtensionFilter(Dictionary.getString("img"), javax.imageio.ImageIO.getReaderFormatNames()));
         
-        if (file_dialog.showSaveDialog(associated_ui) == javax.swing.JFileChooser.APPROVE_OPTION) {
+        if (file_dialog.showOpenDialog(associated_ui) == javax.swing.JFileChooser.APPROVE_OPTION) {
             if (file_dialog.getFileFilter() == file_dialog.getChoosableFileFilters()[0]) {
                 
                 String fpath = file_dialog.getSelectedFile().getPath();
