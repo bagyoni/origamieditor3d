@@ -1,5 +1,6 @@
 package origamieditor3d.origami;
 
+import java.util.ArrayList;
 
 public class Geometry {
 
@@ -162,5 +163,114 @@ public class Geometry {
         };
 
         return img;
+    }
+
+    /**
+     * Arranges the planar points in the specified list in a counter-clockwise
+     * winding order as viewed from their center.
+     *
+     * @param polygon
+     *            An {@link ArrayList} whose each element is an array containing
+     *            the 2-dimensional coordinates of a point.
+     * @return An {@link ArrayList} containing the same elements as {@code
+     * polygon}, but in a counter-clockwise winding order.
+     * @since 2013-10-11
+     */
+    static public ArrayList<double[]> ccwWindingOrder(ArrayList<double[]> polygon) {
+    
+        ArrayList<double[]> ordered = new ArrayList<>();
+        ArrayList<Double> angles = new ArrayList<>();
+        angles.add(0d);
+    
+        if (polygon.size() > 0) {
+    
+            double[] center = new double[] { 0, 0 };
+    
+            for (double[] point : polygon) {
+    
+                center = new double[] { center[0] + point[0] / polygon.size(), center[1] + point[1] / polygon.size() };
+            }
+    
+            for (int i = 1; i < polygon.size(); i++) {
+    
+                angles.add(angle(vector(polygon.get(i), center),
+                        vector(polygon.get(0), center)));
+            }
+    
+            while (ordered.size() < polygon.size()) {
+    
+                double minangle = -1.0;
+                double[] minpoint = nullvector;
+                int mindex = -1;
+    
+                for (int i = 0; i < angles.size(); i++) {
+    
+                    if ((angles.get(i) < minangle || minangle == -1.0) && angles.get(i) != -1.0) {
+    
+                        minangle = angles.get(i);
+                        minpoint = polygon.get(i);
+                        mindex = i;
+                    }
+                }
+    
+                ordered.add(new double[] { minpoint[0], minpoint[1] });
+                angles.set(mindex, -1.0);
+            }
+        }
+        return ordered;
+    }
+
+    /**
+     * Returns {@code true} iff the planar points in the specified list are the
+     * vertices of a convex polygon listed in a counter-clockwise winding order.
+     *
+     * @param polygon
+     *            An {@link ArrayList} whose each element is an array containing
+     *            the 2-dimensional coordinates of a point.
+     * @return As described above.
+     * @since 2013-10-12
+     */
+    static public boolean isConvex(ArrayList<double[]> polygon) {
+    
+        if (polygon.size() > 3) {
+    
+            if (angle(vector(polygon.get(polygon.size() - 1), polygon.get(0)),
+                    vector(polygon.get(1), polygon.get(0))) > Math.PI) {
+                return false;
+            }
+    
+            for (int i = 1; i < polygon.size() - 1; i++) {
+    
+                if (angle(vector(polygon.get(i - 1), polygon.get(i)),
+                        vector(polygon.get(i + 1), polygon.get(i))) > Math.PI) {
+                    return false;
+                }
+            }
+    
+            if (angle(vector(polygon.get(polygon.size() - 2), polygon.get(polygon.size() - 1)),
+                    vector(polygon.get(0), polygon.get(polygon.size() - 1))) > Math.PI) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    static public double point_segment_distance(double[] point, double[] s1, double[] s2) {
+        
+        double[] sdir = vector(s2, s1);
+        if (vector_length(sdir) < 0.00000001) {
+            return vector_length(vector(s1, point));
+        }
+        sdir = length_to_1(sdir);
+        
+        double[] proj = sum(s1, scalar_multip(sdir, scalar_product(sdir, vector(point, s1))));
+        if (scalar_product(vector(s1, proj), vector(s2, proj)) < 0) {
+            return vector_length(vector(proj, point));
+        }
+        else {
+            double dist1 = vector_length(vector(point, s1));
+            double dist2 = vector_length(vector(point, s2));
+            return dist1 < dist2 ? dist1 : dist2;
+        }
     }
 }

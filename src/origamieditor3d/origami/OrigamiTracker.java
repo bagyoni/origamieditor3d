@@ -25,6 +25,9 @@ public class OrigamiTracker {
     @SuppressWarnings("unchecked")
     public OrigamiTracker(Origami origami, double[] tracker) throws Exception {
 
+        trackedOrigami = origami;
+        track = tracker;
+        /*
     	if (origami instanceof OrigamiGen2) {
 
     		trackedOrigami = new OrigamiGen2(origami){
@@ -41,6 +44,7 @@ public class OrigamiTracker {
     		                sokszog0.remove(sokszog0.size() - 1);
     		                polygons.set(polygonIndex, sokszog0);
     		                tracker = true;
+    		                System.out.println(polygonIndex);
     		            }
     		            ArrayList<Integer> s0 = polygons.get(polygonIndex);
 
@@ -162,12 +166,16 @@ public class OrigamiTracker {
         ArrayList<Integer> sokszog0 = (ArrayList<Integer>) trackedOrigami.polygons.get(0).clone();
         sokszog0.add(trackerpont);
         trackedOrigami.polygons.set(0, sokszog0);
+        */
     }
     
+    private double[] track;
     private int trackerpont;
 
     public int trackPolygon() {
 
+        return trackedOrigami.findPolygonContaining(track);
+        /*
     	trackedOrigami.execute();
         for (int i = 0; i < trackedOrigami.polygons_size; i++) {
             if ((int) trackedOrigami.polygons.get(i).get(trackedOrigami.polygons.get(i).size() - 1) == trackerpont) {
@@ -175,11 +183,15 @@ public class OrigamiTracker {
             }
         }
         return -1;
+        */
     }
 
     public double[] trackPoint() {
 
+        return trackedOrigami.find3dImageOf(track);
+        /*
     	trackedOrigami.execute();
         return trackedOrigami.vertices.get(trackerpont);
+        */
     }
 }

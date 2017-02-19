@@ -65,7 +65,7 @@ public class Origami {
      * The new model will be initialized with an empty {@link #history()
      * history}, a {@link #papertype() papertype} of {@link PaperType#Custom}, a
      * {@link #corners() corners} list that is the
-     * {@link #ccwWindingOrder(ArrayList) ccwWindingOrder} of the specified
+     * {@link Geometry#ccwWindingOrder(ArrayList) ccwWindingOrder} of the specified
      * {@link ArrayList}, and will be {@link #reset() reset} immediately
      * afterwards.
      *
@@ -85,8 +85,8 @@ public class Origami {
         history_stream = new ArrayList<>();
         history_pointer = 0;
         papertype = PaperType.Custom;
-        this.corners = ccwWindingOrder(corners);
-        if (!isConvex(this.corners)) {
+        this.corners = Geometry.ccwWindingOrder(corners);
+        if (!Geometry.isConvex(this.corners)) {
             throw new Exception("Varatlan konkav sokszog/Unexpected concave polygon");
         }
         reset();
@@ -229,7 +229,7 @@ public class Origami {
         /**
          * An Origami of this {@link #papertype() papertype} will have a single
          * polygon with the vertices obtained from the
-         * {@link #ccwWindingOrder(ArrayList) ccwWindingOrder} of its
+         * {@link Geometry#ccwWindingOrder(ArrayList) ccwWindingOrder} of its
          * {@link #corners() corners} when {@link #reset() reset}.
          */
         Custom('E');
@@ -1751,96 +1751,6 @@ public class Origami {
     }
 
     /**
-     * Arranges the planar points in the specified list in a counter-clockwise
-     * winding order as viewed from their center.
-     *
-     * @param polygon
-     *            An {@link ArrayList} whose each element is an array containing
-     *            the 2-dimensional coordinates of a point.
-     * @return An {@link ArrayList} containing the same elements as {@code
-     * polygon}, but in a counter-clockwise winding order.
-     * @since 2013-10-11
-     */
-    static private ArrayList<double[]> ccwWindingOrder(ArrayList<double[]> polygon) {
-
-        ArrayList<double[]> ordered = new ArrayList<>();
-        ArrayList<Double> angles = new ArrayList<>();
-        angles.add(0d);
-
-        if (polygon.size() > 0) {
-
-            double[] center = new double[] { 0, 0 };
-
-            for (double[] point : polygon) {
-
-                center = new double[] { center[0] + point[0] / polygon.size(), center[1] + point[1] / polygon.size() };
-            }
-
-            for (int i = 1; i < polygon.size(); i++) {
-
-                angles.add(Geometry.angle(Geometry.vector(polygon.get(i), center),
-                        Geometry.vector(polygon.get(0), center)));
-            }
-
-            while (ordered.size() < polygon.size()) {
-
-                double minangle = -1.0;
-                double[] minpoint = Geometry.nullvector;
-                int mindex = -1;
-
-                for (int i = 0; i < angles.size(); i++) {
-
-                    if ((angles.get(i) < minangle || minangle == -1.0) && angles.get(i) != -1.0) {
-
-                        minangle = angles.get(i);
-                        minpoint = polygon.get(i);
-                        mindex = i;
-                    }
-                }
-
-                ordered.add(new double[] { minpoint[0], minpoint[1] });
-                angles.set(mindex, -1.0);
-            }
-        }
-        return ordered;
-    }
-
-    /**
-     * Returns {@code true} iff the planar points in the specified list are the
-     * vertices of a convex polygon listed in a counter-clockwise winding order.
-     *
-     * @param polygon
-     *            An {@link ArrayList} whose each element is an array containing
-     *            the 2-dimensional coordinates of a point.
-     * @return As described above.
-     * @since 2013-10-12
-     */
-    static private boolean isConvex(ArrayList<double[]> polygon) {
-
-        if (polygon.size() > 3) {
-
-            if (Geometry.angle(Geometry.vector(polygon.get(polygon.size() - 1), polygon.get(0)),
-                    Geometry.vector(polygon.get(1), polygon.get(0))) > Math.PI) {
-                return false;
-            }
-
-            for (int i = 1; i < polygon.size() - 1; i++) {
-
-                if (Geometry.angle(Geometry.vector(polygon.get(i - 1), polygon.get(i)),
-                        Geometry.vector(polygon.get(i + 1), polygon.get(i))) > Math.PI) {
-                    return false;
-                }
-            }
-
-            if (Geometry.angle(Geometry.vector(polygon.get(polygon.size() - 2), polygon.get(polygon.size() - 1)),
-                    Geometry.vector(polygon.get(0), polygon.get(polygon.size() - 1))) > Math.PI) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
      * Returns the size of the smallest orthogonal square all the
      * {@link #corners() corners} of this origami can fit in.
      *
@@ -2338,6 +2248,130 @@ public class Origami {
             return 5;
         }
         return 6;
+    }
+    
+    public int findPolygonContaining(double[] point2d) {
+        
+        //find the closest edge to point2d
+        int[] closest_segment = new int[] { -1, -1 };
+        double min_dist = -1;
+        
+        for (int i=0; i<polygons_size; i++) {
+            
+            if (isStrictlyNonDegenerate(i)) {
+                
+                ArrayList<Integer> poly = polygons.get(i);
+                for (int ii=0; ii<poly.size() - 1; ii++) {
+                    
+                    double[] s1 = vertices2d.get(poly.get(ii));
+                    double[] s2 = vertices2d.get(poly.get(ii+1));
+                    double dist = Geometry.point_segment_distance(point2d, s1, s2);
+
+                    if (dist < min_dist || min_dist == -1) {
+                        
+                        closest_segment[0] = poly.get(ii);
+                        closest_segment[1] = poly.get(ii+1);
+                        min_dist = dist;
+                    }
+                }
+                
+                double[] s1 = vertices2d.get(poly.get(poly.size() - 1));
+                double[] s2 = vertices2d.get(poly.get(0));
+                double dist = Geometry.point_segment_distance(point2d, s1, s2);
+
+                if (dist < min_dist || min_dist == -1) {
+                    
+                    closest_segment[0] = poly.get(poly.size() - 1);
+                    closest_segment[1] = poly.get(0);
+                    min_dist = dist;
+                }
+            }
+        }
+        
+        //there are no more than two polygons where this edge can belong
+        int closest_poly1 = -1, closest_poly2 = -1;
+        for (int i=0; i<polygons_size; i++) {
+            if (isStrictlyNonDegenerate(i)) {
+                ArrayList<Integer> poly = polygons.get(i);
+                for (int ii=0; ii<poly.size() - 1; ii++) {
+                    if (closest_segment[0] == poly.get(ii) && closest_segment[1] == poly.get(ii+1)
+                            || closest_segment[1] == poly.get(ii) && closest_segment[0] == poly.get(ii+1)) {
+                        if (closest_poly1 == -1) {
+                            closest_poly1 = i;
+                        }
+                        else {
+                            closest_poly2 = i;
+                        }
+                    }
+                }
+                if (closest_segment[0] == poly.get(poly.size() - 1) && closest_segment[1] == poly.get(0)
+                        || closest_segment[1] == poly.get(poly.size() - 1) && closest_segment[0] == poly.get(0)) {
+                    if (closest_poly1 == -1) {
+                        closest_poly1 = i;
+                    }
+                    else {
+                        closest_poly2 = i;
+                    }
+                }
+            }
+        }
+        
+        //one of these polygons is the polygon containing point2d
+        if (closest_poly2 == -1) {
+            return closest_poly1;
+        }
+        ArrayList<Integer> testpoly = polygons.get(closest_poly1);
+        ArrayList<double[]> testpoints = new ArrayList<double[]>();
+        for (int i=0; i<testpoly.size(); i++) {
+            testpoints.add(vertices2d.get(testpoly.get(i)));
+        }
+        testpoints.add(point2d);
+        
+        if (Geometry.isConvex(Geometry.ccwWindingOrder(testpoints))) {
+            return closest_poly2;
+        }
+        return closest_poly1;
+    }
+    
+    public double[] find3dImageOf(double[] point2d) {
+        
+        int poly_ind = findPolygonContaining(point2d);
+        ArrayList<Integer> image_poly = polygons.get(poly_ind);
+        double[] orig = vertices().get(image_poly.get(0));
+        double[] orig2d = vertices2d().get(image_poly.get(0));
+        
+        for (int point1ind : image_poly) {
+            for (int point2ind : image_poly) {
+
+                double[] base1 = Geometry.vector(vertices().get(point1ind), orig);
+                double[] base2 = Geometry.vector(vertices().get(point2ind), orig);
+                
+                if (Geometry.vector_length(Geometry.vector_product(base1, base2)) > 0) {
+                    
+                    base1 = Geometry.length_to_1(base1);
+                    base2 = Geometry.length_to_1(base2);
+                    
+                    double[] base1_2d = Geometry.vector(vertices2d().get(point1ind), orig2d);
+                    double[] base2_2d = Geometry.vector(vertices2d().get(point2ind), orig2d);
+                    base1_2d = Geometry.length_to_1(base1_2d);
+                    base2_2d = Geometry.length_to_1(base2_2d);
+                    
+                    double det = base1_2d[0]*base2_2d[1] - base1_2d[1]*base2_2d[0];
+
+                    double coord1 = Geometry.scalar_product(Geometry.vector(point2d, orig2d),
+                            new double[] {base2_2d[1], -base2_2d[0], 0})/det;
+                    double coord2 = Geometry.scalar_product(Geometry.vector(point2d, orig2d),
+                            new double[] {-base1_2d[1], base1_2d[0], 0})/det;
+                    
+                    double[] img = Geometry.sum(orig,
+                            Geometry.sum(Geometry.scalar_multip(base1, coord1),
+                                         Geometry.scalar_multip(base2, coord2)));
+                    return img;
+                    
+                }
+            }
+        }
+        return null;
     }
 
     @Override
