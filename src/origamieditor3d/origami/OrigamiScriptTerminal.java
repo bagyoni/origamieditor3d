@@ -511,9 +511,8 @@ public class OrigamiScriptTerminal {
 
             } else if (pt.length == 2 && nv.length == 3) {
 
-                ppoint = new OrigamiTracker(TerminalOrigami, new double[]{
-                    Double.parseDouble(pt[0]), Double.parseDouble(pt[1])})
-                        .trackPoint();
+                ppoint = TerminalOrigami.find3dImageOf(new double[]{
+                    Double.parseDouble(pt[0]), Double.parseDouble(pt[1])});
 
                 pnormal = new double[]{Double.parseDouble(nv[0]),
                     Double.parseDouble(nv[1]), Double.parseDouble(nv[2])};
@@ -544,9 +543,9 @@ public class OrigamiScriptTerminal {
                     Double.parseDouble(pont1[2])};
             } else if (pont1.length == 2) {
 
-                pt1 = new OrigamiTracker(TerminalOrigami, new double[]{
+                pt1 = TerminalOrigami.find3dImageOf(new double[]{
                     Double.parseDouble(pont1[0]),
-                    Double.parseDouble(pont1[1])}).trackPoint();
+                    Double.parseDouble(pont1[1])});
             } else {
                 throw OrigamiException.H007;
             }
@@ -558,9 +557,9 @@ public class OrigamiScriptTerminal {
                     Double.parseDouble(pont2[2])};
             } else if (pont2.length == 2) {
 
-                pt2 = new OrigamiTracker(TerminalOrigami, new double[]{
+                pt2 = TerminalOrigami.find3dImageOf(new double[]{
                     Double.parseDouble(pont2[0]),
-                    Double.parseDouble(pont2[1])}).trackPoint();
+                    Double.parseDouble(pont2[1])});
             } else {
                 throw OrigamiException.H007;
             }
@@ -572,9 +571,9 @@ public class OrigamiScriptTerminal {
                     Double.parseDouble(pont3[2])};
             } else if (pont3.length == 2) {
 
-                pt3 = new OrigamiTracker(TerminalOrigami, new double[]{
+                pt3 = TerminalOrigami.find3dImageOf(new double[]{
                     Double.parseDouble(pont3[0]),
-                    Double.parseDouble(pont3[1])}).trackPoint();
+                    Double.parseDouble(pont3[1])});
             } else {
                 throw OrigamiException.H007;
             }
@@ -610,9 +609,9 @@ public class OrigamiScriptTerminal {
                     Double.parseDouble(pont1[2])};
             } else if (pont1.length == 2) {
 
-                pt1 = new OrigamiTracker(TerminalOrigami, new double[]{
+                pt1 = TerminalOrigami.find3dImageOf(new double[]{
                     Double.parseDouble(pont1[0]),
-                    Double.parseDouble(pont1[1])}).trackPoint();
+                    Double.parseDouble(pont1[1])});
             } else {
                 throw OrigamiException.H007;
             }
@@ -624,9 +623,9 @@ public class OrigamiScriptTerminal {
                     Double.parseDouble(pont2[2])};
             } else if (pont2.length == 2) {
 
-                pt2 = new OrigamiTracker(TerminalOrigami, new double[]{
+                pt2 = TerminalOrigami.find3dImageOf(new double[]{
                     Double.parseDouble(pont2[0]),
-                    Double.parseDouble(pont2[1])}).trackPoint();
+                    Double.parseDouble(pont2[1])});
             } else {
                 throw OrigamiException.H007;
             }
@@ -638,9 +637,9 @@ public class OrigamiScriptTerminal {
                     Double.parseDouble(pont3[2])};
             } else if (pont3.length == 2) {
 
-                pt3 = new OrigamiTracker(TerminalOrigami, new double[]{
+                pt3 = TerminalOrigami.find3dImageOf(new double[]{
                     Double.parseDouble(pont3[0]),
-                    Double.parseDouble(pont3[1])}).trackPoint();
+                    Double.parseDouble(pont3[1])});
             } else {
                 throw OrigamiException.H007;
             }
@@ -671,9 +670,8 @@ public class OrigamiScriptTerminal {
 
             } else if (pt.length == 2) {
 
-                ppoint = new OrigamiTracker(TerminalOrigami, new double[]{
-                    Double.parseDouble(pt[0]), Double.parseDouble(pt[1])})
-                        .trackPoint();
+                ppoint = TerminalOrigami.find3dImageOf(new double[]{
+                    Double.parseDouble(pt[0]), Double.parseDouble(pt[1])});
 
             } else {
                 throw OrigamiException.H007;
@@ -906,8 +904,7 @@ public class OrigamiScriptTerminal {
 
             TerminalOrigami.crease(ppoint, pnormal);
 
-            int mag = new OrigamiTracker(TerminalOrigami, tracker)
-                    .trackPolygon();
+            int mag = TerminalOrigami.findPolygonContaining(tracker);
 
             TerminalOrigami.rotationFold(ppoint, pnormal, phi, mag);
         } else {
@@ -926,8 +923,7 @@ public class OrigamiScriptTerminal {
 
             TerminalOrigami.crease(ppoint, pnormal);
 
-            int mag = new OrigamiTracker(TerminalOrigami, tracker)
-                    .trackPolygon();
+            int mag = TerminalOrigami.findPolygonContaining(tracker);
 
             TerminalOrigami.reflectionFold(ppoint, pnormal, mag);
         } else {
@@ -946,8 +942,7 @@ public class OrigamiScriptTerminal {
 
             TerminalOrigami.crease(ppoint, pnormal);
 
-            int mag = new OrigamiTracker(TerminalOrigami, tracker)
-                    .trackPolygon();
+            int mag = TerminalOrigami.findPolygonContaining(tracker);
 
             TerminalOrigami.mutilation(ppoint, pnormal, mag);
         } else {

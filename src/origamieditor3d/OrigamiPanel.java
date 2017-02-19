@@ -22,7 +22,6 @@ import javax.swing.JPanel;
 import origamieditor3d.origami.Camera;
 import origamieditor3d.origami.Geometry;
 import origamieditor3d.origami.Origami;
-import origamieditor3d.origami.OrigamiTracker;
 
 /**
  * @author Attila Bágyoni (ba-sz-at@users.sourceforge.net)
@@ -124,8 +123,7 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
         tracker_x = x;
         tracker_y = y;
         try {
-            tracker_im = new OrigamiTracker(
-                    PanelOrigami,
+            tracker_im = PanelOrigami.find3dImageOf(
                     new double[]{
                         ((double) tracker_x - refkamera.xshift
                                 + new Camera(refkamera.xshift, refkamera.yshift, refkamera.zoom())
@@ -133,7 +131,7 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
                         ((double) tracker_y - refkamera.yshift
                                 + new Camera(refkamera.xshift, refkamera.yshift, refkamera.zoom())
                                 .projection0(refkamera.camera_pos())[1]) / refkamera.zoom()
-                    }).trackPoint();
+                    });
         } catch (Exception ex) {
         }
         trackerOn = true;
@@ -158,8 +156,7 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
         try {
             int x = xy[0];
             int y = xy[1];
-            liner_triangle[liner_grab_index] = new OrigamiTracker(
-                    PanelOrigami,
+            liner_triangle[liner_grab_index] = PanelOrigami.find3dImageOf(
                     new double[]{
                         ((double) x - refkamera.xshift
                                 + new Camera(refkamera.xshift, refkamera.yshift, refkamera.zoom())
@@ -167,7 +164,7 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
                         ((double) y - refkamera.yshift
                                 + new Camera(refkamera.xshift, refkamera.yshift, refkamera.zoom())
                                 .projection0(refkamera.camera_pos())[1]) / refkamera.zoom()
-                    }).trackPoint();
+                    });
         } catch (Exception ex) {
             liner_triangle[liner_grab_index] = null;
         }

@@ -20,7 +20,6 @@ import javax.swing.JPanel;
 import origamieditor3d.origami.Camera;
 import origamieditor3d.origami.Geometry;
 import origamieditor3d.origami.Origami;
-import origamieditor3d.origami.OrigamiTracker;
 
 /**
  * @author Attila Bágyoni (ba-sz-at@users.sourceforge.net)
@@ -161,24 +160,21 @@ public class PaperPanel extends JPanel implements BasicEditing {
 
             try {
 
-                double[] pt1 = new OrigamiTracker(
-                        PanelOrigami,
+                double[] pt1 = PanelOrigami.find3dImageOf(
                         new double[]{
                             ((double) liner_triangle[0][0] - PanelCamera.xshift + PanelCamera.projection0(PanelCamera.camera_pos())[0]) / PanelCamera.zoom(),
                             ((double) liner_triangle[0][1] - PanelCamera.yshift + PanelCamera.projection0(PanelCamera.camera_pos())[1]) / PanelCamera.zoom()
-                        }).trackPoint(),
-                        pt2 = new OrigamiTracker(
-                                PanelOrigami,
+                        }),
+                        pt2 = PanelOrigami.find3dImageOf(
                                 new double[]{
                                     ((double) liner_triangle[1][0] - PanelCamera.xshift + PanelCamera.projection0(PanelCamera.camera_pos())[0]) / PanelCamera.zoom(),
                                     ((double) liner_triangle[1][1] - PanelCamera.yshift + PanelCamera.projection0(PanelCamera.camera_pos())[1]) / PanelCamera.zoom()
-                                }).trackPoint(),
-                        pt3 = new OrigamiTracker(
-                                PanelOrigami,
+                                }),
+                        pt3 = PanelOrigami.find3dImageOf(
                                 new double[]{
                                     ((double) liner_triangle[2][0] - PanelCamera.xshift + PanelCamera.projection0(PanelCamera.camera_pos())[0]) / PanelCamera.zoom(),
                                     ((double) liner_triangle[2][1] - PanelCamera.yshift + PanelCamera.projection0(PanelCamera.camera_pos())[1]) / PanelCamera.zoom()
-                                }).trackPoint();
+                                });
 
                 if (linerMode == RulerMode.Planethrough) {
                     if (Geometry.vector_length(Geometry.vector_product(

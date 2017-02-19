@@ -2852,11 +2852,11 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
     }// GEN-LAST:event_ui_file_saveActionPerformed
 
     //
-    // ALWAYS IN THE MIDDLE / MINDIG KÖZÉPEN
+    // BEST FIT / LEGJOBB ILLESZKEDÉS
     //
     private void ui_view_bestActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_ui_view_bestActionPerformed
 
-        alwaysInMiddle = !alwaysInMiddle;
+        alwaysInMiddle = ui_view_best.isSelected();
         if (alwaysInMiddle) {
             oPanel1.PanelCamera.adjust(terminal1.TerminalOrigami);
             oPanel1.rulerOff();
