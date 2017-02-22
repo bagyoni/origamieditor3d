@@ -79,11 +79,8 @@ public class DialogManager {
         }
         
         if (file_dialog.showOpenDialog(associated_ui) == javax.swing.JFileChooser.APPROVE_OPTION) {
-            if (file_dialog.getFileFilter() == file_dialog.getChoosableFileFilters()[0]) {
-                
-                String fpath = file_dialog.getSelectedFile().getPath();
-                return fpath;
-            }
+            String fpath = file_dialog.getSelectedFile().getPath();
+            return fpath;
         }
         return null;
     }

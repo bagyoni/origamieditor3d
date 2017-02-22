@@ -167,10 +167,10 @@ public class Origami {
     protected ArrayList<double[]> history = new ArrayList<>();
 
     /**
-     * Returns an {@link ArrayList} containing information about some of the
-     * methods previously called on this origami. <b>This member is intended for
-     * private use</b>, although it may be replaced by a more straightforward
-     * and human-readable format in later versions.
+     * Whenever a FoldingOperation is called on the origami, its identifier and
+     * its parameters are all merged into a single array and added to this
+     * list at the index corresponding to the {@link #history_pointer()}.
+     * All elements above this index will be removed from the list.
      *
      * @return As described above.
      */
@@ -1541,8 +1541,9 @@ public class Origami {
     }
 
     /**
-     * Executes every {@link Origami#FoldingOperator FoldingOperator} stored in
-     * this origami's {@link #history()}. Does not call {@linkplain #reset()}.
+     * Executes every {@link Origami#FoldingOperation FoldingOperation} stored
+     * in this origami's {@link #history() history}. Does not call {@link
+     * #reset() reset}.
      */
     public void execute() {
 
@@ -1581,16 +1582,13 @@ public class Origami {
     }
 
     /**
-     * Végrehajt a megadott indextôl kezdve a megadott darabszámú, this origami
-     * {@link #history}-jában egymást követô mûveletet this origamin index
-     * szerint növekvô sorrendben.
+     * Executes the specified number of steps stored in the {@link #history()
+     * history} of this origami starting from the specified index.
      *
-     * @param index
-     *            Az elsô végrehajtandó mûvelet {@link history}-beli 0-alapú
-     *            indexe. Negatív érték esetén csak a mûveletek nemnegatív
-     *            indexû része lesz elvégezve.
-     * @param steps
-     *            A végrehajtandó mûveletek száma.
+     * @param index The index of the first element in the in the {@link
+     * #history() history} to execute.
+     * @param steps The number of {@link Origami#FoldingOperation
+     * FoldingOperations} to execute.
      */
     public void execute(int index, int steps) {
 
@@ -2250,7 +2248,17 @@ public class Origami {
         return 6;
     }
     
-    public int findPolygonContaining(double[] point2d) {
+    /**
+     * Returns the index of the polygon in the {@link #polygons() polygons}
+     * list that contains a specific point on the paper given in 2D (paper
+     * space) coordinates. Returns -1 if every polygon in this origami is
+     * {@link #isStrictlyNonDegenerate(int) degenerate}.
+     * 
+     * @param point2d The 2D coordinates of the point.
+     * @return The index of the polygon containing the point.
+     * @since 2017-02-19
+     */
+    public int findPolygonContaining(double... point2d) {
         
         //find the closest edge to point2d
         int[] closest_segment = new int[] { -1, -1 };
@@ -2333,7 +2341,18 @@ public class Origami {
         return closest_poly1;
     }
     
-    public double[] find3dImageOf(double[] point2d) {
+    /**
+     * Determines where a given point on the paper ends up in the 3D space,
+     * in the current state of this origami. For example, if an element of the
+     * {@link #vertices2d() vertices2d} list is given, the corresponding
+     * element of the {@link #vertices() vertices} list should be returned,
+     * unless the origami is malformed.
+     * 
+     * @param point2d The 2D (paper space) coordinates of the point.
+     * @return The 3D (origami space) coordinates of the same point.
+     * @since 2017-02-19
+     */
+    public double[] find3dImageOf(double... point2d) {
         
         int poly_ind = findPolygonContaining(point2d);
         ArrayList<Integer> image_poly = polygons.get(poly_ind);

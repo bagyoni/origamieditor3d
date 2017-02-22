@@ -255,6 +255,14 @@ public class Geometry {
         return true;
     }
 
+    /**
+     * Returns the distance between the specified point and line segment in 2D.
+     * @param point The 2D coordinates of the point.
+     * @param s1 The 2D coordinates of one endpoint of the segment.
+     * @param s2 The 2D coordinates of the other endpoint of the segment.
+     * @return As described above.
+     * @since 2017-02-19
+     */
     static public double point_segment_distance(double[] point, double[] s1, double[] s2) {
         
         double[] sdir = vector(s2, s1);

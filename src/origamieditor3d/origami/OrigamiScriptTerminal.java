@@ -1713,7 +1713,6 @@ public class OrigamiScriptTerminal {
         ArrayList<String> tmp = (ArrayList<String>) history.clone();
         totalReset();
         for (String p : tmp) {
-
             execute(p);
         }
     }

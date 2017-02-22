@@ -58,8 +58,6 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
     private boolean targetOn;
     
     final private javax.swing.JFrame ui_options;
-    final private javax.swing.JDialog ui_timeline;
-    final private javax.swing.JSlider timeSlider;
     final private javax.swing.JPopupMenu ui_foldingops;
 
     private enum ControlState {
@@ -174,8 +172,8 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         
         // Load example model entries into the menu
         ui_file_example.getPopupMenu().setLayout(new java.awt.GridLayout(0, 2));
-        final ExampleModels models = new ExampleModels();
-        final java.util.ArrayList<String> modnames = models.names();
+        final ExampleModels examples = new ExampleModels();
+        final java.util.ArrayList<String> modnames = examples.names();
         for (int i = 0; i < modnames.size(); i++) {
             final int ind = i;
             final javax.swing.JMenuItem modelitem = new javax.swing.JMenuItem(Dictionary.getString(modnames.get(i)));
@@ -189,7 +187,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                         }
                     }
                     filepath = null;
-                    try (java.io.InputStream fis = models.getFile(modnames.get(ind))) {
+                    try (java.io.InputStream fis = examples.getFile(modnames.get(ind))) {
 
                         java.util.ArrayList<Byte> bytesb = new java.util.ArrayList<>();
                         int fisbyte;
@@ -249,7 +247,6 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                     }
                 }
                 ui_options.dispose();
-                ui_timeline.dispose();
                 OrigamiEditorUI.this.dispose();
                 System.exit(0);
             }
@@ -380,63 +377,6 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         ui_options.setResizable(false);
         ui_options.setLocationRelativeTo(null);
         ui_options.pack();
-
-        // initialize timeline
-        ui_timeline = new javax.swing.JDialog(this, Dictionary.getString("ui.timeline"));
-        ui_timeline.setDefaultCloseOperation(javax.swing.JFrame.DISPOSE_ON_CLOSE);
-        timeSlider = new javax.swing.JSlider();
-        timeSlider.setMinimum(0);
-        timeSlider.setMaximum(0);
-        timeSlider.setValue(0);
-        foldNumber = 0;
-        timeSlider.addChangeListener(new javax.swing.event.ChangeListener() {
-            @Override
-            public void stateChanged(javax.swing.event.ChangeEvent e) {
-                
-                if (foldNumber == timeSlider.getValue() || changeListenerShutUp) {
-                    return;
-                }
-                if (terminal1.TerminalOrigami.history().size() < 100) {
-                    if (foldNumber < timeSlider.getValue()) {
-                        terminal1.TerminalOrigami.redo(timeSlider.getValue() - foldNumber);
-                    }
-                    else {
-                        terminal1.TerminalOrigami.undo(foldNumber - timeSlider.getValue());
-                    }
-                    foldNumber = timeSlider.getValue();
-                    oPanel1.update(terminal1.TerminalOrigami);
-                }
-                else { // Stop eating the CPU when it gets too complex
-                    if (!timeSlider.getValueIsAdjusting()) {
-                        if (foldNumber < timeSlider.getValue()) {
-                            terminal1.TerminalOrigami.redo(timeSlider.getValue() - foldNumber);
-                        }
-                        else {
-                            terminal1.TerminalOrigami.undo(foldNumber - timeSlider.getValue());
-                        }
-                        foldNumber = timeSlider.getValue();
-                        oPanel1.update(terminal1.TerminalOrigami);
-                    }
-                }
-                if (alwaysInMiddle) {
-                    oPanel1.PanelCamera.adjust(terminal1.TerminalOrigami);
-                }
-                defaultify();
-            }
-        });
-        ui_timeline.getContentPane().add(timeSlider);
-        ui_timeline.setSize(getWidth(), 50);
-        addComponentListener(new java.awt.event.ComponentAdapter() {
-            @Override
-            public void componentResized(java.awt.event.ComponentEvent e) {
-                ui_timeline.setSize(getWidth(), 50);
-                super.componentResized(e);
-            }
-        });
-        ui_timeline.setResizable(false);
-        ui_timeline.setLocation(getLocation().x, getLocation().y + getHeight());
-        ui_timeline.setVisible(true);
-        changeListenerShutUp = false;
 
         // initialize folding options popup menu
         ui_foldingops = new javax.swing.JPopupMenu();
@@ -579,6 +519,8 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         ui_snap_2.setToolTipText(Dictionary.getString("tooltip.snap.2"));
         ui_snap_3.setToolTipText(Dictionary.getString("tooltip.snap.3"));
         ui_snap_4.setToolTipText(Dictionary.getString("tooltip.snap.4"));
+        
+        ui_timeline_label.setText(Dictionary.getString("ui.timeline"));
     }
 
     /**
@@ -595,6 +537,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         ui_panels = new javax.swing.JSplitPane();
         oPanel1 = new origamieditor3d.OrigamiPanel();
         pPanel1 = new origamieditor3d.PaperPanel();
+        ui_editor_notimeline = new javax.swing.JSplitPane();
         ui_toolbars = new javax.swing.JSplitPane();
         ui_rightbar = new javax.swing.JToolBar();
         ui_select = new javax.swing.JToggleButton();
@@ -655,7 +598,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         ui_view_best = new javax.swing.JCheckBoxMenuItem();
         jSeparator4 = new javax.swing.JPopupMenu.Separator();
         ui_help_show = new javax.swing.JCheckBoxMenuItem();
-        ui_view_timeline = new javax.swing.JMenuItem();
+        ui_view_timeline = new javax.swing.JCheckBoxMenuItem();
         ui_view_options = new javax.swing.JMenuItem();
         ui_help = new javax.swing.JMenu();
         ui_help_user = new javax.swing.JMenuItem();
@@ -665,11 +608,11 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
         getContentPane().setLayout(new java.awt.GridLayout(1, 0));
 
-        ui_editor.setDividerSize(0);
         ui_editor.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+        ui_editor.setDividerSize(0);
         ui_editor.setResizeWeight(1.0);
         ui_editor.setEnabled(false);
-        ui_editor.setPreferredSize(new java.awt.Dimension(802, 429));
+        ui_editor.setPreferredSize(new java.awt.Dimension(802, 459));
         ui_editor.addComponentListener(new java.awt.event.ComponentAdapter() {
             @Override
             public void componentResized(java.awt.event.ComponentEvent evt) {
@@ -677,7 +620,13 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
             }
         });
 
-        ui_panels.setDividerLocation(400);
+        ui_editor_notimeline.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+        ui_editor_notimeline.setDividerSize(0);
+        ui_editor_notimeline.setResizeWeight(1);
+        ui_editor_notimeline.setEnabled(false);
+        
+        ui_panels.setOrientation(javax.swing.JSplitPane.HORIZONTAL_SPLIT);
+        ui_panels.setDividerLocation(0.5);
         ui_panels.setDividerSize(0);
         ui_panels.setResizeWeight(0.5);
         ui_panels.setEnabled(false);
@@ -744,9 +693,10 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         });
         ui_panels.setRightComponent(pPanel1);
 
-        ui_editor.setTopComponent(ui_panels);
-
-        ui_toolbars.setDividerLocation(400);
+        ui_editor_notimeline.setTopComponent(ui_panels);
+        
+        ui_toolbars.setOrientation(javax.swing.JSplitPane.HORIZONTAL_SPLIT);
+        ui_toolbars.setDividerLocation(0.5);
         ui_toolbars.setDividerSize(0);
         ui_toolbars.setResizeWeight(0.5);
         ui_toolbars.setMinimumSize(new java.awt.Dimension(142, 35));
@@ -757,6 +707,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
             }
         });
 
+        //initialize right toolbar
         ui_rightbar.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         ui_rightbar.setFloatable(false);
         ui_rightbar.setEnabled(false);
@@ -818,6 +769,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
 
         ui_toolbars.setRightComponent(ui_rightbar);
 
+        //initialize snap options
         ui_leftbar.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         ui_leftbar.setFloatable(false);
         ui_leftbar.setRollover(true);
@@ -902,8 +854,34 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         ui_leftbar.add(ui_snap_4);
 
         ui_toolbars.setLeftComponent(ui_leftbar);
-
-        ui_editor.setRightComponent(ui_toolbars);
+        
+        ui_editor_notimeline.setBottomComponent(ui_toolbars);
+        
+        ui_editor.setTopComponent(ui_editor_notimeline);
+        
+        // initialize timeline
+        ui_timeline = new javax.swing.JPanel();
+        ui_timeline.setLayout(new java.awt.BorderLayout());
+        ui_timeline.setMinimumSize(new java.awt.Dimension(142, 30));
+        ui_timeline.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        ui_timeline_label = new javax.swing.JLabel("Timeline: ");
+        ui_timeline.add(ui_timeline_label, java.awt.BorderLayout.WEST);
+        
+        timeSlider = new javax.swing.JSlider();
+        timeSlider.setMinimum(0);
+        timeSlider.setMaximum(0);
+        timeSlider.setValue(0);
+        foldNumber = 0;
+        timeSlider.addChangeListener(new javax.swing.event.ChangeListener() {
+            @Override
+            public void stateChanged(javax.swing.event.ChangeEvent e) {
+                timeSliderStateChanged(e);
+            }
+        });
+        ui_timeline.add(timeSlider, java.awt.BorderLayout.CENTER);
+        changeListenerShutUp = false;
+        
+        ui_editor.setBottomComponent(ui_timeline);
 
         jTabbedPane1.addTab("Editor", ui_editor);
 
@@ -1240,6 +1218,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         ui_view.add(ui_view_best);
         ui_view.add(jSeparator4);
 
+        ui_view_timeline.setSelected(true);
         ui_view_timeline.setText("Timeline");
         ui_view_timeline.addActionListener(new java.awt.event.ActionListener() {
             @Override
@@ -2441,7 +2420,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         }
         
         String fpath = dialogManager1.getOpenFilePath("ori", "txt");
-        
+
         if (fpath != null) {
 
             if (fpath.endsWith(".ori")) {
@@ -2484,6 +2463,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                 try {
                     terminal1.execute("filename [" + fpath + "] load",
                             OrigamiScriptTerminal.Access.ROOT);
+                    
                     oPanel1.update(terminal1.TerminalOrigami);
                     pPanel1.update(terminal1.TerminalOrigami);
 
@@ -3021,9 +3001,51 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
     // TIMELINE / IDŐVONAL
     //
     private void ui_view_timelineActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_ui_view_timelineActionPerformed
-        ui_timeline.setVisible(true);
+        
+        if (!ui_view_timeline.isSelected()) {
+            ui_editor.remove(ui_timeline);
+        }
+        else {
+            ui_editor.add(ui_timeline);
+        }
     }// GEN-LAST:event_ui_view_timelineActionPerformed
 
+    //
+    // TIMELINE SLIDER / IDŐVONAL CSÚSZKA
+    //
+    private void timeSliderStateChanged(javax.swing.event.ChangeEvent evt) {
+        
+        if (foldNumber == timeSlider.getValue() || changeListenerShutUp) {
+            return;
+        }
+        if (terminal1.TerminalOrigami.history().size() < 100) {
+            if (foldNumber < timeSlider.getValue()) {
+                terminal1.TerminalOrigami.redo(timeSlider.getValue() - foldNumber);
+            }
+            else {
+                terminal1.TerminalOrigami.undo(foldNumber - timeSlider.getValue());
+            }
+            foldNumber = timeSlider.getValue();
+            oPanel1.update(terminal1.TerminalOrigami);
+        }
+        else { // Stop eating the CPU when it gets too complex
+            if (!timeSlider.getValueIsAdjusting()) {
+                if (foldNumber < timeSlider.getValue()) {
+                    terminal1.TerminalOrigami.redo(timeSlider.getValue() - foldNumber);
+                }
+                else {
+                    terminal1.TerminalOrigami.undo(foldNumber - timeSlider.getValue());
+                }
+                foldNumber = timeSlider.getValue();
+                oPanel1.update(terminal1.TerminalOrigami);
+            }
+        }
+        if (alwaysInMiddle) {
+            oPanel1.PanelCamera.adjust(terminal1.TerminalOrigami);
+        }
+        defaultify();
+    }
+    
     //
     // USER GUIDE / FELHASZNÁLÓI KÉZIKÖNYV
     //
@@ -3665,7 +3687,11 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
     private javax.swing.JToggleButton ui_snap_4;
     private javax.swing.JLabel ui_snap;
     private javax.swing.JToolBar.Separator ui_snap_separator;
+    private javax.swing.JSplitPane ui_editor_notimeline;
     private javax.swing.JSplitPane ui_toolbars;
+    private javax.swing.JPanel ui_timeline;
+    private javax.swing.JLabel ui_timeline_label;
+    private javax.swing.JSlider timeSlider;
     private javax.swing.JMenu ui_view;
     private javax.swing.JMenu ui_view_paper;
     private javax.swing.JCheckBoxMenuItem ui_view_paper_gradient;
@@ -3676,7 +3702,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
     private javax.swing.JCheckBoxMenuItem ui_view_show;
     private javax.swing.JCheckBoxMenuItem ui_view_zoom;
     private javax.swing.JCheckBoxMenuItem ui_view_best;
-    private javax.swing.JMenuItem ui_view_timeline;
+    private javax.swing.JCheckBoxMenuItem ui_view_timeline;
     private javax.swing.JMenuItem ui_view_options;
     private JSeparator separator;
     private JSeparator separator_1;
