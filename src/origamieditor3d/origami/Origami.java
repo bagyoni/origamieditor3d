@@ -406,7 +406,7 @@ public class Origami {
      * the specified index.
      *
      * @param polygonIndex
-     *            The zero-base index at which the polygon to remove is located
+     *            The zero-based index at which the polygon to remove is located
      *            in the {@link #polygons() polygons} list.
      */
     protected void removePolygon(int polygonIndex) {
@@ -660,7 +660,7 @@ public class Origami {
      * with a positive distance between them.
      *
      * @param polygonIndex
-     *            The zero-base index at which the polygon to check is located
+     *            The zero-based index at which the polygon to check is located
      *            in the {@link #polygons() polygons} list.
      * @return {@code false} iff the specified polygon is zero-dimensional.
      */
@@ -682,7 +682,7 @@ public class Origami {
      * polygons} list has a positive area.
      *
      * @param polygonIndex
-     *            The zero-base index at which the polygon to check is located
+     *            The zero-based index at which the polygon to check is located
      *            in the {@link #polygons() polygons} list.
      * @return {@code false} iff the specified polygon is zero- or one-dimensional.
      */
@@ -753,7 +753,7 @@ public class Origami {
      *            An array containing the coordinates of the normal vector of
      *            the half-space.
      * @param polygonIndex
-     *            The zero-base index at which the polygon to split is located
+     *            The zero-based index at which the polygon to split is located
      *            in the {@link #polygons() polygons} list.
      * @return {@code true} iff the polygon has been divided in two.
      */
