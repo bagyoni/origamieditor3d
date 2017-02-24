@@ -1735,7 +1735,7 @@ public class Export {
             is.close();
             os.close();
 
-            OrigamiIO.write_gen2(origami, tempOri.getPath());
+            OrigamiIO.write_gen2(origami, tempOri.getPath(), null);
 
             java.util.zip.ZipFile jar = new java.util.zip.ZipFile(tempJar);
             java.io.FileOutputStream fos = new java.io.FileOutputStream(finalJar);

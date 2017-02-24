@@ -26,7 +26,6 @@ import java.util.ArrayList;
 public class Camera {
 
     final static public int paper_back_color = 0xF7D6A6;
-    final static public int paper_front_color = 0x000097;
     final static public int maximal_zoom = 4;
 
     public Camera(int x, int y, double zoom) {
@@ -44,15 +43,16 @@ public class Camera {
     protected double[] camera_dir;
     protected double[] axis_x;
     protected double[] axis_y;
-    static private double[] default_camera_pos = {200, 200, 0};
-    static private double[] default_camera_dir = {0, 0, 1};
-    static private double[] default_axis_x = {1, 0, 0};
-    static private double[] default_axis_y = {0, 1, 0};
+    final static public double[] default_camera_pos = {200, 200, 0};
+    final static public double[] default_camera_dir = {0, 0, 1};
+    final static public double[] default_axis_x = {1, 0, 0};
+    final static public double[] default_axis_y = {0, 1, 0};
     public int xshift = 230;
     public int yshift = 230;
     private double zoom = 1.0;
     private double[][] space_buffer;
     public java.awt.image.BufferedImage texture;
+    protected byte orientation = 0;
 
     public double[] camera_pos() {
         return camera_pos;
@@ -78,8 +78,6 @@ public class Camera {
         zoom = value;
     }
 
-    protected byte orientation = 0;
-
     public double[] projection0(double[] point) {
 
         double[] basepoint = Geometry.line_plane_intersection(
@@ -102,13 +100,13 @@ public class Camera {
         double sinX = Math.sin(x * Math.PI / 180);
         double cosX = Math.cos(x * Math.PI / 180);
 
-        camera_dir = Geometry.rotation(camera_dir, Geometry.nullvector, axis_y, sinX, cosX);
+        camera_dir = Geometry.length_to_1(Geometry.rotation(camera_dir, Geometry.nullvector, axis_y, sinX, cosX));
         axis_x = Geometry.length_to_1(Geometry.rotation(axis_x, Geometry.nullvector, axis_y, sinX, cosX));
 
         double sinY = Math.sin(y * Math.PI / 180);
         double cosY = Math.cos(y * Math.PI / 180);
 
-        camera_dir = Geometry.rotation(camera_dir, Geometry.nullvector, axis_x, sinY, cosY);
+        camera_dir = Geometry.length_to_1(Geometry.rotation(camera_dir, Geometry.nullvector, axis_x, sinY, cosY));
         axis_y = Geometry.length_to_1(Geometry.rotation(axis_y, Geometry.nullvector, axis_x, sinY, cosY));
     }
 

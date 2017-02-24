@@ -85,6 +85,10 @@ public class OrigamiScriptTerminal {
     public Origami TerminalOrigami;
     public Camera TerminalCamera;
     private int paper_color;
+    public int paper_color() {
+        return paper_color;
+    }
+    final static private int default_paper_color = 0x000097;
     private java.awt.image.BufferedImage paper_texture;
     public java.awt.image.BufferedImage paper_texture() {
         return paper_texture;
@@ -238,6 +242,13 @@ public class OrigamiScriptTerminal {
             @Override
             public void execute(String... args) throws Exception {
                 color(args);
+            }
+        });
+        
+        Params.put("uncolor", new Command() {
+            @Override
+            public void execute(String... args) throws Exception {
+                uncolor(args);
             }
         });
     }
@@ -1045,6 +1056,17 @@ public class OrigamiScriptTerminal {
 
         }
     }
+    
+    private void uncolor(String... args) throws Exception {
+
+        switch (version) {
+
+            default:
+                uncolor1(args);
+                break;
+
+        }
+    }
 
     private void filename1(String... args) throws Exception {
 
@@ -1119,6 +1141,15 @@ public class OrigamiScriptTerminal {
             } else {
                 throw OrigamiException.H007;
             }
+        } else {
+            throw OrigamiException.H007;
+        }
+    }
+    
+    private void uncolor1(String... args) throws Exception {
+
+        if (args.length == 0) {
+            paper_color = default_paper_color;
         } else {
             throw OrigamiException.H007;
         }
@@ -1407,7 +1438,10 @@ public class OrigamiScriptTerminal {
                 for (int i = 0; i < bytesb.size(); i++) {
                     bytes[i] = bytesb.get(i);
                 }
-                TerminalOrigami = OrigamiIO.read_gen2(new java.io.ByteArrayInputStream(bytes));
+                paper_color = default_paper_color;
+                int[] rgb = { (paper_color >>> 16) & 0xFF, (paper_color >>> 8) & 0xFF, paper_color & 0xFF };
+                TerminalOrigami = OrigamiIO.read_gen2(new java.io.ByteArrayInputStream(bytes), rgb);
+                paper_color = rgb[0]*0x10000 + rgb[1]*0x100 + rgb[2];
             } else {
                 throw OrigamiException.H010;
             }
@@ -1530,7 +1564,11 @@ public class OrigamiScriptTerminal {
             if (new java.io.File(filename).exists() && access != Access.ROOT && access != Access.DEV) {
                 throw OrigamiException.H011;
             }
-            OrigamiIO.write_gen2(TerminalOrigami, filename);
+            int[] rgb = { (paper_color >>> 16) & 0xFF, (paper_color >>> 8) & 0xFF, paper_color & 0xFF };
+            if (paper_color == default_paper_color) {
+                rgb = null;
+            }
+            OrigamiIO.write_gen2(TerminalOrigami, filename, rgb);
         } else {
             throw OrigamiException.H010;
         }

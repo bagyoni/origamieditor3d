@@ -16,6 +16,7 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+import java.util.Random;
 
 import javax.swing.JPanel;
 
@@ -51,6 +52,13 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
         linerMode = RulerMode.Normal;
         antialiasOn = true;
     }
+    final static private int[] random_front_colors =
+                { 0x000097, 0x24A0DF, 0x397E79, //blue
+                0xDF0000, //red
+                0x00E371, 0x66E71D, 0x20CB07, //green
+                0xFFFFCC, //yellow
+                0xA840F4, 0xC40A86 }; //purple
+    final private double[][] liner_triangle;
     private Origami PanelOrigami;
     protected Camera PanelCamera;
     private boolean ready_to_paint;
@@ -59,7 +67,6 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
     private Integer tracker_x, tracker_y;
     private boolean trackerOn;
     private double[] tracker_im;
-    final private double[][] liner_triangle;
     private int liner_grab_index;
     private int[] alignment_point;
     private int paper_front_color;
@@ -217,6 +224,10 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
 
     public int getFrontColor() {
         return paper_front_color;
+    }
+    
+    public void randomizeFrontColor() {
+        paper_front_color = random_front_colors[new Random().nextInt(random_front_colors.length)];
     }
 
     public void setDisplaymode(DisplayMode value) {

@@ -24,7 +24,7 @@ import java.util.Arrays;
  */
 public class OrigamiIO {
 
-    static public void write_gen2(Origami origami, String filename) throws Exception {
+    static public void write_gen2(Origami origami, String filename, int[] rgb) throws Exception {
 
         if (!(origami instanceof OrigamiGen2)) {
             write_gen1(origami, filename);
@@ -32,7 +32,8 @@ public class OrigamiIO {
         }
         try {
 
-            File ori = new File(filename + "~");
+            final int rand = new java.util.Random().nextInt(100000) + 100000;
+            File ori = new File(filename + String.valueOf(rand));
             if (ori.exists()) {
                 ori.delete();
             }
@@ -44,9 +45,16 @@ public class OrigamiIO {
             str.write(0x33);
             str.write(0x44);
 
-            //version 3, compressed
+            //version 3
             str.write(3);
-            str.write(0x63);
+            //number of payloads
+            if (rgb == null) {
+                str.write(0x63); //compact
+            }
+            else {
+                str.write(1); //1 payload
+            }
+            
             //paper type
             str.write((int) origami.papertype().toChar());
             //corners
@@ -68,7 +76,15 @@ public class OrigamiIO {
             } else {
                 str.write(0);
             }
-
+            
+            //paper color
+            if (rgb != null) {
+                str.write(0x43); //C
+                str.write(0xFF & rgb[0]);
+                str.write(0xFF & rgb[1]);
+                str.write(0xFF & rgb[2]);
+            }
+            
             //command blocks
             for (int i = 0; i < origami.history_pointer(); i++) {
                 for (int ii=0; ii<16; ii++) {
@@ -83,7 +99,7 @@ public class OrigamiIO {
             str.write(0x46);
 
             str.close();
-            origamieditor3d.compression.LZW.compress(new File(filename + "~"), new File(filename));
+            origamieditor3d.compression.LZW.compress(new File(filename + String.valueOf(rand)), new File(filename));
             ori.delete();
 
         } catch (Exception ex) {
@@ -155,7 +171,7 @@ public class OrigamiIO {
         }
     }
 
-    static public Origami read_gen2(java.io.ByteArrayInputStream ori) throws Exception {
+    static public Origami read_gen2(java.io.ByteArrayInputStream ori, int[] rgb) throws Exception {
 
         try {
 
@@ -163,6 +179,7 @@ public class OrigamiIO {
             ori.reset();
             java.io.InputStream str = origamieditor3d.compression.LZW.extract(ori);
 
+            //reading header
             int fejlec1 = str.read();
             fejlec1 <<= 8;
             fejlec1 += str.read();
@@ -171,24 +188,24 @@ public class OrigamiIO {
             fejlec1 <<= 8;
             fejlec1 += str.read();
 
-            if (fejlec1 != 0x4f453344) {
+            if (fejlec1 != 0x4f453344) { //OE3D
 
                 str.close();
                 throw OrigamiException.H005;
             } else {
 
-                int fejlec2 = str.read();
+                int fejlec2 = str.read(); //version
                 fejlec2 <<= 8;
-                fejlec2 += str.read();
+                fejlec2 += str.read(); //number of payloads
 
-                if (fejlec2 != 0x0363) {
+                if ((fejlec2 & 0xFF00) != 0x0300) { //ver 3
 
                     str.close();
                     return read_gen1(ori);
                 } else {
 
+                    //paper type
                     int papir = str.read();
-
                     if (Origami.PaperType.forChar((char) papir) != Origami.PaperType.Custom) {
 
                         origami = new OrigamiGen2(Origami.PaperType.forChar((char) papir));
@@ -223,7 +240,29 @@ public class OrigamiIO {
 
                         origami = new OrigamiGen2(sarkok);
                     }
+                    
+                    if ((fejlec2 & 0xFF) != 0x63) {
+                        for (int i=0; i<(fejlec2 & 0xFF); i++) {
+                            
+                            int payload_id = str.read();
+                            if (payload_id == 0x43) { //paper color
+                                if (rgb != null) {
+                                    
+                                    rgb[0] = str.read();
+                                    rgb[1] = str.read();
+                                    rgb[2] = str.read();
+                                }
+                                else {
+                                    
+                                    str.read();
+                                    str.read();
+                                    str.read();
+                                }
+                            }
+                        }
+                    }
 
+                    //command blocks
                     int[] block = new int[16];
                     int i=-1;
 
