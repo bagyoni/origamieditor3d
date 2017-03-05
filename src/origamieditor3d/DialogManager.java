@@ -45,6 +45,7 @@ public class DialogManager {
     
     public String getSaveFilePath(String fileExtension) {
         
+        file_dialog.setSelectedFile(new java.io.File(""));
         file_dialog.resetChoosableFileFilters();
         file_dialog.setAcceptAllFileFilterUsed(false);
         file_dialog.addChoosableFileFilter(new FileNameExtensionFilter(Dictionary.getString(fileExtension), fileExtension));
@@ -72,6 +73,7 @@ public class DialogManager {
     
     public String getOpenFilePath(String... fileExtensions) {
         
+        file_dialog.setSelectedFile(new java.io.File(""));
         file_dialog.resetChoosableFileFilters();
         file_dialog.setAcceptAllFileFilterUsed(false);
         for (String ext : fileExtensions) {
@@ -87,6 +89,7 @@ public class DialogManager {
     
     public String getOpenImagePath() {
         
+        file_dialog.setSelectedFile(new java.io.File(""));
         file_dialog.resetChoosableFileFilters();
         file_dialog.setAcceptAllFileFilterUsed(false);
         file_dialog.addChoosableFileFilter(new FileNameExtensionFilter(Dictionary.getString("img"), javax.imageio.ImageIO.getReaderFormatNames()));

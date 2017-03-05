@@ -1,5 +1,5 @@
 // This file is part of Origami Editor 3D.
-// Copyright (C) 2013, 2014, 2015 Bágyoni Attila <ba-sz-at@users.sourceforge.net>
+// Copyright (C) 2013-2017 Bágyoni Attila <ba-sz-at@users.sourceforge.net>
 // Origami Editor 3D is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
@@ -1241,7 +1241,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         c.gridwidth = 2;
         c.gridheight = 2;
         ui_options.getContentPane().add(paletta, c);
-        final javax.swing.JCheckBox savecolor = new javax.swing.JCheckBox("ui.view.options.save");
+        final javax.swing.JCheckBox savecolor = new javax.swing.JCheckBox(Dictionary.getString("ui.view.options.save"));
         savecolor.setSelected(true);
         save_paper_color = true;
         savecolor.addActionListener(new java.awt.event.ActionListener() {
@@ -3602,6 +3602,12 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         if (fpath != null) {
             
             try {
+                if (save_paper_color) {
+                    terminal1.execute("color " + String.valueOf(oPanel1.getFrontColor()));
+                }
+                else {
+                    terminal1.execute("uncolor");
+                }
                 terminal1.execute("filename [" + fpath + "] export-jar",
                         OrigamiScriptTerminal.Access.ROOT);
                 oPanel1.update(terminal1.TerminalOrigami);

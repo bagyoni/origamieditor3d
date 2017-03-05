@@ -1,6 +1,7 @@
 package origamieditor3d.origami;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class Geometry {
 
@@ -170,42 +171,40 @@ public class Geometry {
      * winding order as viewed from their center.
      *
      * @param polygon
-     *            An {@link ArrayList} whose each element is an array containing
-     *            the 2-dimensional coordinates of a point.
+     *            A list containing the 2D coordinates of each point.
      * @return An {@link ArrayList} containing the same elements as {@code
      * polygon}, but in a counter-clockwise winding order.
      * @since 2013-10-11
      */
-    static public ArrayList<double[]> ccwWindingOrder(ArrayList<double[]> polygon) {
-    
+    static public ArrayList<double[]> ccwWindingOrder(List<double[]> polygon) {
+
         ArrayList<double[]> ordered = new ArrayList<>();
         ArrayList<Double> angles = new ArrayList<>();
-        angles.add(0d);
-    
+        
         if (polygon.size() > 0) {
     
-            double[] center = new double[] { 0, 0 };
+            double[] center = { 0, 0 };
     
-            for (double[] point : polygon) {
-    
-                center = new double[] { center[0] + point[0] / polygon.size(), center[1] + point[1] / polygon.size() };
+            for (double[] vert : polygon) {
+                center = new double[] { center[0] + vert[0]/polygon.size(), center[1] + vert[1]/polygon.size()};
             }
-    
-            for (int i = 1; i < polygon.size(); i++) {
+            
+            for (int i = 0; i < polygon.size(); i++) {
     
                 angles.add(angle(vector(polygon.get(i), center),
-                        vector(polygon.get(0), center)));
+                        new double[] { 1, 0, 0 }));
             }
-    
+
             while (ordered.size() < polygon.size()) {
     
-                double minangle = -1.0;
+                Double minangle = null;
                 double[] minpoint = nullvector;
                 int mindex = -1;
     
                 for (int i = 0; i < angles.size(); i++) {
-    
-                    if ((angles.get(i) < minangle || minangle == -1.0) && angles.get(i) != -1.0) {
+
+                    boolean smaller = (angles.get(i) != null) ? (minangle != null ? angles.get(i) < minangle : true) : false;
+                    if (smaller) {
     
                         minangle = angles.get(i);
                         minpoint = polygon.get(i);
@@ -214,7 +213,7 @@ public class Geometry {
                 }
     
                 ordered.add(new double[] { minpoint[0], minpoint[1] });
-                angles.set(mindex, -1.0);
+                angles.set(mindex, null);
             }
         }
         return ordered;
@@ -225,12 +224,11 @@ public class Geometry {
      * vertices of a convex polygon listed in a counter-clockwise winding order.
      *
      * @param polygon
-     *            An {@link ArrayList} whose each element is an array containing
-     *            the 2-dimensional coordinates of a point.
+     *            A list containing the 2D coordinates of each point.
      * @return As described above.
      * @since 2013-10-12
      */
-    static public boolean isConvex(ArrayList<double[]> polygon) {
+    static public boolean isConvex(List<double[]> polygon) {
     
         if (polygon.size() > 3) {
     
@@ -280,5 +278,65 @@ public class Geometry {
             double dist2 = vector_length(vector(point, s2));
             return dist1 < dist2 ? dist1 : dist2;
         }
+    }
+    
+    /**
+     * Determines whether the specified convex polygon contains the specified
+     * point.
+     * @param point The 2D coordinates of the point.
+     * @param polygon A list containing the 2D coordinates of each point of the
+     * convex polygon in a (counter-)clockwise winding order.
+     * @return true iff the point is in the polygon (including its border).
+     * @since 2017-03-04
+     */
+    static public boolean point_in_polygon(double[] point, List<double[]> polygon) {
+        
+        if (polygon.size() > 2) {
+            
+            int sgn = 0;
+            for (int i=0; i<polygon.size()-1; i++) {
+                
+                double cos = vector_product(vector(polygon.get(i+1), polygon.get(i)), 
+                        vector(point, polygon.get(i)))[2];
+                if (cos > 0) {
+                    
+                    if (sgn >= 0) {
+                        sgn = 1;
+                    }
+                    else {
+                        return false;
+                    }
+                }
+                if (cos < 0) {
+                    if (sgn <= 0) {
+                        sgn = -1;
+                    }
+                    else {
+                        return false;
+                    }
+                }
+            }
+            double cos = vector_product(vector(polygon.get(0), polygon.get(polygon.size()-1)), 
+                    vector(point, polygon.get(polygon.size()-1)))[2];
+            if (cos > 0) {
+                
+                if (sgn >= 0) {
+                    sgn = 1;
+                }
+                else {
+                    return false;
+                }
+            }
+            if (cos < 0) {
+                if (sgn <= 0) {
+                    sgn = -1;
+                }
+                else {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
     }
 }

@@ -1534,7 +1534,11 @@ public class OrigamiScriptTerminal {
             if (new java.io.File(filename).exists() && access != Access.ROOT && access != Access.DEV) {
                 throw OrigamiException.H011;
             }
-            Export.exportJAR(TerminalOrigami, filename);
+            int[] rgb = { (paper_color >>> 16) & 0xFF, (paper_color >>> 8) & 0xFF, paper_color & 0xFF };
+            if (paper_color == default_paper_color) {
+                rgb = null;
+            }
+            Export.exportJAR(TerminalOrigami, filename, rgb);
         } else {
             throw OrigamiException.H010;
         }

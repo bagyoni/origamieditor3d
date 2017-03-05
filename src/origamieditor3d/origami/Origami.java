@@ -2333,12 +2333,10 @@ public class Origami {
         for (int i=0; i<testpoly.size(); i++) {
             testpoints.add(vertices2d.get(testpoly.get(i)));
         }
-        testpoints.add(point2d);
-        
-        if (Geometry.isConvex(Geometry.ccwWindingOrder(testpoints))) {
-            return closest_poly2;
+        if (Geometry.point_in_polygon(point2d, testpoints)) {
+            return closest_poly1;
         }
-        return closest_poly1;
+        return closest_poly2;
     }
     
     /**

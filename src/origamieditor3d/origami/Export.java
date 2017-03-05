@@ -1703,7 +1703,7 @@ public class Export {
         }
     }
 
-    static public void exportJAR(Origami origami, String filename) throws Exception {
+    static public void exportJAR(Origami origami, String filename, int[] rgb) throws Exception {
 
         try {
 
@@ -1735,7 +1735,7 @@ public class Export {
             is.close();
             os.close();
 
-            OrigamiIO.write_gen2(origami, tempOri.getPath(), null);
+            OrigamiIO.write_gen2(origami, tempOri.getPath(), rgb);
 
             java.util.zip.ZipFile jar = new java.util.zip.ZipFile(tempJar);
             java.io.FileOutputStream fos = new java.io.FileOutputStream(finalJar);

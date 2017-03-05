@@ -25,7 +25,7 @@ import java.util.ArrayList;
  */
 public class Camera {
 
-    final static public int paper_back_color = 0xF7D6A6;
+    final static public int paper_back_color = 0xD8D2B0;
     final static public int maximal_zoom = 4;
 
     public Camera(int x, int y, double zoom) {

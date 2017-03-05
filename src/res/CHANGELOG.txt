@@ -1,3 +1,0 @@
-- Paper color and camera angle can now be saved.
-- Moved Timeline inside the main window.
-- Added 1 new example file.
