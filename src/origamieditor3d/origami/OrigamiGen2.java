@@ -142,7 +142,7 @@ public class OrigamiGen2 extends Origami {
 
         OrigamiGen2 copy = new OrigamiGen2(papertype);
         copy.corners = (ArrayList<double[]>) corners.clone();
-        copy.history = (ArrayList<double[]>) history.clone();
+        copy.history = (ArrayList<FoldingAction>) history.clone();
         copy.history_stream = (ArrayList<int[]>) history_stream.clone();
         copy.history_pointer = history_pointer;
         copy.vertices_size = vertices_size;

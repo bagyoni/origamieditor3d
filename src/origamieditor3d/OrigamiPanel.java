@@ -542,5 +542,4 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
         return null;
     }
     
-    
 }

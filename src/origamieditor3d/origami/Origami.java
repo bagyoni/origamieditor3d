@@ -26,18 +26,6 @@ import java.util.HashMap;
 public class Origami {
 
     /**
-     * Indicates that a method is a user-level folding operation.
-     */
-    private @interface FoldingOperation {
-
-        /**
-         *
-         * @return
-         */
-        int value();
-    }
-
-    /**
      * Creates a new origami model. <br>
      * The new model will be initialized with an empty {@link #history()
      * histroy}, a {@link #papertype() papertype} of the specified
@@ -97,7 +85,7 @@ public class Origami {
 
         papertype = origami.papertype;
         corners = origami.corners;
-        history = (ArrayList<double[]>) origami.history.clone();
+        history = (ArrayList<FoldingAction>) origami.history.clone();
         history_stream = (ArrayList<int[]>) origami.history_stream.clone();
         reset();
     }
@@ -163,8 +151,35 @@ public class Origami {
     public int polygons_size() {
         return polygons_size;
     }
-
-    protected ArrayList<double[]> history = new ArrayList<>();
+    
+    final static public int FOLD_REFLECTION   = 1;
+    final static public int FOLD_ROTATION     = 2;
+    final static public int FOLD_REFLECTION_P = 3;
+    final static public int FOLD_ROTATION_P   = 4;
+    final static public int FOLD_CREASE       = 5;
+    final static public int FOLD_MUTILATION   = 6;
+    final static public int FOLD_MUTILATION_P = 7;
+    
+    public abstract class FoldingAction {
+        
+        public FoldingAction(int foldID, double[] ppoint, double[] pnormal, int polygonIndex, int phi) {
+            
+            this.foldID = foldID;
+            this.ppoint = ppoint;
+            this.pnormal = pnormal;
+            this.polygonIndex = polygonIndex;
+            this.phi = phi;
+        }
+        
+        abstract public void execute();
+        final public int foldID;
+        final public double[] ppoint;
+        final public double[] pnormal;
+        final public int polygonIndex;
+        final public int phi;
+    }
+    
+    protected ArrayList<FoldingAction> history = new ArrayList<>();
 
     /**
      * Whenever a FoldingOperation is called on the origami, its identifier and
@@ -174,7 +189,7 @@ public class Origami {
      *
      * @return As described above.
      */
-    public ArrayList<double[]> history() {
+    public ArrayList<FoldingAction> history() {
         return history;
     }
 
@@ -474,78 +489,107 @@ public class Origami {
             pnormal = new double[] { -pnormal[0], -pnormal[1], -pnormal[2] };
         }
 
-        double[] command;
+        FoldingAction comnd;
         if ((header >>> 24) % 8 == 1) {
 
             // reflection fold
-            command = new double[7];
-            command[0] = 1;
+            comnd = new FoldingAction(FOLD_REFLECTION, ppoint, pnormal, 0, 0) {
+                @Override
+                public void execute() {
+                    internalReflectionFold(ppoint, pnormal);
+                }
+            };
         }
         else if ((header >>> 24) % 8 == 2) {
 
             // positive rot. fold
-            command = new double[8];
-            command[0] = 2;
-            command[7] = (header >>> 16) % 256;
+            int phi = (header >>> 16) % 256;
+            comnd = new FoldingAction(FOLD_ROTATION, ppoint, pnormal, 0, phi) {
+                @Override
+                public void execute() {
+                    internalRotationFold(ppoint, pnormal, phi);
+                }
+            };
         }
         else if ((header >>> 24) % 8 == 3) {
 
             // negative rot. fold
-            command = new double[8];
-            command[0] = 2;
-            command[7] = -(header >>> 16) % 256;
+            int phi = -(header >>> 16) % 256;
+            comnd = new FoldingAction(FOLD_ROTATION, ppoint, pnormal, 0, phi) {
+                @Override
+                public void execute() {
+                    internalRotationFold(ppoint, pnormal, phi);
+                }
+            };
         }
         else if ((header >>> 24) % 8 == 4) {
 
             // partial reflection fold
-            command = new double[8];
-            command[0] = 3;
-            command[7] = (header % 65536);
+            int polygonIndex = (header % 65536);
+            comnd = new FoldingAction(FOLD_REFLECTION_P, ppoint, pnormal, polygonIndex, 0) {
+                @Override
+                public void execute() {
+                    internalReflectionFold(ppoint, pnormal, polygonIndex);
+                }
+            };
         }
         else if ((header >>> 24) % 8 == 5) {
 
             // positive partial rot. fold
-            command = new double[9];
-            command[0] = 4;
-            command[7] = (header >>> 16) % 256;
-            command[8] = (header % 65536);
+            int phi = (header >>> 16) % 256;
+            int polygonIndex = (header % 65536);
+            comnd = new FoldingAction(FOLD_ROTATION_P, ppoint, pnormal, polygonIndex, phi) {
+                @Override
+                public void execute() {
+                    internalRotationFold(ppoint, pnormal, phi, polygonIndex);
+                }
+            };
         }
         else if ((header >>> 24) % 8 == 6) {
 
             // negative partial rot. fold
-            command = new double[9];
-            command[0] = 4;
-            command[7] = -(header >>> 16) % 256;
-            command[8] = (header % 65536);
+            int phi = -(header >>> 16) % 256;
+            int polygonIndex = (header % 65536);
+            comnd = new FoldingAction(FOLD_ROTATION_P, ppoint, pnormal, polygonIndex, phi) {
+                @Override
+                public void execute() {
+                    internalRotationFold(ppoint, pnormal, phi, polygonIndex);
+                }
+            };
         }
         else if ((header >>> 24) % 8 == 7) {
 
             // crease
-            command = new double[7];
-            command[0] = 5;
+            comnd = new FoldingAction(FOLD_CREASE, ppoint, pnormal, 0, 0) {
+                @Override
+                public void execute() {
+                    internalRotationFold(ppoint, pnormal, 0);
+                }
+            };
         }
         else if (header % 65536 == 65535) {
 
             // cut
-            command = new double[7];
-            command[0] = 6;
+            comnd = new FoldingAction(FOLD_MUTILATION, ppoint, pnormal, 0, 0) {
+                @Override
+                public void execute() {
+                    internalMutilation(ppoint, pnormal);
+                }
+            };
         }
         else {
 
             // partial cut
-            command = new double[8];
-            command[0] = 7;
-            command[7] = (header % 65536);
+            int polygonIndex = (header % 65536);
+            comnd = new FoldingAction(FOLD_MUTILATION_P, ppoint, pnormal, polygonIndex, 0) {
+                @Override
+                public void execute() {
+                    internalMutilation(ppoint, pnormal, polygonIndex);
+                }
+            };
         }
 
-        command[1] = ppoint[0];
-        command[2] = ppoint[1];
-        command[3] = ppoint[2];
-        command[4] = pnormal[0];
-        command[5] = pnormal[1];
-        command[6] = pnormal[2];
-
-        history.add(command);
+        history.add(comnd);
         history_stream.add(cblock);
     }
 
@@ -1334,72 +1378,65 @@ public class Origami {
      * @param ppoint
      * @param pnormal
      */
-    @FoldingOperation(1)
     public void reflectionFold(double[] ppoint, double[] pnormal) {
 
         history.subList(history_pointer, history.size()).clear();
         history_stream.subList(history_pointer, history_stream.size()).clear();
-        addCommand(1, ppoint, pnormal, 0, 0);
+        addCommand(FOLD_REFLECTION, ppoint, pnormal, 0, 0);
         execute(history_pointer, 1);
         history_pointer++;
     }
 
-    @FoldingOperation(3)
     public void reflectionFold(double[] ppoint, double[] pnormal, int polygonIndex) {
 
         history.subList(history_pointer, history.size()).clear();
         history_stream.subList(history_pointer, history_stream.size()).clear();
-        addCommand(3, ppoint, pnormal, polygonIndex, 0);
+        addCommand(FOLD_REFLECTION_P, ppoint, pnormal, polygonIndex, 0);
         execute(history_pointer, 1);
         history_pointer++;
     }
 
-    @FoldingOperation(2)
     public void rotationFold(double[] ppoint, double[] pnormal, int phi) {
 
         history.subList(history_pointer, history.size()).clear();
         history_stream.subList(history_pointer, history_stream.size()).clear();
-        addCommand(2, ppoint, pnormal, 0, phi);
+        addCommand(FOLD_ROTATION, ppoint, pnormal, 0, phi);
         execute(history_pointer, 1);
         history_pointer++;
     }
 
-    @FoldingOperation(4)
     public void rotationFold(double[] ppoint, double[] pnormal, int phi, int polygonIndex) {
 
         history.subList(history_pointer, history.size()).clear();
         history_stream.subList(history_pointer, history_stream.size()).clear();
-        addCommand(4, ppoint, pnormal, polygonIndex, phi);
+        addCommand(FOLD_ROTATION_P, ppoint, pnormal, polygonIndex, phi);
         execute(history_pointer, 1);
         history_pointer++;
     }
 
-    @FoldingOperation(5)
     public void crease(double[] ppoint, double[] pnormal) {
 
         history.subList(history_pointer, history.size()).clear();
         history_stream.subList(history_pointer, history_stream.size()).clear();
-        addCommand(5, ppoint, pnormal, 0, 0);
+        addCommand(FOLD_CREASE, ppoint, pnormal, 0, 0);
         execute(history_pointer, 1);
         history_pointer++;
     }
 
-    @FoldingOperation(6)
     public void mutilation(double[] ppoint, double[] pnormal) {
 
         history.subList(history_pointer, history.size()).clear();
         history_stream.subList(history_pointer, history_stream.size()).clear();
-        addCommand(6, ppoint, pnormal, 0, 0);
+        addCommand(FOLD_MUTILATION, ppoint, pnormal, 0, 0);
         execute(history_pointer, 1);
         history_pointer++;
     }
 
-    @FoldingOperation(7)
     public void mutilation(double[] ppoint, double[] pnormal, int polygonIndex) {
 
         history.subList(history_pointer, history.size()).clear();
         history_stream.subList(history_pointer, history_stream.size()).clear();
-        addCommand(7, ppoint, pnormal, polygonIndex, 0);
+        addCommand(FOLD_MUTILATION_P, ppoint, pnormal, polygonIndex, 0);
         execute(history_pointer, 1);
         history_pointer++;
     }
@@ -1549,35 +1586,8 @@ public class Origami {
 
         for (int i = 0; i < history_pointer; i++) {
 
-            double[] parancs = history.get(i);
-            if (parancs[0] == 1) {
-                internalReflectionFold(new double[] { parancs[1], parancs[2], parancs[3] },
-                        new double[] { parancs[4], parancs[5], parancs[6] });
-            }
-            else if (parancs[0] == 2) {
-                internalRotationFold(new double[] { parancs[1], parancs[2], parancs[3] },
-                        new double[] { parancs[4], parancs[5], parancs[6] }, (int) (parancs[7]));
-            }
-            else if (parancs[0] == 3) {
-                internalReflectionFold(new double[] { parancs[1], parancs[2], parancs[3] },
-                        new double[] { parancs[4], parancs[5], parancs[6] }, (int) (parancs[7]));
-            }
-            else if (parancs[0] == 4) {
-                internalRotationFold(new double[] { parancs[1], parancs[2], parancs[3] },
-                        new double[] { parancs[4], parancs[5], parancs[6] }, (int) (parancs[7]), (int) (parancs[8]));
-            }
-            else if (parancs[0] == 5) {
-                internalRotationFold(new double[] { parancs[1], parancs[2], parancs[3] },
-                        new double[] { parancs[4], parancs[5], parancs[6] }, 0);
-            }
-            else if (parancs[0] == 6) {
-                internalMutilation(new double[] { parancs[1], parancs[2], parancs[3] },
-                        new double[] { parancs[4], parancs[5], parancs[6] });
-            }
-            else if (parancs[0] == 7) {
-                internalMutilation(new double[] { parancs[1], parancs[2], parancs[3] },
-                        new double[] { parancs[4], parancs[5], parancs[6] }, (int) (parancs[7]));
-            }
+            FoldingAction fa = history.get(i);
+            fa.execute();
         }
     }
 
@@ -1594,37 +1604,9 @@ public class Origami {
 
         if (index + steps <= history.size()) {
             for (int i = index; i < index + steps && i >= 0; i++) {
-                double[] parancs = history.get(i);
-
-                if (parancs[0] == 1) {
-                    internalReflectionFold(new double[] { parancs[1], parancs[2], parancs[3] },
-                            new double[] { parancs[4], parancs[5], parancs[6] });
-                }
-                else if (parancs[0] == 2) {
-                    internalRotationFold(new double[] { parancs[1], parancs[2], parancs[3] },
-                            new double[] { parancs[4], parancs[5], parancs[6] }, (int) (parancs[7]));
-                }
-                else if (parancs[0] == 3) {
-                    internalReflectionFold(new double[] { parancs[1], parancs[2], parancs[3] },
-                            new double[] { parancs[4], parancs[5], parancs[6] }, (int) (parancs[7]));
-                }
-                else if (parancs[0] == 4) {
-                    internalRotationFold(new double[] { parancs[1], parancs[2], parancs[3] },
-                            new double[] { parancs[4], parancs[5], parancs[6] }, (int) (parancs[7]),
-                            (int) (parancs[8]));
-                }
-                else if (parancs[0] == 5) {
-                    internalRotationFold(new double[] { parancs[1], parancs[2], parancs[3] },
-                            new double[] { parancs[4], parancs[5], parancs[6] }, 0);
-                }
-                else if (parancs[0] == 6) {
-                    internalMutilation(new double[] { parancs[1], parancs[2], parancs[3] },
-                            new double[] { parancs[4], parancs[5], parancs[6] });
-                }
-                else if (parancs[0] == 7) {
-                    internalMutilation(new double[] { parancs[1], parancs[2], parancs[3] },
-                            new double[] { parancs[4], parancs[5], parancs[6] }, (int) (parancs[7]));
-                }
+                
+                FoldingAction fa = history.get(i);
+                fa.execute();
             }
         }
     }
@@ -1642,7 +1624,9 @@ public class Origami {
         if (history_pointer > 0) {
 
             history_pointer--;
-            while (0 < history_pointer ? history.get(history_pointer - 1)[0] == 5d : false) {
+            while (0 < history_pointer 
+                    ? history.get(history_pointer - 1).foldID == FOLD_CREASE
+                    : false) {
                 history_pointer--;
             }
             reset();
@@ -1673,7 +1657,7 @@ public class Origami {
         if (history.size() > history_pointer) {
 
             history_pointer++;
-            while (history.get(history_pointer - 1)[0] == 5d) {
+            while (history.get(history_pointer - 1).foldID == FOLD_CREASE) {
                 history_pointer++;
             }
             reset();
@@ -1903,7 +1887,7 @@ public class Origami {
         ArrayList<double[]> line = new ArrayList<>();
         for (int polygonIndex = 0; polygonIndex < polygons_size; polygonIndex++) {
 
-            if (isCut(ppoint1, pnormal1, polygonIndex)) {
+            if (isNonDegenerate(polygonIndex)) {
 
                 double[] start = null, end = null;
                 for (int i = 0; i < polygons.get(polygonIndex).size(); i++) {
@@ -1948,7 +1932,7 @@ public class Origami {
         ArrayList<double[]> line = new ArrayList<>();
         for (int polygonIndex = 0; polygonIndex < polygons_size; polygonIndex++) {
 
-            if (isCut(ppoint1, pnormal1, polygonIndex)) {
+            if (isNonDegenerate(polygonIndex)) {
 
                 double[] start = null, end = null;
                 for (int i = 0; i < polygons.get(polygonIndex).size(); i++) {
@@ -2154,7 +2138,7 @@ public class Origami {
         if (step > origami.history_pointer) {
             return 0;
         }
-        if (origami.history.get(step)[0] == 1) {
+        if (origami.history.get(step).foldID == FOLD_REFLECTION) {
 
             origami.undo(origami.history_pointer - step);
             origami.redo(1);
@@ -2186,16 +2170,14 @@ public class Origami {
 
             return maxcompl;
         }
-        if (origami.history.get(step)[0] == 3) {
+        if (origami.history.get(step).foldID == FOLD_REFLECTION_P) {
 
             origami.undo(origami.history_pointer - step + 1);
             origami.redo(1);
 
-            double[] point = new double[] { origami.history().get(step)[1], origami.history().get(step)[2],
-                    origami.history().get(step)[3] };
-            double[] normal = new double[] { origami.history().get(step)[4], origami.history().get(step)[5],
-                    origami.history().get(step)[6] };
-            int index = (int) origami.history().get(step)[7];
+            double[] point = origami.history().get(step).ppoint;
+            double[] normal = origami.history().get(step).pnormal;
+            int index = origami.history().get(step).polygonIndex;
 
             ArrayList<int[]> pairs = (ArrayList<int[]>) origami.cutpolygon_pairs.clone();
             ArrayList<Integer> selection = origami.polygonSelect(point, normal, index);
@@ -2397,7 +2379,7 @@ public class Origami {
 
         Origami copy = new Origami(papertype);
         copy.corners = (ArrayList<double[]>) corners.clone();
-        copy.history = (ArrayList<double[]>) history.clone();
+        copy.history = (ArrayList<FoldingAction>) history.clone();
         copy.history_stream = (ArrayList<int[]>) history_stream.clone();
         copy.history_pointer = history_pointer;
         copy.vertices_size = vertices_size;
