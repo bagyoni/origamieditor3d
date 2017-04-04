@@ -10,34 +10,28 @@
 // GNU General Public License for more details.
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http:// www.gnu.org/licenses/>.
-package origamieditor3d;
+package origamieditor3d.panel;
 
 import java.awt.Color;
 import java.awt.Graphics;
 
-import javax.swing.JPanel;
-
 import origamieditor3d.origami.Camera;
 import origamieditor3d.origami.Geometry;
-import origamieditor3d.origami.Origami;
-
 /**
  * @author Attila Bágyoni (ba-sz-at@users.sourceforge.net)
  */
-public class PaperPanel extends JPanel implements BasicEditing {
+public class PaperPanel extends Panel {
 
     private static final long serialVersionUID = 1L;
-    private Origami PanelOrigami;
-    protected Camera PanelCamera;
+    
     private Integer tracker_x, tracker_y;
     private double[] tracker_im;
-    private boolean ready_to_paint;
+    
     private boolean trackerOn;
     private double[] liner_point, liner_normal;
     private Integer[][] liner_triangle;
     private int liner_grab_index;
-    private RulerMode linerMode;
-
+    
     public Integer tracker_x() {
         return tracker_x;
     }
@@ -75,14 +69,7 @@ public class PaperPanel extends JPanel implements BasicEditing {
         liner_grab_index = 0;
         liner_point = null;
         liner_normal = null;
-        linerMode = RulerMode.Normal;
-    }
-
-    @Override
-    public void update(Origami origami) {
-
-        PanelOrigami = origami;
-        ready_to_paint = true;
+        rulerMode = RulerMode.Normal;
     }
 
     @Override
@@ -110,11 +97,6 @@ public class PaperPanel extends JPanel implements BasicEditing {
     }
 
     @Override
-    public void setRulerMode(RulerMode mode) {
-        linerMode = mode;
-    }
-
-    @Override
     public void rulerOn(Camera refcam, int x1, int y1, int x2, int y2) {
 
         double pontX = ((double) x2 - refcam.xshift) / refcam.zoom();
@@ -137,7 +119,7 @@ public class PaperPanel extends JPanel implements BasicEditing {
             refcam.axis_x()[1] / refcam.zoom() * pont1X + refcam.axis_y()[1] / refcam.zoom() * pont1Y + refcam.camera_pos()[1],
             refcam.axis_x()[2] / refcam.zoom() * pont1X + refcam.axis_y()[2] / refcam.zoom() * pont1Y + refcam.camera_pos()[2]
         };
-        if (linerMode == RulerMode.Neusis) {
+        if (rulerMode == RulerMode.Neusis) {
             vonalzoNV = Geometry.vector(vonalzoPT, vonalzoPT1);
         }
         liner_point = vonalzoPT;
@@ -176,7 +158,7 @@ public class PaperPanel extends JPanel implements BasicEditing {
                                     ((double) liner_triangle[2][1] - PanelCamera.yshift + PanelCamera.projection0(PanelCamera.camera_pos())[1]) / PanelCamera.zoom()
                                 });
 
-                if (linerMode == RulerMode.Planethrough) {
+                if (rulerMode == RulerMode.Planethrough) {
                     if (Geometry.vector_length(Geometry.vector_product(
                             Geometry.vector(pt2, pt1), Geometry.vector(pt3, pt1))) != 0d) {
 
@@ -186,7 +168,7 @@ public class PaperPanel extends JPanel implements BasicEditing {
                     } else {
                         rulerOff();
                     }
-                } else if (linerMode == RulerMode.Angle_bisector) {
+                } else if (rulerMode == RulerMode.Angle_bisector) {
                     liner_point = pt2;
                     liner_normal = Geometry.vector(
                             Geometry.length_to_100(Geometry.vector(pt1, pt2)),
@@ -220,7 +202,7 @@ public class PaperPanel extends JPanel implements BasicEditing {
         liner_triangle[2] = null;
         trackerOn = false;
     }
-
+    
     @Override
     public void paintComponent(Graphics g) {
 

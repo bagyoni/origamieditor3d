@@ -10,7 +10,7 @@
 // GNU General Public License for more details.
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http:// www.gnu.org/licenses/>.
-package origamieditor3d;
+package origamieditor3d.panel;
 
 import java.awt.Color;
 import java.awt.Graphics;
@@ -18,16 +18,13 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.util.Random;
 
-import javax.swing.JPanel;
-
 import origamieditor3d.origami.Camera;
 import origamieditor3d.origami.Geometry;
-import origamieditor3d.origami.Origami;
 
 /**
  * @author Attila Bágyoni (ba-sz-at@users.sourceforge.net)
  */
-public class OrigamiPanel extends JPanel implements BasicEditing {
+public class OrigamiPanel extends Panel {
 
     private static final long serialVersionUID = 1L;
 
@@ -49,7 +46,7 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
         paper_front_color = 0xFFFFFF;
         previewOn = false;
         displaymode = DisplayMode.GRADIENT;
-        linerMode = RulerMode.Normal;
+        rulerMode = RulerMode.Normal;
         antialiasOn = true;
     }
     final static private int[] random_front_colors =
@@ -59,13 +56,9 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
                 0xFFFFCC, //yellow
                 0xA840F4, 0xC40A86 }; //purple
     final private double[][] liner_triangle;
-    private Origami PanelOrigami;
-    protected Camera PanelCamera;
-    private boolean ready_to_paint;
     private Integer ruler_x1, ruler_y1, ruler_x2, ruler_y2;
     private boolean linerOn;
-    private Integer tracker_x, tracker_y;
-    private boolean trackerOn;
+    
     private double[] tracker_im;
     private int liner_grab_index;
     private int[] alignment_point;
@@ -73,7 +66,6 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
     private boolean previewOn;
     private DisplayMode displaymode;
     private Integer protractor_angle;
-    private RulerMode linerMode;
     private boolean antialiasOn;
 
     public enum DisplayMode {
@@ -89,16 +81,6 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
     @Override
     public void grabTriangleAt(int vertIndex) {
         liner_grab_index = vertIndex;
-    }
-
-    @Override
-    public void update(Origami origami) {
-
-        PanelOrigami = origami;
-        if (displaymode == DisplayMode.UV) {
-            PanelCamera.updateBuffer(PanelOrigami);
-        }
-        ready_to_paint = true;
     }
 
     @Override
@@ -150,11 +132,6 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
         tracker_x = null;
         tracker_y = null;
         trackerOn = false;
-    }
-
-    @Override
-    public void setRulerMode(RulerMode mode) {
-        linerMode = mode;
     }
 
     @Override
@@ -352,7 +329,7 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
                         + this.PanelCamera.axis_y()[2] / this.PanelCamera.zoom() * pont1Y
                         + this.PanelCamera.camera_pos()[2]
                 };
-                if (linerMode == RulerMode.Neusis) {
+                if (rulerMode == RulerMode.Neusis) {
                     vonalzoNV = Geometry.vector(vonalzoPT, vonalzoPT1);
                 }
 
@@ -360,7 +337,7 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
             }
 
             g.setColor(Color.red);
-            if (linerMode == RulerMode.Neusis) {
+            if (rulerMode == RulerMode.Neusis) {
                 int maxdim = Math.max(this.getWidth(), this.getHeight())
                         /Math.max(Math.max(Math.abs(ruler_y1 - ruler_y2), Math.abs(ruler_x1 - ruler_x2)), 1) + 1;
                 g.drawLine(ruler_x2 + maxdim * (ruler_y1 - ruler_y2), ruler_y2 + maxdim * (ruler_x2 - ruler_x1),
@@ -467,7 +444,7 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
     
     public double[] getRulerNormalvector() {
         
-        if (linerOn && linerMode == RulerMode.Normal) {
+        if (linerOn && rulerMode == RulerMode.Normal) {
             
             double[] rulerNV = new double[] {
                 PanelCamera.axis_x()[0] * (ruler_y2 - ruler_y1)
@@ -483,7 +460,7 @@ public class OrigamiPanel extends JPanel implements BasicEditing {
             }
             return rulerNV;
         }
-        if (linerOn && linerMode == RulerMode.Neusis) {
+        if (linerOn && rulerMode == RulerMode.Neusis) {
             
             double[] rulerPT = getRulerPoint();
             double[] rulerNV = Geometry.vector(rulerPT, getRulerPoint1());

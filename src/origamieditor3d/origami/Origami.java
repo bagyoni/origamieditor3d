@@ -160,7 +160,7 @@ public class Origami {
     final static public int FOLD_MUTILATION   = 6;
     final static public int FOLD_MUTILATION_P = 7;
     
-    public abstract class FoldingAction {
+    public class FoldingAction {
         
         public FoldingAction(int foldID, double[] ppoint, double[] pnormal, int polygonIndex, int phi) {
             
@@ -171,7 +171,33 @@ public class Origami {
             this.phi = phi;
         }
         
-        abstract public void execute();
+        final public void execute() {
+            
+            switch(foldID) {
+                
+                case FOLD_CREASE:
+                    internalRotationFold(ppoint, pnormal, 0);
+                    break;
+                case FOLD_REFLECTION:
+                    internalReflectionFold(ppoint, pnormal);
+                    break;
+                case FOLD_REFLECTION_P:
+                    internalReflectionFold(ppoint, pnormal, polygonIndex);
+                    break;
+                case FOLD_ROTATION:
+                    internalRotationFold(ppoint, pnormal, phi);
+                    break;
+                case FOLD_ROTATION_P:
+                    internalRotationFold(ppoint, pnormal, phi, polygonIndex);
+                    break;
+                case FOLD_MUTILATION:
+                    internalMutilation(ppoint, pnormal);
+                    break;
+                case FOLD_MUTILATION_P:
+                    internalMutilation(ppoint, pnormal, polygonIndex);
+                    break;
+            }
+        }
         final public int foldID;
         final public double[] ppoint;
         final public double[] pnormal;
@@ -493,106 +519,71 @@ public class Origami {
         if ((header >>> 24) % 8 == 1) {
 
             // reflection fold
-            comnd = new FoldingAction(FOLD_REFLECTION, ppoint, pnormal, 0, 0) {
-                @Override
-                public void execute() {
-                    internalReflectionFold(ppoint, pnormal);
-                }
-            };
+            comnd = new FoldingAction(FOLD_REFLECTION, ppoint, pnormal, 0, 0);
         }
         else if ((header >>> 24) % 8 == 2) {
 
             // positive rot. fold
             int phi = (header >>> 16) % 256;
-            comnd = new FoldingAction(FOLD_ROTATION, ppoint, pnormal, 0, phi) {
-                @Override
-                public void execute() {
-                    internalRotationFold(ppoint, pnormal, phi);
-                }
-            };
+            comnd = new FoldingAction(FOLD_ROTATION, ppoint, pnormal, 0, phi);
         }
         else if ((header >>> 24) % 8 == 3) {
 
             // negative rot. fold
             int phi = -(header >>> 16) % 256;
-            comnd = new FoldingAction(FOLD_ROTATION, ppoint, pnormal, 0, phi) {
-                @Override
-                public void execute() {
-                    internalRotationFold(ppoint, pnormal, phi);
-                }
-            };
+            comnd = new FoldingAction(FOLD_ROTATION, ppoint, pnormal, 0, phi);
         }
         else if ((header >>> 24) % 8 == 4) {
 
             // partial reflection fold
             int polygonIndex = (header % 65536);
-            comnd = new FoldingAction(FOLD_REFLECTION_P, ppoint, pnormal, polygonIndex, 0) {
-                @Override
-                public void execute() {
-                    internalReflectionFold(ppoint, pnormal, polygonIndex);
-                }
-            };
+            comnd = new FoldingAction(FOLD_REFLECTION_P, ppoint, pnormal, polygonIndex, 0);
         }
         else if ((header >>> 24) % 8 == 5) {
 
             // positive partial rot. fold
             int phi = (header >>> 16) % 256;
             int polygonIndex = (header % 65536);
-            comnd = new FoldingAction(FOLD_ROTATION_P, ppoint, pnormal, polygonIndex, phi) {
-                @Override
-                public void execute() {
-                    internalRotationFold(ppoint, pnormal, phi, polygonIndex);
-                }
-            };
+            comnd = new FoldingAction(FOLD_ROTATION_P, ppoint, pnormal, polygonIndex, phi);
         }
         else if ((header >>> 24) % 8 == 6) {
 
             // negative partial rot. fold
             int phi = -(header >>> 16) % 256;
             int polygonIndex = (header % 65536);
-            comnd = new FoldingAction(FOLD_ROTATION_P, ppoint, pnormal, polygonIndex, phi) {
-                @Override
-                public void execute() {
-                    internalRotationFold(ppoint, pnormal, phi, polygonIndex);
-                }
-            };
+            comnd = new FoldingAction(FOLD_ROTATION_P, ppoint, pnormal, polygonIndex, phi);
         }
         else if ((header >>> 24) % 8 == 7) {
 
             // crease
-            comnd = new FoldingAction(FOLD_CREASE, ppoint, pnormal, 0, 0) {
-                @Override
-                public void execute() {
-                    internalRotationFold(ppoint, pnormal, 0);
-                }
-            };
+            comnd = new FoldingAction(FOLD_CREASE, ppoint, pnormal, 0, 0);
         }
         else if (header % 65536 == 65535) {
 
             // cut
-            comnd = new FoldingAction(FOLD_MUTILATION, ppoint, pnormal, 0, 0) {
-                @Override
-                public void execute() {
-                    internalMutilation(ppoint, pnormal);
-                }
-            };
+            comnd = new FoldingAction(FOLD_MUTILATION, ppoint, pnormal, 0, 0);
         }
         else {
 
             // partial cut
             int polygonIndex = (header % 65536);
-            comnd = new FoldingAction(FOLD_MUTILATION_P, ppoint, pnormal, polygonIndex, 0) {
-                @Override
-                public void execute() {
-                    internalMutilation(ppoint, pnormal, polygonIndex);
-                }
-            };
+            comnd = new FoldingAction(FOLD_MUTILATION_P, ppoint, pnormal, polygonIndex, 0);
         }
 
         history.add(comnd);
         history_stream.add(cblock);
     }
 
+    /**
+     * Compresses the arguments into an array of bytes. For {@code ppoint} and
+     * {@code pnormal}, this compression is lossy.
+     * @param foid
+     * @param ppoint
+     * @param pnormal
+     * @param polygonIndex
+     * @param phi
+     * @return
+     */
     protected int[] commandBlock(int foid, double[] ppoint, double[] pnormal, int polygonIndex, int phi) {
 
         double max_d = -1;
