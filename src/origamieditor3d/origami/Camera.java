@@ -94,6 +94,17 @@ public class Camera {
                 projection0(point)[1] - projection0(camera_pos)[1]};
         return img;
     }
+    
+    public double[] deprojection(double... xy) {
+        
+        double X = (xy[0] - xshift
+                + new Camera(xshift, yshift, zoom).projection0(camera_pos)[0]) / zoom;
+
+        double Y = (xy[1] - yshift
+                + new Camera(xshift, yshift, zoom).projection0(camera_pos)[1]) / zoom;
+        
+        return new double[]{X, Y};
+    }
 
     public void rotate(float x, float y) {
 

@@ -1546,189 +1546,88 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
             }
             else if (EditorState == ControlState.RULER_ROT) {
 
-                double[] vonalzoNV = oPanel1.getRulerNormalvector();
-                double[] vonalzoPT = oPanel1.getRulerPoint();
-                
-                if (pPanel1.isTracked()) {
-
-                    try {
-                        double magX = ((double) pPanel1.tracker_x() - pPanel1.panelCamera().xshift
-                                + new Camera(pPanel1.panelCamera().xshift, pPanel1.panelCamera().yshift,
-                                        pPanel1.panelCamera().zoom()).projection0(pPanel1.panelCamera().camera_pos())[0])
-                                / pPanel1.panelCamera().zoom();
-
-                        double magY = ((double) pPanel1.tracker_y() - pPanel1.panelCamera().yshift
-                                + new Camera(pPanel1.panelCamera().xshift, pPanel1.panelCamera().yshift,
-                                        pPanel1.panelCamera().zoom()).projection0(pPanel1.panelCamera().camera_pos())[1])
-                                / pPanel1.panelCamera().zoom();
-
-                        terminal1.execute("plane [" + vonalzoPT[0] + " " + vonalzoPT[1] + " " + vonalzoPT[2] + "] ["
-                                + vonalzoNV[0] + " " + vonalzoNV[1] + " " + vonalzoNV[2] + "]" + (char) 10 + "target ["
-                                + magX + " " + magY + "]" + (char) 10 + "angle " + rotation_angle + (char) 10 + "rotate");
-                        oPanel1.update(terminal1.TerminalOrigami);
+                try {
+                    
+                    double[] rulerPT = oPanel1.getRulerPoint();
+                    double[] rulerNV = oPanel1.getRulerNormalvector();
+                    terminal1.execute(OrigamiScripter.plane(rulerPT, rulerNV));
+                    
+                    if (pPanel1.isTracked()) {
+        
+                        double[] targ = pPanel1.panelCamera().deprojection(
+                                (double)pPanel1.tracker_x(), (double)pPanel1.tracker_y());
+                        
+                        terminal1.execute(OrigamiScripter.target(targ));
                     }
-                    catch (Exception ex) {
-                        oPanel1.update(terminal1.TerminalOrigami);
-                        pPanel1.update(terminal1.TerminalOrigami);
-                        javax.swing.JOptionPane.showMessageDialog(this, ex.getMessage().replace('/', (char) 10),
-                                "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
-                    }
+                    terminal1.execute(OrigamiScripter.angle(rotation_angle));
+                    terminal1.execute(OrigamiScripter.rotate());
+                    oPanel1.update(terminal1.TerminalOrigami);
+                }
+                catch (Exception ex) {
+                    
+                    oPanel1.update(terminal1.TerminalOrigami);
+                    pPanel1.update(terminal1.TerminalOrigami);
+                    javax.swing.JOptionPane.showMessageDialog(this, ex.getMessage().replace('/', (char) 10), "Error",
+                            javax.swing.JOptionPane.ERROR_MESSAGE);
+                }
+                finally {
+                    
                     if (alwaysInMiddle) {
                         oPanel1.panelCamera().adjust(terminal1.TerminalOrigami);
                     }
-                    pPanel1.reset();
-                    oPanel1.reset();
-                    pPanel1.setToolTipText(Dictionary.getString("tooltip.ppanel.select"));
+                    rotation_angle = 0;
+                    oPanel1.hideProtractor();
+                    defaultify();
+                    saved = false;
                 }
-                else {
-
-                    try {
-                        terminal1.execute("plane [" + vonalzoPT[0] + " " + vonalzoPT[1] + " " + vonalzoPT[2] + "] ["
-                                + vonalzoNV[0] + " " + vonalzoNV[1] + " " + vonalzoNV[2] + "]" + (char) 10 + "angle "
-                                + rotation_angle + (char) 10 + "rotate");
-                        oPanel1.update(terminal1.TerminalOrigami);
-                    }
-                    catch (Exception ex) {
-                        oPanel1.update(terminal1.TerminalOrigami);
-                        pPanel1.update(terminal1.TerminalOrigami);
-                        javax.swing.JOptionPane.showMessageDialog(this, ex.getMessage().replace('/', (char) 10),
-                                "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
-                    }
-                }
-                if (alwaysInMiddle) {
-                    oPanel1.panelCamera().adjust(terminal1.TerminalOrigami);
-                }
-                rotation_angle = 0;
-                oPanel1.hideProtractor();
-                defaultify();
-                saved = false;
             }
             else if (EditorState == ControlState.TRI_ROT) {
 
-                String pszo = "";
-                if (SecondaryState == ControlState.PLANETHRU) {
-                    pszo = "planethrough";
-                }
-                if (SecondaryState == ControlState.ANGLE_BISECT) {
-                    pszo = "angle-bisector";
-                }
-                if (pPanel1.isTracked()) {
-
-                    try {
-                        double magX = ((double) pPanel1.tracker_x() - pPanel1.panelCamera().xshift
-                                + new Camera(pPanel1.panelCamera().xshift, pPanel1.panelCamera().yshift,
-                                        pPanel1.panelCamera().zoom()).projection0(pPanel1.panelCamera().camera_pos())[0])
-                                / pPanel1.panelCamera().zoom();
-
-                        double magY = ((double) pPanel1.tracker_y() - pPanel1.panelCamera().yshift
-                                + new Camera(pPanel1.panelCamera().xshift, pPanel1.panelCamera().yshift,
-                                        pPanel1.panelCamera().zoom()).projection0(pPanel1.panelCamera().camera_pos())[1])
-                                / pPanel1.panelCamera().zoom();
-
-                        terminal1.execute(pszo + " [" + (((double) pPanel1.linerTriangle()[0][0]
-                                - pPanel1.panelCamera().xshift
-                                + new Camera(pPanel1.panelCamera().xshift, pPanel1.panelCamera().yshift,
-                                        pPanel1.panelCamera().zoom()).projection0(pPanel1.panelCamera().camera_pos())[0])
-                                / pPanel1.panelCamera().zoom())
-                                + " "
-                                + (((double) pPanel1.linerTriangle()[0][1] - pPanel1.panelCamera().yshift
-                                        + new Camera(pPanel1.panelCamera().xshift, pPanel1.panelCamera().yshift,
-                                                pPanel1.panelCamera().zoom())
-                                                        .projection0(pPanel1.panelCamera().camera_pos())[1])
-                                        / pPanel1.panelCamera().zoom())
-                                + "] ["
-                                + (((double) pPanel1.linerTriangle()[1][0] - pPanel1.panelCamera().xshift
-                                        + new Camera(pPanel1.panelCamera().xshift, pPanel1.panelCamera().yshift,
-                                                pPanel1.panelCamera().zoom())
-                                                        .projection0(pPanel1.panelCamera().camera_pos())[0])
-                                        / pPanel1.panelCamera().zoom())
-                                + " "
-                                + (((double) pPanel1.linerTriangle()[1][1] - pPanel1.panelCamera().yshift
-                                        + new Camera(pPanel1.panelCamera().xshift, pPanel1.panelCamera().yshift,
-                                                pPanel1.panelCamera().zoom())
-                                                        .projection0(pPanel1.panelCamera().camera_pos())[1])
-                                        / pPanel1.panelCamera().zoom())
-                                + "] ["
-                                + (((double) pPanel1.linerTriangle()[2][0] - pPanel1.panelCamera().xshift
-                                        + new Camera(pPanel1.panelCamera().xshift, pPanel1.panelCamera().yshift,
-                                                pPanel1.panelCamera().zoom())
-                                                        .projection0(pPanel1.panelCamera().camera_pos())[0])
-                                        / pPanel1.panelCamera().zoom())
-                                + " "
-                                + (((double) pPanel1.linerTriangle()[2][1] - pPanel1.panelCamera().yshift
-                                        + new Camera(pPanel1.panelCamera().xshift, pPanel1.panelCamera().yshift,
-                                                pPanel1.panelCamera().zoom())
-                                                        .projection0(pPanel1.panelCamera().camera_pos())[1])
-                                        / pPanel1.panelCamera().zoom())
-                                + "]" + (char) 10 + "target [" + magX + " " + magY + "]" + (char) 10 + "angle "
-                                + rotation_angle + (char) 10 + "rotate");
-                        oPanel1.update(terminal1.TerminalOrigami);
+                double[] p1 = pPanel1.panelCamera().deprojection(
+                        (double)pPanel1.linerTriangle()[0][0],
+                        (double)pPanel1.linerTriangle()[0][1]);
+                double[] p2 = pPanel1.panelCamera().deprojection(
+                        (double)pPanel1.linerTriangle()[1][0],
+                        (double)pPanel1.linerTriangle()[1][1]);
+                double[] p3 = pPanel1.panelCamera().deprojection(
+                        (double)pPanel1.linerTriangle()[2][0],
+                        (double)pPanel1.linerTriangle()[2][1]);
+                
+                try {
+                    if (SecondaryState == ControlState.PLANETHRU) {
+                        terminal1.execute(OrigamiScripter.planethrough(p1, p2, p3));
                     }
-                    catch (Exception ex) {
-                        oPanel1.update(terminal1.TerminalOrigami);
-                        pPanel1.update(terminal1.TerminalOrigami);
-                        javax.swing.JOptionPane.showMessageDialog(this, ex.getMessage().replace('/', (char) 10),
-                                "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
+                    if (SecondaryState == ControlState.ANGLE_BISECT) {
+                        terminal1.execute(OrigamiScripter.angle_bisector(p1, p2, p3));
                     }
+                    if (pPanel1.isTracked()) {
+        
+                        double[] targ = pPanel1.panelCamera().deprojection(
+                                (double)pPanel1.tracker_x(), (double)pPanel1.tracker_y());
+                        
+                        terminal1.execute(OrigamiScripter.target(targ));
+                    }
+                    terminal1.execute(OrigamiScripter.angle(rotation_angle));
+                    terminal1.execute(OrigamiScripter.rotate());
+                    oPanel1.update(terminal1.TerminalOrigami);
+                }
+                catch (Exception ex) {
+                    
+                    oPanel1.update(terminal1.TerminalOrigami);
+                    pPanel1.update(terminal1.TerminalOrigami);
+                    javax.swing.JOptionPane.showMessageDialog(this, ex.getMessage().replace('/', (char) 10), "Error",
+                            javax.swing.JOptionPane.ERROR_MESSAGE);
+                }
+                finally {
+                    
                     if (alwaysInMiddle) {
                         oPanel1.panelCamera().adjust(terminal1.TerminalOrigami);
                     }
-                    pPanel1.reset();
-                    oPanel1.reset();
-                    pPanel1.setToolTipText(Dictionary.getString("tooltip.ppanel.select"));
+                    rotation_angle = 0;
+                    oPanel1.hideProtractor();
+                    defaultify();
+                    saved = false;
                 }
-                else {
-                    try {
-                        terminal1.execute(pszo + " [" + (((double) pPanel1.linerTriangle()[0][0]
-                                - pPanel1.panelCamera().xshift
-                                + new Camera(pPanel1.panelCamera().xshift, pPanel1.panelCamera().yshift,
-                                        pPanel1.panelCamera().zoom()).projection0(pPanel1.panelCamera().camera_pos())[0])
-                                / pPanel1.panelCamera().zoom())
-                                + " "
-                                + (((double) pPanel1.linerTriangle()[0][1] - pPanel1.panelCamera().yshift
-                                        + new Camera(pPanel1.panelCamera().xshift, pPanel1.panelCamera().yshift,
-                                                pPanel1.panelCamera().zoom())
-                                                        .projection0(pPanel1.panelCamera().camera_pos())[1])
-                                        / pPanel1.panelCamera().zoom())
-                                + "] ["
-                                + (((double) pPanel1.linerTriangle()[1][0] - pPanel1.panelCamera().xshift
-                                        + new Camera(pPanel1.panelCamera().xshift, pPanel1.panelCamera().yshift,
-                                                pPanel1.panelCamera().zoom())
-                                                        .projection0(pPanel1.panelCamera().camera_pos())[0])
-                                        / pPanel1.panelCamera().zoom())
-                                + " "
-                                + (((double) pPanel1.linerTriangle()[1][1] - pPanel1.panelCamera().yshift
-                                        + new Camera(pPanel1.panelCamera().xshift, pPanel1.panelCamera().yshift,
-                                                pPanel1.panelCamera().zoom())
-                                                        .projection0(pPanel1.panelCamera().camera_pos())[1])
-                                        / pPanel1.panelCamera().zoom())
-                                + "] ["
-                                + (((double) pPanel1.linerTriangle()[2][0] - pPanel1.panelCamera().xshift
-                                        + new Camera(pPanel1.panelCamera().xshift, pPanel1.panelCamera().yshift,
-                                                pPanel1.panelCamera().zoom())
-                                                        .projection0(pPanel1.panelCamera().camera_pos())[0])
-                                        / pPanel1.panelCamera().zoom())
-                                + " "
-                                + (((double) pPanel1.linerTriangle()[2][1] - pPanel1.panelCamera().yshift
-                                        + new Camera(pPanel1.panelCamera().xshift, pPanel1.panelCamera().yshift,
-                                                pPanel1.panelCamera().zoom())
-                                                        .projection0(pPanel1.panelCamera().camera_pos())[1])
-                                        / pPanel1.panelCamera().zoom())
-                                + "]" + (char) 10 + "angle " + rotation_angle + (char) 10 + "rotate");
-                        oPanel1.update(terminal1.TerminalOrigami);
-                    }
-                    catch (Exception ex) {
-                        oPanel1.update(terminal1.TerminalOrigami);
-                        pPanel1.update(terminal1.TerminalOrigami);
-                        javax.swing.JOptionPane.showMessageDialog(this, ex.getMessage().replace('/', (char) 10),
-                                "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
-                    }
-                }
-                if (alwaysInMiddle) {
-                    oPanel1.panelCamera().adjust(terminal1.TerminalOrigami);
-                }
-                defaultify();
-                saved = false;
             }
             else {
                 if (alwaysInMiddle) {
@@ -1785,174 +1684,81 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
 
         if (EditorState == ControlState.RULER2) {
 
-            double[] vonalzoNV = oPanel1.getRulerNormalvector();
-            double[] vonalzoPT = oPanel1.getRulerPoint();
-
-            if (pPanel1.isTracked()) {
-                try {
-                    double magX = ((double) pPanel1.tracker_x() - pPanel1.panelCamera().xshift
-                            + new Camera(pPanel1.panelCamera().xshift, pPanel1.panelCamera().yshift,
-                                    pPanel1.panelCamera().zoom()).projection0(pPanel1.panelCamera().camera_pos())[0])
-                            / pPanel1.panelCamera().zoom();
-
-                    double magY = ((double) pPanel1.tracker_y() - pPanel1.panelCamera().yshift
-                            + new Camera(pPanel1.panelCamera().xshift, pPanel1.panelCamera().yshift,
-                                    pPanel1.panelCamera().zoom()).projection0(pPanel1.panelCamera().camera_pos())[1])
-                            / pPanel1.panelCamera().zoom();
-
-                    terminal1.execute("plane [" + vonalzoPT[0] + " " + vonalzoPT[1] + " " + vonalzoPT[2] + "] ["
-                            + vonalzoNV[0] + " " + vonalzoNV[1] + " " + vonalzoNV[2] + "]" + (char) 10 + "target ["
-                            + magX + " " + magY + "]" + (char) 10 + "reflect");
-                    oPanel1.update(terminal1.TerminalOrigami);
+            try {
+                double[] rulerPT = oPanel1.getRulerPoint();
+                double[] rulerNV = oPanel1.getRulerNormalvector();
+                terminal1.execute(OrigamiScripter.plane(rulerPT, rulerNV));
+    
+                if (pPanel1.isTracked()) {
+    
+                    double[] targ = pPanel1.panelCamera().deprojection(
+                            (double)pPanel1.tracker_x(), (double)pPanel1.tracker_y());
+                    
+                    terminal1.execute(OrigamiScripter.target(targ));
                 }
-                catch (Exception exc) {
-                    terminal_log.setText(terminal_log.getText() + (char) 10 + exc);
-                }
+                terminal1.execute(OrigamiScripter.reflect());
+                oPanel1.update(terminal1.TerminalOrigami);
+            }
+            catch (Exception ex) {
+                
+                oPanel1.update(terminal1.TerminalOrigami);
+                pPanel1.update(terminal1.TerminalOrigami);
+                javax.swing.JOptionPane.showMessageDialog(this, ex.getMessage().replace('/', (char) 10), "Error",
+                        javax.swing.JOptionPane.ERROR_MESSAGE);
+            }
+            finally {
+                
                 if (alwaysInMiddle) {
                     oPanel1.panelCamera().adjust(terminal1.TerminalOrigami);
                 }
+                defaultify();
+                saved = false;
             }
-            else {
-
-                try {
-                    terminal1.execute("plane [" + vonalzoPT[0] + " " + vonalzoPT[1] + " " + vonalzoPT[2] + "] ["
-                            + vonalzoNV[0] + " " + vonalzoNV[1] + " " + vonalzoNV[2] + "]" + (char) 10 + "reflect");
-                    oPanel1.update(terminal1.TerminalOrigami);
-                }
-                catch (Exception ex) {
-                    oPanel1.update(terminal1.TerminalOrigami);
-                    pPanel1.update(terminal1.TerminalOrigami);
-                    javax.swing.JOptionPane.showMessageDialog(this, ex.getMessage().replace('/', (char) 10), "Error",
-                            javax.swing.JOptionPane.ERROR_MESSAGE);
-                }
-            }
-            if (alwaysInMiddle) {
-                oPanel1.panelCamera().adjust(terminal1.TerminalOrigami);
-            }
-            defaultify();
-            saved = false;
         }
         else if (EditorState == ControlState.TRI3) {
 
-            String pszo = "";
-            if (SecondaryState == ControlState.PLANETHRU) {
-                pszo = "planethrough";
-            }
-            if (SecondaryState == ControlState.ANGLE_BISECT) {
-                pszo = "angle-bisector";
-            }
-            if (pPanel1.isTracked()) {
-
-                try {
-                    double magX = ((double) pPanel1.tracker_x() - pPanel1.panelCamera().xshift
-                            + new Camera(pPanel1.panelCamera().xshift, pPanel1.panelCamera().yshift,
-                                    pPanel1.panelCamera().zoom()).projection0(pPanel1.panelCamera().camera_pos())[0])
-                            / pPanel1.panelCamera().zoom();
-
-                    double magY = ((double) pPanel1.tracker_y() - pPanel1.panelCamera().yshift
-                            + new Camera(pPanel1.panelCamera().xshift, pPanel1.panelCamera().yshift,
-                                    pPanel1.panelCamera().zoom()).projection0(pPanel1.panelCamera().camera_pos())[1])
-                            / pPanel1.panelCamera().zoom();
-
-                    terminal1.execute(pszo + " [" + (((double) pPanel1.linerTriangle()[0][0] - pPanel1.panelCamera().xshift
-                            + new Camera(pPanel1.panelCamera().xshift, pPanel1.panelCamera().yshift,
-                                    pPanel1.panelCamera().zoom()).projection0(pPanel1.panelCamera().camera_pos())[0])
-                            / pPanel1.panelCamera().zoom())
-                            + " "
-                            + (((double) pPanel1.linerTriangle()[0][1] - pPanel1.panelCamera().yshift
-                                    + new Camera(pPanel1.panelCamera().xshift, pPanel1.panelCamera().yshift,
-                                            pPanel1.panelCamera().zoom())
-                                                    .projection0(pPanel1.panelCamera().camera_pos())[1])
-                                    / pPanel1.panelCamera().zoom())
-                            + "] ["
-                            + (((double) pPanel1.linerTriangle()[1][0] - pPanel1.panelCamera().xshift
-                                    + new Camera(pPanel1.panelCamera().xshift, pPanel1.panelCamera().yshift,
-                                            pPanel1.panelCamera().zoom())
-                                                    .projection0(pPanel1.panelCamera().camera_pos())[0])
-                                    / pPanel1.panelCamera().zoom())
-                            + " "
-                            + (((double) pPanel1.linerTriangle()[1][1] - pPanel1.panelCamera().yshift
-                                    + new Camera(pPanel1.panelCamera().xshift, pPanel1.panelCamera().yshift,
-                                            pPanel1.panelCamera().zoom())
-                                                    .projection0(pPanel1.panelCamera().camera_pos())[1])
-                                    / pPanel1.panelCamera().zoom())
-                            + "] ["
-                            + (((double) pPanel1.linerTriangle()[2][0] - pPanel1.panelCamera().xshift
-                                    + new Camera(pPanel1.panelCamera().xshift, pPanel1.panelCamera().yshift,
-                                            pPanel1.panelCamera().zoom())
-                                                    .projection0(pPanel1.panelCamera().camera_pos())[0])
-                                    / pPanel1.panelCamera().zoom())
-                            + " "
-                            + (((double) pPanel1.linerTriangle()[2][1] - pPanel1.panelCamera().yshift
-                                    + new Camera(pPanel1.panelCamera().xshift, pPanel1.panelCamera().yshift,
-                                            pPanel1.panelCamera().zoom())
-                                                    .projection0(pPanel1.panelCamera().camera_pos())[1])
-                                    / pPanel1.panelCamera().zoom())
-                            + "]" + (char) 10 + "target [" + magX + " " + magY + "]" + (char) 10 + "reflect");
-                    oPanel1.update(terminal1.TerminalOrigami);
+            double[] p1 = pPanel1.panelCamera().deprojection(
+                    (double)pPanel1.linerTriangle()[0][0],
+                    (double)pPanel1.linerTriangle()[0][1]);
+            double[] p2 = pPanel1.panelCamera().deprojection(
+                    (double)pPanel1.linerTriangle()[1][0],
+                    (double)pPanel1.linerTriangle()[1][1]);
+            double[] p3 = pPanel1.panelCamera().deprojection(
+                    (double)pPanel1.linerTriangle()[2][0],
+                    (double)pPanel1.linerTriangle()[2][1]);
+            
+            try {
+                if (SecondaryState == ControlState.PLANETHRU) {
+                    terminal1.execute(OrigamiScripter.planethrough(p1, p2, p3));
                 }
-                catch (Exception ex) {
-                    oPanel1.update(terminal1.TerminalOrigami);
-                    pPanel1.update(terminal1.TerminalOrigami);
-                    javax.swing.JOptionPane.showMessageDialog(this, ex.getMessage().replace('/', (char) 10), "Error",
-                            javax.swing.JOptionPane.ERROR_MESSAGE);
+                if (SecondaryState == ControlState.ANGLE_BISECT) {
+                    terminal1.execute(OrigamiScripter.angle_bisector(p1, p2, p3));
                 }
+                if (pPanel1.isTracked()) {
+    
+                    double[] targ = pPanel1.panelCamera().deprojection(
+                            (double)pPanel1.tracker_x(), (double)pPanel1.tracker_y());
+                    
+                    terminal1.execute(OrigamiScripter.target(targ));
+                }
+                terminal1.execute(OrigamiScripter.reflect());
+                oPanel1.update(terminal1.TerminalOrigami);
+            }
+            catch (Exception ex) {
+                
+                oPanel1.update(terminal1.TerminalOrigami);
+                pPanel1.update(terminal1.TerminalOrigami);
+                javax.swing.JOptionPane.showMessageDialog(this, ex.getMessage().replace('/', (char) 10), "Error",
+                        javax.swing.JOptionPane.ERROR_MESSAGE);
+            }
+            finally {
+                
                 if (alwaysInMiddle) {
                     oPanel1.panelCamera().adjust(terminal1.TerminalOrigami);
                 }
+                defaultify();
+                saved = false;
             }
-            else {
-
-                try {
-                    terminal1.execute(pszo + " [" + (((double) pPanel1.linerTriangle()[0][0] - pPanel1.panelCamera().xshift
-                            + new Camera(pPanel1.panelCamera().xshift, pPanel1.panelCamera().yshift,
-                                    pPanel1.panelCamera().zoom()).projection0(pPanel1.panelCamera().camera_pos())[0])
-                            / pPanel1.panelCamera().zoom())
-                            + " "
-                            + (((double) pPanel1.linerTriangle()[0][1] - pPanel1.panelCamera().yshift
-                                    + new Camera(pPanel1.panelCamera().xshift, pPanel1.panelCamera().yshift,
-                                            pPanel1.panelCamera().zoom())
-                                                    .projection0(pPanel1.panelCamera().camera_pos())[1])
-                                    / pPanel1.panelCamera().zoom())
-                            + "] ["
-                            + (((double) pPanel1.linerTriangle()[1][0] - pPanel1.panelCamera().xshift
-                                    + new Camera(pPanel1.panelCamera().xshift, pPanel1.panelCamera().yshift,
-                                            pPanel1.panelCamera().zoom())
-                                                    .projection0(pPanel1.panelCamera().camera_pos())[0])
-                                    / pPanel1.panelCamera().zoom())
-                            + " "
-                            + (((double) pPanel1.linerTriangle()[1][1] - pPanel1.panelCamera().yshift
-                                    + new Camera(pPanel1.panelCamera().xshift, pPanel1.panelCamera().yshift,
-                                            pPanel1.panelCamera().zoom())
-                                                    .projection0(pPanel1.panelCamera().camera_pos())[1])
-                                    / pPanel1.panelCamera().zoom())
-                            + "] ["
-                            + (((double) pPanel1.linerTriangle()[2][0] - pPanel1.panelCamera().xshift
-                                    + new Camera(pPanel1.panelCamera().xshift, pPanel1.panelCamera().yshift,
-                                            pPanel1.panelCamera().zoom())
-                                                    .projection0(pPanel1.panelCamera().camera_pos())[0])
-                                    / pPanel1.panelCamera().zoom())
-                            + " "
-                            + (((double) pPanel1.linerTriangle()[2][1] - pPanel1.panelCamera().yshift
-                                    + new Camera(pPanel1.panelCamera().xshift, pPanel1.panelCamera().yshift,
-                                            pPanel1.panelCamera().zoom())
-                                                    .projection0(pPanel1.panelCamera().camera_pos())[1])
-                                    / pPanel1.panelCamera().zoom())
-                            + "]" + (char) 10 + "reflect");
-                    oPanel1.update(terminal1.TerminalOrigami);
-                }
-                catch (Exception ex) {
-                    oPanel1.update(terminal1.TerminalOrigami);
-                    pPanel1.update(terminal1.TerminalOrigami);
-                    javax.swing.JOptionPane.showMessageDialog(this, ex.getMessage().replace('/', (char) 10), "Error",
-                            javax.swing.JOptionPane.ERROR_MESSAGE);
-                }
-            }
-            if (alwaysInMiddle) {
-                oPanel1.panelCamera().adjust(terminal1.TerminalOrigami);
-            }
-            defaultify();
-            saved = false;
         }
 
         foldNumber = terminal1.TerminalOrigami.history_pointer();
@@ -1987,176 +1793,81 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
 
         if (EditorState == ControlState.RULER2) {
 
-            double[] vonalzoNV = oPanel1.getRulerNormalvector();
-            double[] vonalzoPT = oPanel1.getRulerPoint();
-
-            if (pPanel1.isTracked()) {
-
-                try {
-                    double magX = ((double) pPanel1.tracker_x() - pPanel1.panelCamera().xshift
-                            + new Camera(pPanel1.panelCamera().xshift, pPanel1.panelCamera().yshift,
-                                    pPanel1.panelCamera().zoom()).projection0(pPanel1.panelCamera().camera_pos())[0])
-                            / pPanel1.panelCamera().zoom();
-
-                    double magY = ((double) pPanel1.tracker_y() - pPanel1.panelCamera().yshift
-                            + new Camera(pPanel1.panelCamera().xshift, pPanel1.panelCamera().yshift,
-                                    pPanel1.panelCamera().zoom()).projection0(pPanel1.panelCamera().camera_pos())[1])
-                            / pPanel1.panelCamera().zoom();
-
-                    terminal1.execute("plane [" + vonalzoPT[0] + " " + vonalzoPT[1] + " " + vonalzoPT[2] + "] ["
-                            + vonalzoNV[0] + " " + vonalzoNV[1] + " " + vonalzoNV[2] + "]" + (char) 10 + "target ["
-                            + magX + " " + magY + "]" + (char) 10 + "cut");
-                    oPanel1.update(terminal1.TerminalOrigami);
+            try {
+                double[] rulerPT = oPanel1.getRulerPoint();
+                double[] rulerNV = oPanel1.getRulerNormalvector();
+                terminal1.execute(OrigamiScripter.plane(rulerPT, rulerNV));
+    
+                if (pPanel1.isTracked()) {
+    
+                    double[] targ = pPanel1.panelCamera().deprojection(
+                            (double)pPanel1.tracker_x(), (double)pPanel1.tracker_y());
+                    
+                    terminal1.execute(OrigamiScripter.target(targ));
                 }
-                catch (Exception exc) {
-                    terminal_log.setText(terminal_log.getText() + (char) 10 + exc);
-                }
+                terminal1.execute(OrigamiScripter.cut());
+                oPanel1.update(terminal1.TerminalOrigami);
+            }
+            catch (Exception ex) {
+                
+                oPanel1.update(terminal1.TerminalOrigami);
+                pPanel1.update(terminal1.TerminalOrigami);
+                javax.swing.JOptionPane.showMessageDialog(this, ex.getMessage().replace('/', (char) 10), "Error",
+                        javax.swing.JOptionPane.ERROR_MESSAGE);
+            }
+            finally {
+                
                 if (alwaysInMiddle) {
                     oPanel1.panelCamera().adjust(terminal1.TerminalOrigami);
                 }
+                defaultify();
+                saved = false;
             }
-            else {
-
-                try {
-                    terminal1.execute("plane [" + vonalzoPT[0] + " " + vonalzoPT[1] + " " + vonalzoPT[2] + "] ["
-                            + vonalzoNV[0] + " " + vonalzoNV[1] + " " + vonalzoNV[2] + "]" + (char) 10 + "cut");
-                    oPanel1.update(terminal1.TerminalOrigami);
-                }
-                catch (Exception ex) {
-                    oPanel1.update(terminal1.TerminalOrigami);
-                    pPanel1.update(terminal1.TerminalOrigami);
-                    javax.swing.JOptionPane.showMessageDialog(this, ex.getMessage().replace('/', (char) 10), "Error",
-                            javax.swing.JOptionPane.ERROR_MESSAGE);
-                }
-            }
-            if (alwaysInMiddle) {
-                oPanel1.panelCamera().adjust(terminal1.TerminalOrigami);
-            }
-            defaultify();
-            saved = false;
         }
         else if (EditorState == ControlState.TRI3) {
 
-            String pszo = "";
-            if (SecondaryState == ControlState.PLANETHRU) {
-                pszo = "planethrough";
-            }
-            if (SecondaryState == ControlState.ANGLE_BISECT) {
-                pszo = "angle-bisector";
-            }
-            if (pPanel1.isTracked()) {
-
-                try {
-                    double magX = ((double) pPanel1.tracker_x() - pPanel1.panelCamera().xshift
-                            + new Camera(pPanel1.panelCamera().xshift, pPanel1.panelCamera().yshift,
-                                    pPanel1.panelCamera().zoom()).projection0(pPanel1.panelCamera().camera_pos())[0])
-                            / pPanel1.panelCamera().zoom();
-
-                    double magY = ((double) pPanel1.tracker_y() - pPanel1.panelCamera().yshift
-                            + new Camera(pPanel1.panelCamera().xshift, pPanel1.panelCamera().yshift,
-                                    pPanel1.panelCamera().zoom()).projection0(pPanel1.panelCamera().camera_pos())[1])
-                            / pPanel1.panelCamera().zoom();
-
-                    terminal1.execute(pszo + " [" + (((double) pPanel1.linerTriangle()[0][0] - pPanel1.panelCamera().xshift
-                            + new Camera(pPanel1.panelCamera().xshift, pPanel1.panelCamera().yshift,
-                                    pPanel1.panelCamera().zoom()).projection0(pPanel1.panelCamera().camera_pos())[0])
-                            / pPanel1.panelCamera().zoom())
-                            + " "
-                            + (((double) pPanel1.linerTriangle()[0][1] - pPanel1.panelCamera().yshift
-                                    + new Camera(pPanel1.panelCamera().xshift, pPanel1.panelCamera().yshift,
-                                            pPanel1.panelCamera().zoom())
-                                                    .projection0(pPanel1.panelCamera().camera_pos())[1])
-                                    / pPanel1.panelCamera().zoom())
-                            + "] ["
-                            + (((double) pPanel1.linerTriangle()[1][0] - pPanel1.panelCamera().xshift
-                                    + new Camera(pPanel1.panelCamera().xshift, pPanel1.panelCamera().yshift,
-                                            pPanel1.panelCamera().zoom())
-                                                    .projection0(pPanel1.panelCamera().camera_pos())[0])
-                                    / pPanel1.panelCamera().zoom())
-                            + " "
-                            + (((double) pPanel1.linerTriangle()[1][1] - pPanel1.panelCamera().yshift
-                                    + new Camera(pPanel1.panelCamera().xshift, pPanel1.panelCamera().yshift,
-                                            pPanel1.panelCamera().zoom())
-                                                    .projection0(pPanel1.panelCamera().camera_pos())[1])
-                                    / pPanel1.panelCamera().zoom())
-                            + "] ["
-                            + (((double) pPanel1.linerTriangle()[2][0] - pPanel1.panelCamera().xshift
-                                    + new Camera(pPanel1.panelCamera().xshift, pPanel1.panelCamera().yshift,
-                                            pPanel1.panelCamera().zoom())
-                                                    .projection0(pPanel1.panelCamera().camera_pos())[0])
-                                    / pPanel1.panelCamera().zoom())
-                            + " "
-                            + (((double) pPanel1.linerTriangle()[2][1] - pPanel1.panelCamera().yshift
-                                    + new Camera(pPanel1.panelCamera().xshift, pPanel1.panelCamera().yshift,
-                                            pPanel1.panelCamera().zoom())
-                                                    .projection0(pPanel1.panelCamera().camera_pos())[1])
-                                    / pPanel1.panelCamera().zoom())
-                            + "]" + (char) 10 + "target [" + magX + " " + magY + "]" + (char) 10 + "cut");
-                    oPanel1.update(terminal1.TerminalOrigami);
+            double[] p1 = pPanel1.panelCamera().deprojection(
+                    (double)pPanel1.linerTriangle()[0][0],
+                    (double)pPanel1.linerTriangle()[0][1]);
+            double[] p2 = pPanel1.panelCamera().deprojection(
+                    (double)pPanel1.linerTriangle()[1][0],
+                    (double)pPanel1.linerTriangle()[1][1]);
+            double[] p3 = pPanel1.panelCamera().deprojection(
+                    (double)pPanel1.linerTriangle()[2][0],
+                    (double)pPanel1.linerTriangle()[2][1]);
+            
+            try {
+                if (SecondaryState == ControlState.PLANETHRU) {
+                    terminal1.execute(OrigamiScripter.planethrough(p1, p2, p3));
                 }
-                catch (Exception ex) {
-                    oPanel1.update(terminal1.TerminalOrigami);
-                    pPanel1.update(terminal1.TerminalOrigami);
-                    javax.swing.JOptionPane.showMessageDialog(this, ex.getMessage().replace('/', (char) 10), "Error",
-                            javax.swing.JOptionPane.ERROR_MESSAGE);
+                if (SecondaryState == ControlState.ANGLE_BISECT) {
+                    terminal1.execute(OrigamiScripter.angle_bisector(p1, p2, p3));
                 }
+                if (pPanel1.isTracked()) {
+    
+                    double[] targ = pPanel1.panelCamera().deprojection(
+                            (double)pPanel1.tracker_x(), (double)pPanel1.tracker_y());
+                    
+                    terminal1.execute(OrigamiScripter.target(targ));
+                }
+                terminal1.execute(OrigamiScripter.cut());
+                oPanel1.update(terminal1.TerminalOrigami);
+            }
+            catch (Exception ex) {
+                
+                oPanel1.update(terminal1.TerminalOrigami);
+                pPanel1.update(terminal1.TerminalOrigami);
+                javax.swing.JOptionPane.showMessageDialog(this, ex.getMessage().replace('/', (char) 10), "Error",
+                        javax.swing.JOptionPane.ERROR_MESSAGE);
+            }
+            finally {
+                
                 if (alwaysInMiddle) {
                     oPanel1.panelCamera().adjust(terminal1.TerminalOrigami);
                 }
+                defaultify();
+                saved = false;
             }
-            else {
-
-                try {
-                    terminal1.execute(pszo + " [" + (((double) pPanel1.linerTriangle()[0][0] - pPanel1.panelCamera().xshift
-                            + new Camera(pPanel1.panelCamera().xshift, pPanel1.panelCamera().yshift,
-                                    pPanel1.panelCamera().zoom()).projection0(pPanel1.panelCamera().camera_pos())[0])
-                            / pPanel1.panelCamera().zoom())
-                            + " "
-                            + (((double) pPanel1.linerTriangle()[0][1] - pPanel1.panelCamera().yshift
-                                    + new Camera(pPanel1.panelCamera().xshift, pPanel1.panelCamera().yshift,
-                                            pPanel1.panelCamera().zoom())
-                                                    .projection0(pPanel1.panelCamera().camera_pos())[1])
-                                    / pPanel1.panelCamera().zoom())
-                            + "] ["
-                            + (((double) pPanel1.linerTriangle()[1][0] - pPanel1.panelCamera().xshift
-                                    + new Camera(pPanel1.panelCamera().xshift, pPanel1.panelCamera().yshift,
-                                            pPanel1.panelCamera().zoom())
-                                                    .projection0(pPanel1.panelCamera().camera_pos())[0])
-                                    / pPanel1.panelCamera().zoom())
-                            + " "
-                            + (((double) pPanel1.linerTriangle()[1][1] - pPanel1.panelCamera().yshift
-                                    + new Camera(pPanel1.panelCamera().xshift, pPanel1.panelCamera().yshift,
-                                            pPanel1.panelCamera().zoom())
-                                                    .projection0(pPanel1.panelCamera().camera_pos())[1])
-                                    / pPanel1.panelCamera().zoom())
-                            + "] ["
-                            + (((double) pPanel1.linerTriangle()[2][0] - pPanel1.panelCamera().xshift
-                                    + new Camera(pPanel1.panelCamera().xshift, pPanel1.panelCamera().yshift,
-                                            pPanel1.panelCamera().zoom())
-                                                    .projection0(pPanel1.panelCamera().camera_pos())[0])
-                                    / pPanel1.panelCamera().zoom())
-                            + " "
-                            + (((double) pPanel1.linerTriangle()[2][1] - pPanel1.panelCamera().yshift
-                                    + new Camera(pPanel1.panelCamera().xshift, pPanel1.panelCamera().yshift,
-                                            pPanel1.panelCamera().zoom())
-                                                    .projection0(pPanel1.panelCamera().camera_pos())[1])
-                                    / pPanel1.panelCamera().zoom())
-                            + "]" + (char) 10 + "cut");
-                    oPanel1.update(terminal1.TerminalOrigami);
-                }
-                catch (Exception ex) {
-                    oPanel1.update(terminal1.TerminalOrigami);
-                    pPanel1.update(terminal1.TerminalOrigami);
-                    javax.swing.JOptionPane.showMessageDialog(this, ex.getMessage().replace('/', (char) 10), "Error",
-                            javax.swing.JOptionPane.ERROR_MESSAGE);
-                }
-            }
-            EditorState = ControlState.STANDBY;
-            if (alwaysInMiddle) {
-                oPanel1.panelCamera().adjust(terminal1.TerminalOrigami);
-            }
-            defaultify();
-            saved = false;
         }
 
         foldNumber = terminal1.TerminalOrigami.history_pointer();
@@ -2801,6 +2512,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
             }
         }
         else {
+            
             try {
                 
                 if (save_paper_color) {
