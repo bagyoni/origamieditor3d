@@ -37,7 +37,8 @@ public class Origami {
      */
     public Origami(PaperType papertype) {
 
-        vertices = (vertices2d = new ArrayList<>());
+        vertices = new ArrayList<>();
+        vertices2d = new ArrayList<>();
         vertices_size = 0;
         polygons = new ArrayList<>();
         polygons_size = 0;
@@ -65,7 +66,8 @@ public class Origami {
      */
     public Origami(ArrayList<double[]> corners) throws Exception {
 
-        vertices = (vertices2d = new ArrayList<>());
+        vertices = new ArrayList<>();
+        vertices2d = new ArrayList<>();
         vertices_size = 0;
         polygons = new ArrayList<>();
         polygons_size = 0;
@@ -83,11 +85,18 @@ public class Origami {
     @SuppressWarnings("unchecked")
     public Origami(Origami origami) {
 
+        vertices = new ArrayList<>();
+        vertices2d = new ArrayList<>();
+        vertices_size = 0;
+        polygons = new ArrayList<>();
+        polygons_size = 0;
         papertype = origami.papertype;
-        corners = origami.corners;
+        corners = (ArrayList<double[]>) origami.corners.clone();
         history = (ArrayList<FoldingAction>) origami.history.clone();
         history_stream = (ArrayList<int[]>) origami.history_stream.clone();
+        history_pointer = origami.history_pointer;
         reset();
+        execute();
     }
 
     public int generation() {
@@ -171,30 +180,30 @@ public class Origami {
             this.phi = phi;
         }
         
-        final public void execute() {
+        final public void execute(Origami origami) {
             
             switch(foldID) {
                 
                 case FOLD_CREASE:
-                    internalRotationFold(ppoint, pnormal, 0);
+                    origami.internalRotationFold(ppoint, pnormal, 0);
                     break;
                 case FOLD_REFLECTION:
-                    internalReflectionFold(ppoint, pnormal);
+                    origami.internalReflectionFold(ppoint, pnormal);
                     break;
                 case FOLD_REFLECTION_P:
-                    internalReflectionFold(ppoint, pnormal, polygonIndex);
+                    origami.internalReflectionFold(ppoint, pnormal, polygonIndex);
                     break;
                 case FOLD_ROTATION:
-                    internalRotationFold(ppoint, pnormal, phi);
+                    origami.internalRotationFold(ppoint, pnormal, phi);
                     break;
                 case FOLD_ROTATION_P:
-                    internalRotationFold(ppoint, pnormal, phi, polygonIndex);
+                    origami.internalRotationFold(ppoint, pnormal, phi, polygonIndex);
                     break;
                 case FOLD_MUTILATION:
-                    internalMutilation(ppoint, pnormal);
+                    origami.internalMutilation(ppoint, pnormal);
                     break;
                 case FOLD_MUTILATION_P:
-                    internalMutilation(ppoint, pnormal, polygonIndex);
+                    origami.internalMutilation(ppoint, pnormal, polygonIndex);
                     break;
             }
         }
@@ -1578,7 +1587,7 @@ public class Origami {
         for (int i = 0; i < history_pointer; i++) {
 
             FoldingAction fa = history.get(i);
-            fa.execute();
+            fa.execute(this);
         }
     }
 
@@ -1597,7 +1606,7 @@ public class Origami {
             for (int i = index; i < index + steps && i >= 0; i++) {
                 
                 FoldingAction fa = history.get(i);
-                fa.execute();
+                fa.execute(this);
             }
         }
     }
@@ -2189,10 +2198,9 @@ public class Origami {
 
         Origami origami = clone();
         origami.redoAll();
-
+        
         int sum = 0;
         for (int i = 0; i < origami.history().size(); i++) {
-
             sum += origami.complexity(i);
         }
         return sum;
@@ -2365,23 +2373,9 @@ public class Origami {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public Origami clone() {
 
-        Origami copy = new Origami(papertype);
-        copy.corners = (ArrayList<double[]>) corners.clone();
-        copy.history = (ArrayList<FoldingAction>) history.clone();
-        copy.history_stream = (ArrayList<int[]>) history_stream.clone();
-        copy.history_pointer = history_pointer;
-        copy.vertices_size = vertices_size;
-        copy.vertices = (ArrayList<double[]>) vertices.clone();
-        copy.vertices2d = (ArrayList<double[]>) vertices2d.clone();
-        copy.polygons_size = polygons_size;
-        copy.polygons = (ArrayList<ArrayList<Integer>>) polygons.clone();
-        copy.last_cut_polygons = (ArrayList<ArrayList<Integer>>) last_cut_polygons.clone();
-        copy.cutpolygon_nodes = (ArrayList<int[]>) cutpolygon_nodes.clone();
-        copy.cutpolygon_pairs = (ArrayList<int[]>) cutpolygon_pairs.clone();
-        copy.border = (ArrayList<Integer>) border.clone();
+        Origami copy = new Origami(this);
         return copy;
     }
 }

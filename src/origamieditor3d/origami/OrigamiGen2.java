@@ -32,7 +32,7 @@ public class OrigamiGen2 extends Origami {
         super(corners);
     }
 
-    public OrigamiGen2(Origami origami) throws Exception {
+    public OrigamiGen2(Origami origami) {
         super(origami);
     }
 
@@ -137,23 +137,9 @@ public class OrigamiGen2 extends Origami {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public OrigamiGen2 clone() {
 
-        OrigamiGen2 copy = new OrigamiGen2(papertype);
-        copy.corners = (ArrayList<double[]>) corners.clone();
-        copy.history = (ArrayList<FoldingAction>) history.clone();
-        copy.history_stream = (ArrayList<int[]>) history_stream.clone();
-        copy.history_pointer = history_pointer;
-        copy.vertices_size = vertices_size;
-        copy.vertices = (ArrayList<double[]>) vertices.clone();
-        copy.vertices2d = (ArrayList<double[]>) vertices2d.clone();
-        copy.polygons_size = polygons_size;
-        copy.polygons = (ArrayList<ArrayList<Integer>>) polygons.clone();
-        copy.last_cut_polygons = (ArrayList<ArrayList<Integer>>) last_cut_polygons.clone();
-        copy.cutpolygon_nodes = (ArrayList<int[]>) cutpolygon_nodes.clone();
-        copy.cutpolygon_pairs = (ArrayList<int[]>) cutpolygon_pairs.clone();
-        copy.border = (ArrayList<Integer>) border.clone();
+        OrigamiGen2 copy = new OrigamiGen2(this);
         return copy;
     }
 }
