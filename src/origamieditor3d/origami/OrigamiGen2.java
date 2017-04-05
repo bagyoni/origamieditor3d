@@ -137,7 +137,7 @@ public class OrigamiGen2 extends Origami {
     }
 
     @Override
-    public OrigamiGen2 clone() {
+    public OrigamiGen2 copy() {
 
         OrigamiGen2 copy = new OrigamiGen2(this);
         return copy;

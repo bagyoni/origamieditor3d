@@ -82,7 +82,6 @@ public class Origami {
         reset();
     }
 
-    @SuppressWarnings("unchecked")
     public Origami(Origami origami) {
 
         vertices = new ArrayList<>();
@@ -91,9 +90,9 @@ public class Origami {
         polygons = new ArrayList<>();
         polygons_size = 0;
         papertype = origami.papertype;
-        corners = (ArrayList<double[]>) origami.corners.clone();
-        history = (ArrayList<FoldingAction>) origami.history.clone();
-        history_stream = (ArrayList<int[]>) origami.history_stream.clone();
+        corners = new ArrayList<double[]>(origami.corners);
+        history = new ArrayList<FoldingAction>(origami.history);
+        history_stream = new ArrayList<int[]>(origami.history_stream);
         history_pointer = origami.history_pointer;
         reset();
         execute();
@@ -118,7 +117,7 @@ public class Origami {
      *         the origami space.
      */
     public ArrayList<double[]> vertices() {
-        return vertices;
+        return new ArrayList<double[]>(vertices);
     }
 
     protected int vertices_size = 0;
@@ -149,7 +148,7 @@ public class Origami {
      * @return As described above.
      */
     public ArrayList<ArrayList<Integer>> polygons() {
-        return polygons;
+        return new ArrayList<ArrayList<Integer>>(polygons);
     }
 
     protected int polygons_size = 0;
@@ -225,7 +224,7 @@ public class Origami {
      * @return As described above.
      */
     public ArrayList<FoldingAction> history() {
-        return history;
+        return new ArrayList<FoldingAction>(history);
     }
 
     protected int history_pointer;
@@ -237,7 +236,7 @@ public class Origami {
     protected ArrayList<int[]> history_stream = new ArrayList<>();
 
     public ArrayList<int[]> history_stream() {
-        return history_stream;
+        return new ArrayList<int[]>(history_stream);
     }
 
     /**
@@ -380,7 +379,7 @@ public class Origami {
      * @return As described above.
      */
     public ArrayList<double[]> corners() {
-        return corners;
+        return new ArrayList<double[]>(corners);
     }
 
     protected ArrayList<double[]> vertices2d = new ArrayList<>();
@@ -398,13 +397,13 @@ public class Origami {
      *         the paper space.
      */
     public ArrayList<double[]> vertices2d() {
-        return vertices2d;
+        return new ArrayList<double[]>(vertices2d);
     }
 
     protected ArrayList<Integer> border = new ArrayList<>();
 
     public ArrayList<Integer> border() {
-        return border;
+        return new ArrayList<Integer>(border);
     }
 
     /**
@@ -734,14 +733,14 @@ public class Origami {
 
         if (polygons.get(polygonIndex).size() > 2) {
 
-            for (int point1ind : polygons().get(polygonIndex)) {
-                for (int point2ind : polygons().get(polygonIndex)) {
+            for (int point1ind : polygons.get(polygonIndex)) {
+                for (int point2ind : polygons.get(polygonIndex)) {
 
                     if (Geometry.vector_length(Geometry.vector_product(
-                            Geometry.vector(vertices().get(point1ind),
-                                    vertices().get(polygons().get(polygonIndex).get(0))),
-                            Geometry.vector(vertices().get(point2ind),
-                                    vertices().get(polygons().get(polygonIndex).get(0))))) > 0) {
+                            Geometry.vector(vertices.get(point1ind),
+                                    vertices.get(polygons.get(polygonIndex).get(0))),
+                            Geometry.vector(vertices.get(point2ind),
+                                    vertices.get(polygons.get(polygonIndex).get(0))))) > 0) {
                         return true;
                     }
                 }
@@ -1449,7 +1448,6 @@ public class Origami {
      * and {@link #vertices2d() vertices2d} lists will always have the same
      * initial vertices in the same order.
      */
-    @SuppressWarnings("unchecked")
     final public void reset() {
 
         if (papertype == PaperType.A4) {
@@ -1460,7 +1458,7 @@ public class Origami {
             addVertex(424.3, 0, 0);
             addVertex(424.3, 300, 0);
             addVertex(0, 300, 0);
-            vertices2d = (ArrayList<double[]>) vertices.clone();
+            vertices2d = new ArrayList<double[]>(vertices);
             polygons_size = 0;
             polygons.clear();
             ArrayList<Integer> sokszog0 = new ArrayList<>();
@@ -1469,7 +1467,7 @@ public class Origami {
             sokszog0.add(2);
             sokszog0.add(3);
             addPolygon(sokszog0);
-            corners = (ArrayList<double[]>) vertices.clone();
+            corners = new ArrayList<double[]>(vertices);
         }
 
         if (papertype == PaperType.Square) {
@@ -1480,7 +1478,7 @@ public class Origami {
             addVertex(400, 0, 0);
             addVertex(400, 400, 0);
             addVertex(0, 400, 0);
-            vertices2d = (ArrayList<double[]>) vertices.clone();
+            vertices2d = new ArrayList<double[]>(vertices);
             polygons_size = 0;
             polygons.clear();
             ArrayList<Integer> sokszog0 = new ArrayList<>();
@@ -1489,7 +1487,7 @@ public class Origami {
             sokszog0.add(2);
             sokszog0.add(3);
             addPolygon(sokszog0);
-            corners = (ArrayList<double[]>) vertices.clone();
+            corners = new ArrayList<double[]>(vertices);
         }
 
         if (papertype == PaperType.Hexagon) {
@@ -1502,7 +1500,7 @@ public class Origami {
             addVertex(100, 0, 0);
             addVertex(0, 173.205, 0);
             addVertex(100, 346.41, 0);
-            vertices2d = (ArrayList<double[]>) vertices.clone();
+            vertices2d = new ArrayList<double[]>(vertices);
             polygons_size = 0;
             polygons.clear();
             ArrayList<Integer> sokszog0 = new ArrayList<>();
@@ -1513,7 +1511,7 @@ public class Origami {
             sokszog0.add(1);
             sokszog0.add(0);
             addPolygon(sokszog0);
-            corners = (ArrayList<double[]>) vertices.clone();
+            corners = new ArrayList<double[]>(vertices);
         }
 
         if (papertype == PaperType.Dollar) {
@@ -1524,7 +1522,7 @@ public class Origami {
             addVertex(400, 0, 0);
             addVertex(400, 170, 0);
             addVertex(0, 170, 0);
-            vertices2d = (ArrayList<double[]>) vertices.clone();
+            vertices2d = new ArrayList<double[]>(vertices);
             polygons_size = 0;
             polygons.clear();
             ArrayList<Integer> sokszog0 = new ArrayList<>();
@@ -1533,7 +1531,7 @@ public class Origami {
             sokszog0.add(2);
             sokszog0.add(3);
             addPolygon(sokszog0);
-            corners = (ArrayList<double[]>) vertices.clone();
+            corners = new ArrayList<double[]>(vertices);
         }
 
         if (papertype == PaperType.Forint) {
@@ -1544,7 +1542,7 @@ public class Origami {
             addVertex(400, 0, 0);
             addVertex(400, 181.82, 0);
             addVertex(0, 181.82, 0);
-            vertices2d = (ArrayList<double[]>) vertices.clone();
+            vertices2d = new ArrayList<double[]>(vertices);
             polygons_size = 0;
             polygons.clear();
             ArrayList<Integer> sokszog0 = new ArrayList<>();
@@ -1553,7 +1551,7 @@ public class Origami {
             sokszog0.add(2);
             sokszog0.add(3);
             addPolygon(sokszog0);
-            corners = (ArrayList<double[]>) vertices.clone();
+            corners = new ArrayList<double[]>(vertices);
         }
 
         if (papertype == PaperType.Custom) {
@@ -1563,7 +1561,7 @@ public class Origami {
             for (double[] pont : corners) {
                 addVertex(pont[0], pont[1], 0);
             }
-            vertices2d = (ArrayList<double[]>) vertices.clone();
+            vertices2d = new ArrayList<double[]>(vertices);
 
             polygons_size = 0;
             polygons.clear();
@@ -1574,7 +1572,7 @@ public class Origami {
             addPolygon(sokszog0);
         }
 
-        border = (ArrayList<Integer>) polygons.get(0).clone();
+        border = new ArrayList<Integer>(polygons.get(0));
     }
 
     /**
@@ -2131,10 +2129,9 @@ public class Origami {
         return -5;
     }
 
-    @SuppressWarnings("unchecked")
     public int complexity(int step) {
 
-        Origami origami = clone();
+        Origami origami = copy();
         if (step > origami.history_pointer) {
             return 0;
         }
@@ -2142,7 +2139,7 @@ public class Origami {
 
             origami.undo(origami.history_pointer - step);
             origami.redo(1);
-            ArrayList<int[]> pairs = (ArrayList<int[]>) origami.cutpolygon_pairs.clone();
+            ArrayList<int[]> pairs = new ArrayList<int[]>(origami.cutpolygon_pairs);
             origami.undo(1);
             int maxcompl = 0;
 
@@ -2175,11 +2172,11 @@ public class Origami {
             origami.undo(origami.history_pointer - step + 1);
             origami.redo(1);
 
-            double[] point = origami.history().get(step).ppoint;
-            double[] normal = origami.history().get(step).pnormal;
-            int index = origami.history().get(step).polygonIndex;
+            double[] point = origami.history.get(step).ppoint;
+            double[] normal = origami.history.get(step).pnormal;
+            int index = origami.history.get(step).polygonIndex;
 
-            ArrayList<int[]> pairs = (ArrayList<int[]>) origami.cutpolygon_pairs.clone();
+            ArrayList<int[]> pairs = new ArrayList<int[]>(origami.cutpolygon_pairs);
             ArrayList<Integer> selection = origami.polygonSelect(point, normal, index);
             int compl = 0;
 
@@ -2196,11 +2193,11 @@ public class Origami {
 
     public int difficulty() {
 
-        Origami origami = clone();
+        Origami origami = copy();
         origami.redoAll();
         
         int sum = 0;
-        for (int i = 0; i < origami.history().size(); i++) {
+        for (int i = 0; i < origami.history.size(); i++) {
             sum += origami.complexity(i);
         }
         return sum;
@@ -2335,22 +2332,22 @@ public class Origami {
         
         int poly_ind = findPolygonContaining(point2d);
         ArrayList<Integer> image_poly = polygons.get(poly_ind);
-        double[] orig = vertices().get(image_poly.get(0));
-        double[] orig2d = vertices2d().get(image_poly.get(0));
+        double[] orig = vertices.get(image_poly.get(0));
+        double[] orig2d = vertices2d.get(image_poly.get(0));
         
         for (int point1ind : image_poly) {
             for (int point2ind : image_poly) {
 
-                double[] base1 = Geometry.vector(vertices().get(point1ind), orig);
-                double[] base2 = Geometry.vector(vertices().get(point2ind), orig);
+                double[] base1 = Geometry.vector(vertices.get(point1ind), orig);
+                double[] base2 = Geometry.vector(vertices.get(point2ind), orig);
                 
                 if (Geometry.vector_length(Geometry.vector_product(base1, base2)) > 0) {
                     
                     base1 = Geometry.length_to_1(base1);
                     base2 = Geometry.length_to_1(base2);
                     
-                    double[] base1_2d = Geometry.vector(vertices2d().get(point1ind), orig2d);
-                    double[] base2_2d = Geometry.vector(vertices2d().get(point2ind), orig2d);
+                    double[] base1_2d = Geometry.vector(vertices2d.get(point1ind), orig2d);
+                    double[] base2_2d = Geometry.vector(vertices2d.get(point2ind), orig2d);
                     base1_2d = Geometry.length_to_1(base1_2d);
                     base2_2d = Geometry.length_to_1(base2_2d);
                     
@@ -2372,8 +2369,7 @@ public class Origami {
         return null;
     }
 
-    @Override
-    public Origami clone() {
+    public Origami copy() {
 
         Origami copy = new Origami(this);
         return copy;

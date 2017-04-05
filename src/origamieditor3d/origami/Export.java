@@ -308,7 +308,7 @@ public class Export {
 
         try {
 
-            Origami origami1 = origami.clone();
+            Origami origami1 = origami.copy();
             File pdf = new File(filename);
             if (pdf.exists()) {
                 pdf.delete();
@@ -1442,7 +1442,7 @@ public class Export {
             java.awt.image.BufferedImage img = new java.awt.image.BufferedImage(width, height, java.awt.image.BufferedImage.TYPE_INT_RGB);
             java.awt.Graphics2D gimg = img.createGraphics();
             gimg.setBackground(java.awt.Color.WHITE);
-            Origami origami1 = origami.clone();
+            Origami origami1 = origami.copy();
             Camera cam = new Camera(width / 2, height / 2, 1);
             cam.camera_dir = refcam.camera_dir.clone();
             cam.axis_x = refcam.axis_x.clone();
@@ -1514,7 +1514,7 @@ public class Export {
             System.out.println(fos.getChannel().position() + " bytes written to " + filename);
             fos.close();
 
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             throw OrigamiException.H005;
         }
     }
@@ -1575,7 +1575,7 @@ public class Export {
             java.awt.image.BufferedImage img = new java.awt.image.BufferedImage(width, height, java.awt.image.BufferedImage.TYPE_INT_RGB);
             java.awt.Graphics2D gimg = img.createGraphics();
             gimg.setBackground(java.awt.Color.WHITE);
-            Origami origami1 = origami.clone();
+            Origami origami1 = origami.copy();
             Camera cam = new Camera(width / 2, height / 2, 1);
             cam.camera_dir = refcam.camera_dir.clone();
             cam.axis_x = refcam.axis_x.clone();
@@ -1646,7 +1646,7 @@ public class Export {
             System.out.println(fos.getChannel().position() + " bytes written to " + filename);
             fos.close();
 
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             throw OrigamiException.H005;
         }
     }
