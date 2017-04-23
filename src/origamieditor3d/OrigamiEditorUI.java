@@ -272,9 +272,9 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         pPanel1.panelCamera().xshift = pPanel1.getWidth() / 2;
         pPanel1.panelCamera().yshift = pPanel1.getHeight() / 2;
         try {
-
             terminal1.execute("version 1");
-            terminal1.execute("paper square new");
+            terminal1.execute(OrigamiScripter.paper("square"));
+            terminal1.execute(OrigamiScripter._new());
         }
         catch (Exception exc) {
         }
@@ -1964,10 +1964,10 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
 
                         try {
 
-                            terminal1.execute(
-                                    "title [" + new java.io.File(fpath).getName().replace(".pdf", "")
-                                    + "] filename [" + fpath + "] export-autopdf",
-                                    OrigamiScriptTerminal.Access.ROOT);
+                            terminal1.execute(OrigamiScripter.title(new java.io.File(fpath).getName().replace(".pdf", "")));
+                            terminal1.execute(OrigamiScripter.filename(fpath));
+                            terminal1.execute(OrigamiScripter.export_autopdf(), OrigamiScriptTerminal.Access.ROOT);
+                            
                             oPanel1.update(terminal1.TerminalOrigami);
                             pPanel1.update(terminal1.TerminalOrigami);
                             defaultify();
@@ -2012,7 +2012,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
     private void ui_edit_undoActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_ui_edit_undoActionPerformed
 
         try {
-            terminal1.execute("undo");
+            terminal1.execute(OrigamiScripter.undo());
         }
         catch (Exception exc) {
         }
@@ -2068,12 +2068,12 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
             try {
                 
                 if (save_paper_color) {
-                    terminal1.execute("color " + String.valueOf(oPanel1.getFrontColor()));
+                    terminal1.execute(OrigamiScripter.color(oPanel1.getFrontColor()));
                 }
                 else {
-                    terminal1.execute("uncolor");
+                    terminal1.execute(OrigamiScripter.uncolor());
                 }
-                terminal1.execute("filename [" + fpath + "] export-ori",
+                terminal1.execute(OrigamiScripter.filename(fpath) + OrigamiScripter.export_ori(),
                         OrigamiScriptTerminal.Access.ROOT);
                 oPanel1.update(terminal1.TerminalOrigami);
                 pPanel1.update(terminal1.TerminalOrigami);
@@ -2107,7 +2107,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
             }
 
             try {
-                terminal1.execute("filename [" + fpath + "] export-ctm",
+                terminal1.execute(OrigamiScripter.filename(fpath) + OrigamiScripter.export_ctm(),
                         OrigamiScriptTerminal.Access.ROOT);
                 oPanel1.update(terminal1.TerminalOrigami);
                 pPanel1.update(terminal1.TerminalOrigami);
@@ -2142,7 +2142,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
             if (fpath.endsWith(".ori")) {
 
                 try {
-                    terminal1.execute("filename [" + fpath + "] open",
+                    terminal1.execute(OrigamiScripter.filename(fpath) + OrigamiScripter.open(),
                             OrigamiScriptTerminal.Access.ROOT);
                     oPanel1.update(terminal1.TerminalOrigami);
                     pPanel1.update(terminal1.TerminalOrigami);
@@ -2172,7 +2172,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
             else if (fpath.endsWith(".txt")) {
 
                 try {
-                    terminal1.execute("filename [" + fpath + "] load",
+                    terminal1.execute(OrigamiScripter.filename(fpath) + OrigamiScripter.load(),
                             OrigamiScriptTerminal.Access.ROOT);
                     
                     oPanel1.update(terminal1.TerminalOrigami);
@@ -2218,7 +2218,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         try {
 
             if (!terminal1.history().isEmpty()) {
-                terminal1.execute("redo");
+                terminal1.execute(OrigamiScripter.redo());
             }
         }
         catch (Exception ex) {
@@ -2254,7 +2254,8 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         try {
 
             filepath = null;
-            terminal1.execute("paper hexagon new");
+            terminal1.execute(OrigamiScripter.paper("hexagon"));
+            terminal1.execute(OrigamiScripter._new());
 
             oPanel1.update(terminal1.TerminalOrigami);
             pPanel1.update(terminal1.TerminalOrigami);
@@ -2295,7 +2296,8 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         try {
 
             filepath = null;
-            terminal1.execute("paper square new");
+            terminal1.execute(OrigamiScripter.paper("square"));
+            terminal1.execute(OrigamiScripter._new());
 
             oPanel1.update(terminal1.TerminalOrigami);
             pPanel1.update(terminal1.TerminalOrigami);
@@ -2336,7 +2338,8 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         try {
 
             filepath = null;
-            terminal1.execute("paper a4 new");
+            terminal1.execute(OrigamiScripter.paper("a4"));
+            terminal1.execute(OrigamiScripter._new());
 
             oPanel1.update(terminal1.TerminalOrigami);
             pPanel1.update(terminal1.TerminalOrigami);
@@ -2377,7 +2380,8 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         try {
 
             filepath = null;
-            terminal1.execute("paper usd new");
+            terminal1.execute(OrigamiScripter.paper("usd"));
+            terminal1.execute(OrigamiScripter._new());
 
             oPanel1.update(terminal1.TerminalOrigami);
             pPanel1.update(terminal1.TerminalOrigami);
@@ -2488,12 +2492,12 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
                 try {
                     
                     if (save_paper_color) {
-                        terminal1.execute("color " + String.valueOf(oPanel1.getFrontColor()));
+                        terminal1.execute(OrigamiScripter.color(oPanel1.getFrontColor()));
                     }
                     else {
-                        terminal1.execute("uncolor");
+                        terminal1.execute(OrigamiScripter.uncolor());
                     }
-                    terminal1.execute("filename [" + fpath + "] export-ori",
+                    terminal1.execute(OrigamiScripter.filename(fpath) + OrigamiScripter.export_ori(),
                             OrigamiScriptTerminal.Access.ROOT);
                     oPanel1.update(terminal1.TerminalOrigami);
                     pPanel1.update(terminal1.TerminalOrigami);
@@ -2516,12 +2520,12 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
             try {
                 
                 if (save_paper_color) {
-                    terminal1.execute("color " + String.valueOf(oPanel1.getFrontColor()));
+                    terminal1.execute(OrigamiScripter.color(oPanel1.getFrontColor()));
                 }
                 else {
-                    terminal1.execute("uncolor");
+                    terminal1.execute(OrigamiScripter.uncolor());
                 }
-                terminal1.execute("filename [" + filepath + "] export-ori",
+                terminal1.execute(OrigamiScripter.filename(filepath) + OrigamiScripter.export_ori(),
                         OrigamiScriptTerminal.Access.ROOT);
                 oPanel1.update(terminal1.TerminalOrigami);
                 pPanel1.update(terminal1.TerminalOrigami);
@@ -2641,7 +2645,9 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         if (fpath != null) {
 
             try {
-                terminal1.execute("filename [" + fpath + "] load-texture");
+                
+                terminal1.execute(OrigamiScripter.filename(fpath));
+                terminal1.execute(OrigamiScripter.load_texture());
                 tex = terminal1.paper_texture();
                 if (tex.getHeight() < (int) terminal1.TerminalOrigami.paperHeight()
                         || tex.getWidth() < (int) terminal1.TerminalOrigami.paperWidth()) {
@@ -2847,17 +2853,14 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
 
                         try {
 
-                            terminal1.execute(
-                                    "camera [" + oPanel1.panelCamera().camera_dir()[0] + " "
-                                            + oPanel1.panelCamera().camera_dir()[1] + " "
-                                            + oPanel1.panelCamera().camera_dir()[2] + "] ["
-                                            + oPanel1.panelCamera().axis_x()[0] + " " + oPanel1.panelCamera().axis_x()[1]
-                                            + " " + oPanel1.panelCamera().axis_x()[2] + "] ["
-                                            + oPanel1.panelCamera().axis_y()[0] + " " + oPanel1.panelCamera().axis_y()[1]
-                                            + " " + oPanel1.panelCamera().axis_y()[2] + "] color "
-                                            + oPanel1.getFrontColor() + " filename ["
-                                            + fpath + "] export-revolving-gif",
+                            terminal1.execute(OrigamiScripter.camera(
+                                    oPanel1.panelCamera().camera_dir(),
+                                    oPanel1.panelCamera().axis_x(),
+                                    oPanel1.panelCamera().axis_y()));
+                            terminal1.execute(OrigamiScripter.color(oPanel1.getFrontColor()));
+                            terminal1.execute(OrigamiScripter.filename(fpath) + OrigamiScripter.export_revolving_gif(),
                                     OrigamiScriptTerminal.Access.ROOT);
+                            
                             oPanel1.update(terminal1.TerminalOrigami);
                             pPanel1.update(terminal1.TerminalOrigami);
                             defaultify();
@@ -2929,17 +2932,14 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
 
                         try {
 
-                            terminal1.execute(
-                                    "camera [" + oPanel1.panelCamera().camera_dir()[0] + " "
-                                            + oPanel1.panelCamera().camera_dir()[1] + " "
-                                            + oPanel1.panelCamera().camera_dir()[2] + "] ["
-                                            + oPanel1.panelCamera().axis_x()[0] + " " + oPanel1.panelCamera().axis_x()[1]
-                                            + " " + oPanel1.panelCamera().axis_x()[2] + "] ["
-                                            + oPanel1.panelCamera().axis_y()[0] + " " + oPanel1.panelCamera().axis_y()[1]
-                                            + " " + oPanel1.panelCamera().axis_y()[2] + "] color "
-                                            + oPanel1.getFrontColor() + " filename ["
-                                            + fpath + "] export-gif",
+                            terminal1.execute(OrigamiScripter.camera(
+                                    oPanel1.panelCamera().camera_dir(),
+                                    oPanel1.panelCamera().axis_x(),
+                                    oPanel1.panelCamera().axis_y()));
+                            terminal1.execute(OrigamiScripter.color(oPanel1.getFrontColor()));
+                            terminal1.execute(OrigamiScripter.filename(fpath) + OrigamiScripter.export_gif(),
                                     OrigamiScriptTerminal.Access.ROOT);
+                            
                             oPanel1.update(terminal1.TerminalOrigami);
                             pPanel1.update(terminal1.TerminalOrigami);
                             defaultify();
@@ -2988,7 +2988,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
         if (fpath != null) {
             
             try {
-                terminal1.execute("filename [" + fpath + "] export-png",
+                terminal1.execute(OrigamiScripter.filename(fpath) + OrigamiScripter.export_png(),
                         OrigamiScriptTerminal.Access.ROOT);
                 oPanel1.update(terminal1.TerminalOrigami);
                 pPanel1.update(terminal1.TerminalOrigami);
@@ -3248,12 +3248,12 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
             
             try {
                 if (save_paper_color) {
-                    terminal1.execute("color " + String.valueOf(oPanel1.getFrontColor()));
+                    terminal1.execute(OrigamiScripter.color(oPanel1.getFrontColor()));
                 }
                 else {
-                    terminal1.execute("uncolor");
+                    terminal1.execute(OrigamiScripter.uncolor());
                 }
-                terminal1.execute("filename [" + fpath + "] export-jar",
+                terminal1.execute(OrigamiScripter.filename(fpath) + OrigamiScripter.export_jar(),
                         OrigamiScriptTerminal.Access.ROOT);
                 oPanel1.update(terminal1.TerminalOrigami);
                 pPanel1.update(terminal1.TerminalOrigami);
