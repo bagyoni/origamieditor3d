@@ -1,5 +1,7 @@
 package origamieditor3d;
 
+import origamieditor3d.ui.OrigamiEditorUI;
+
 public class MainClass {
 
     /**

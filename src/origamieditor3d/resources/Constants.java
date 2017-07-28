@@ -1,4 +1,4 @@
-package origamieditor3d;
+package origamieditor3d.resources;
 
 public class Constants {
     

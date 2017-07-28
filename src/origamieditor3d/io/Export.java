@@ -1,16 +1,4 @@
-// This file is part of Origami Editor 3D.
-// Copyright (C) 2013, 2014, 2015 Bágyoni Attila <ba-sz-at@users.sourceforge.net>
-// Origami Editor 3D is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-// You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <http:// www.gnu.org/licenses/>.
-package origamieditor3d.origami;
+package origamieditor3d.io;
 
 import java.awt.Color;
 import java.io.File;
@@ -19,7 +7,12 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 
-import origamieditor3d.Constants;
+import origamieditor3d.graphics.Camera;
+import origamieditor3d.origami.Geometry;
+import origamieditor3d.origami.OrigamiGen1;
+import origamieditor3d.origami.OrigamiException;
+import origamieditor3d.origami.Origami;
+import origamieditor3d.resources.Constants;
 import origamieditor3d.resources.Instructor;
 
 /**
@@ -42,10 +35,10 @@ public class Export {
             kamera.adjust(origami);
 
             int haromszogek_hossz = 0;
-            for (int i = 0; i < origami.polygons_size(); i++) {
+            for (int i = 0; i < origami.getPolygonsSize(); i++) {
 
                 if (origami.isNonDegenerate(i)) {
-                    haromszogek_hossz += origami.polygons().get(i).size() - 2;
+                    haromszogek_hossz += origami.getPolygons().get(i).size() - 2;
                 }
             }
 
@@ -74,7 +67,7 @@ public class Export {
             bajtlista.add((byte) (uj_int >>> 24));
 
             //Pontok száma
-            uj_int = origami.vertices_size();
+            uj_int = origami.getVerticesSize();
             bajtlista.add((byte) (uj_int));
             bajtlista.add((byte) (uj_int >>> 8));
             bajtlista.add((byte) (uj_int >>> 16));
@@ -171,25 +164,25 @@ public class Export {
             bajtlista.add((byte) (uj_int >>> 24));
 
             //Háromszögek
-            for (int i = 0; i < origami.polygons_size(); i++) {
+            for (int i = 0; i < origami.getPolygonsSize(); i++) {
 
                 if (origami.isNonDegenerate(i)) {
 
-                    for (int ii = 1; ii < origami.polygons().get(i).size() - 1; ii++) {
+                    for (int ii = 1; ii < origami.getPolygons().get(i).size() - 1; ii++) {
 
-                        uj_int = origami.polygons().get(i).get(0);
+                        uj_int = origami.getPolygons().get(i).get(0);
                         bajtlista.add((byte) (uj_int));
                         bajtlista.add((byte) (uj_int >>> 8));
                         bajtlista.add((byte) (uj_int >>> 16));
                         bajtlista.add((byte) (uj_int >>> 24));
 
-                        uj_int = origami.polygons().get(i).get(ii);
+                        uj_int = origami.getPolygons().get(i).get(ii);
                         bajtlista.add((byte) (uj_int));
                         bajtlista.add((byte) (uj_int >>> 8));
                         bajtlista.add((byte) (uj_int >>> 16));
                         bajtlista.add((byte) (uj_int >>> 24));
 
-                        uj_int = origami.polygons().get(i).get(ii + 1);
+                        uj_int = origami.getPolygons().get(i).get(ii + 1);
                         bajtlista.add((byte) (uj_int));
                         bajtlista.add((byte) (uj_int >>> 8));
                         bajtlista.add((byte) (uj_int >>> 16));
@@ -206,21 +199,21 @@ public class Export {
             bajtlista.add((byte) (uj_int >>> 24));
 
             //Csúcsok
-            for (int i = 0; i < origami.vertices_size(); i++) {
+            for (int i = 0; i < origami.getVerticesSize(); i++) {
 
-                uj_int = Float.floatToIntBits((float) origami.vertices().get(i)[0] - (float) kamera.camera_pos[0]);
+                uj_int = Float.floatToIntBits((float) origami.getVertices().get(i)[0] - (float) kamera.getCamPosition()[0]);
                 bajtlista.add((byte) (uj_int));
                 bajtlista.add((byte) (uj_int >>> 8));
                 bajtlista.add((byte) (uj_int >>> 16));
                 bajtlista.add((byte) (uj_int >>> 24));
 
-                uj_int = Float.floatToIntBits((float) origami.vertices().get(i)[1] - (float) kamera.camera_pos[1]);
+                uj_int = Float.floatToIntBits((float) origami.getVertices().get(i)[1] - (float) kamera.getCamPosition()[1]);
                 bajtlista.add((byte) (uj_int));
                 bajtlista.add((byte) (uj_int >>> 8));
                 bajtlista.add((byte) (uj_int >>> 16));
                 bajtlista.add((byte) (uj_int >>> 24));
 
-                uj_int = Float.floatToIntBits((float) origami.vertices().get(i)[2] - (float) kamera.camera_pos[2]);
+                uj_int = Float.floatToIntBits((float) origami.getVertices().get(i)[2] - (float) kamera.getCamPosition()[2]);
                 bajtlista.add((byte) (uj_int));
                 bajtlista.add((byte) (uj_int >>> 8));
                 bajtlista.add((byte) (uj_int >>> 16));
@@ -265,15 +258,15 @@ public class Export {
                 }
 
                 //the UV mapping is defined by the vertices in the paper space
-                for (int i = 0; i < origami.vertices_size(); i++) {
+                for (int i = 0; i < origami.getVerticesSize(); i++) {
 
-                    uj_int = Float.floatToIntBits((float) (origami.vertices2d().get(i)[0] / origami.paperWidth()));
+                    uj_int = Float.floatToIntBits((float) (origami.getVertices2d().get(i)[0] / origami.paperWidth()));
                     bajtlista.add((byte) (uj_int));
                     bajtlista.add((byte) (uj_int >>> 8));
                     bajtlista.add((byte) (uj_int >>> 16));
                     bajtlista.add((byte) (uj_int >>> 24));
 
-                    uj_int = Float.floatToIntBits((float) (1 - origami.vertices2d().get(i)[1] / origami.paperHeight()));
+                    uj_int = Float.floatToIntBits((float) (1 - origami.getVertices2d().get(i)[1] / origami.paperHeight()));
                     bajtlista.add((byte) (uj_int));
                     bajtlista.add((byte) (uj_int >>> 8));
                     bajtlista.add((byte) (uj_int >>> 16));
@@ -324,32 +317,32 @@ public class Export {
             int ures_muveletek = 0;
             ArrayList<Integer> UresIndexek = new ArrayList<>();
 
-            for (int i = 0; i < origami1.history().size(); i++) {
+            for (int i = 0; i < origami1.getHistory().size(); i++) {
 
-                if (origami1.history().get(i).foldID == Origami.FOLD_ROTATION) {
+                if (origami1.getHistory().get(i).foldID == Origami.FoldingAction.FOLD_ROTATION) {
 
-                    if (i < origami1.history().size() - 1) {
+                    if (i < origami1.getHistory().size() - 1) {
 
-                        if (origami1.history().get(i + 1).foldID == Origami.FOLD_ROTATION
-                                && origami1.history().get(i + 1).ppoint == origami1.history().get(i).ppoint
-                                && origami1.history().get(i + 1).pnormal == origami1.history().get(i).pnormal) {
+                        if (origami1.getHistory().get(i + 1).foldID == Origami.FoldingAction.FOLD_ROTATION
+                                && origami1.getHistory().get(i + 1).ppoint == origami1.getHistory().get(i).ppoint
+                                && origami1.getHistory().get(i + 1).pnormal == origami1.getHistory().get(i).pnormal) {
                             ures_muveletek++;
                             UresIndexek.add(i + 1);
                         }
                     }
-                } else if (origami1.history().get(i).foldID == Origami.FOLD_ROTATION_P) {
+                } else if (origami1.getHistory().get(i).foldID == Origami.FoldingAction.FOLD_ROTATION_P) {
 
-                    if (i < origami1.history().size() - 1) {
+                    if (i < origami1.getHistory().size() - 1) {
 
-                        if (origami1.history().get(i + 1).foldID == Origami.FOLD_ROTATION_P
-                                && origami1.history().get(i + 1).ppoint == origami1.history().get(i).ppoint
-                                && origami1.history().get(i + 1).pnormal == origami1.history().get(i).pnormal
-                                && origami1.history().get(i + 1).polygonIndex == origami1.history().get(i).polygonIndex) {
+                        if (origami1.getHistory().get(i + 1).foldID == Origami.FoldingAction.FOLD_ROTATION_P
+                                && origami1.getHistory().get(i + 1).ppoint == origami1.getHistory().get(i).ppoint
+                                && origami1.getHistory().get(i + 1).pnormal == origami1.getHistory().get(i).pnormal
+                                && origami1.getHistory().get(i + 1).polygonIndex == origami1.getHistory().get(i).polygonIndex) {
                             ures_muveletek++;
                             UresIndexek.add(i + 1);
                         }
                     }
-                } else if (origami1.history().get(i).foldID == Origami.FOLD_CREASE) {
+                } else if (origami1.getHistory().get(i).foldID == Origami.FoldingAction.FOLD_CREASE) {
 
                     ures_muveletek++;
                     UresIndexek.add(i);
@@ -370,33 +363,33 @@ public class Export {
             kamera.nextOrthogonalView();
 
             //Felmérjük az olyan lépések számát, amikhez szemszögváltás kell.
-            for (int i = 0; i < origami1.history().size(); i++) {
+            for (int i = 0; i < origami1.getHistory().size(); i++) {
 
-                double[] regiVaszonNV = kamera.camera_dir;
+                double[] regiVaszonNV = kamera.getCamDirection();
 
-                kamera.camera_dir = Geometry.vector_product(origami1.history().get(i).pnormal,
-                        new double[]{0, 1, 0});
+                kamera.setCamDirection(Geometry.crossProduct(origami1.getHistory().get(i).pnormal,
+                        new double[]{0, 1, 0}));
 
-                if (Geometry.vector_length(kamera.camera_dir) < .00000001) {
-                    kamera.camera_dir = new double[]{0, 0, 1};
+                if (Geometry.vectorLength(kamera.getCamDirection()) < .00000001) {
+                    kamera.setCamDirection(new double[]{0, 0, 1});
                 }
 
-                kamera.camera_dir = new double[]{kamera.camera_dir[0] / Geometry.vector_length(kamera.camera_dir),
-                    kamera.camera_dir[1] / Geometry.vector_length(kamera.camera_dir),
-                    kamera.camera_dir[2] / Geometry.vector_length(kamera.camera_dir)};
+                kamera.setCamDirection(new double[]{kamera.getCamDirection()[0] / Geometry.vectorLength(kamera.getCamDirection()),
+                    kamera.getCamDirection()[1] / Geometry.vectorLength(kamera.getCamDirection()),
+                    kamera.getCamDirection()[2] / Geometry.vectorLength(kamera.getCamDirection())});
 
-                if (Geometry.vector_length(Geometry.vector_product(regiVaszonNV, kamera.camera_dir)) > .00000001) {
+                if (Geometry.vectorLength(Geometry.crossProduct(regiVaszonNV, kamera.getCamDirection())) > .00000001) {
 
                     forgatasok++;
                     ForgatasIndexek.add(i);
-                    double cos = Geometry.scalar_product(regiVaszonNV, kamera.camera_dir) / Geometry.vector_length(regiVaszonNV) / Geometry.vector_length(kamera.camera_dir);
+                    double cos = Geometry.scalarProduct(regiVaszonNV, kamera.getCamDirection()) / Geometry.vectorLength(regiVaszonNV) / Geometry.vectorLength(kamera.getCamDirection());
                     ForgatasSzogek.add((int) (Math.acos(cos >= -1 && cos <= 1 ? cos : 1) / Math.PI * 180));
                 }
             }
-            ForgatasIndexek.add(origami1.history().size());
+            ForgatasIndexek.add(origami1.getHistory().size());
 
             //Egy oldalon 6 cella van (papírmérettôl függetlenül)
-            int cellak_szama = origami1.history().size() + forgatasok - ures_muveletek + 2;
+            int cellak_szama = origami1.getHistory().size() + forgatasok - ures_muveletek + 2;
 
             //Fejléc
             String fajl = "";
@@ -571,7 +564,7 @@ public class Export {
             int objindex = (int) Math.ceil((double) cellak_szama / 6) + 5;
 
             //Ábrák
-            for (int i = 0; i <= origami1.history().size(); i++) {
+            for (int i = 0; i <= origami1.getHistory().size(); i++) {
 
                 int x = 0, y = 0;
                 String kep;
@@ -615,7 +608,7 @@ public class Export {
                     }
 
                     kamera.adjust(origami1);
-                    kamera.setZoom(figure_frame / Math.max(kamera.circumscribedSquareSize(origami1), 1.) * kamera.zoom());
+                    kamera.setZoom(figure_frame / Math.max(kamera.circumscribedSquareSize(origami1), 1.) * kamera.getZoom());
                     kep = kamera.drawFaces(x, y, origami1) + kamera.drawEdges(x, y, origami1);
 
                     Offszetek.add(bajtszam);
@@ -642,36 +635,36 @@ public class Export {
                     fajl = "";
                 }
 
-                if (!UresIndexek.contains(i) && i < origami1.history().size()) {
+                if (!UresIndexek.contains(i) && i < origami1.getHistory().size()) {
 
-                    double[] regiVaszonNV = kamera.camera_dir;
+                    double[] regiVaszonNV = kamera.getCamDirection();
 
-                    kamera.camera_dir = Geometry.vector_product(origami1.history().get(i).pnormal,
-                            new double[]{0, 1, 0});
+                    kamera.setCamDirection(Geometry.crossProduct(origami1.getHistory().get(i).pnormal,
+                            new double[]{0, 1, 0}));
 
-                    if (Geometry.scalar_product(kamera.camera_dir, kamera.camera_dir) < 0.00000001) {
-                        kamera.camera_dir = new double[]{0, 0, 1};
+                    if (Geometry.scalarProduct(kamera.getCamDirection(), kamera.getCamDirection()) < 0.00000001) {
+                        kamera.setCamDirection(new double[]{0, 0, 1});
                     }
 
-                    kamera.camera_dir = new double[]{kamera.camera_dir[0] / Geometry.vector_length(kamera.camera_dir),
-                        kamera.camera_dir[1] / Geometry.vector_length(kamera.camera_dir),
-                        kamera.camera_dir[2] / Geometry.vector_length(kamera.camera_dir)};
+                    kamera.setCamDirection(new double[]{kamera.getCamDirection()[0] / Geometry.vectorLength(kamera.getCamDirection()),
+                        kamera.getCamDirection()[1] / Geometry.vectorLength(kamera.getCamDirection()),
+                        kamera.getCamDirection()[2] / Geometry.vectorLength(kamera.getCamDirection())});
 
-                    kamera.axis_y = new double[]{0, 1, 0};
-                    kamera.axis_x = Geometry.vector_product(kamera.camera_dir, kamera.axis_y);
+                    kamera.setYAxis(new double[]{0, 1, 0});
+                    kamera.setXAxis(Geometry.crossProduct(kamera.getCamDirection(), kamera.getYAxis()));
 
-                    kamera.axis_x = new double[]{kamera.axis_x[0] / Geometry.vector_length(kamera.axis_x) * kamera.zoom(),
-                        kamera.axis_x[1] / Geometry.vector_length(kamera.axis_x) * kamera.zoom(),
-                        kamera.axis_x[2] / Geometry.vector_length(kamera.axis_x) * kamera.zoom()};
+                    kamera.setXAxis(new double[]{kamera.getXAxis()[0] / Geometry.vectorLength(kamera.getXAxis()) * kamera.getZoom(),
+                        kamera.getXAxis()[1] / Geometry.vectorLength(kamera.getXAxis()) * kamera.getZoom(),
+                        kamera.getXAxis()[2] / Geometry.vectorLength(kamera.getXAxis()) * kamera.getZoom()});
 
-                    kamera.axis_y = new double[]{kamera.axis_y[0] / Geometry.vector_length(kamera.axis_y) * kamera.zoom(),
-                        kamera.axis_y[1] / Geometry.vector_length(kamera.axis_y) * kamera.zoom(),
-                        kamera.axis_y[2] / Geometry.vector_length(kamera.axis_y) * kamera.zoom()};
+                    kamera.setYAxis(new double[]{kamera.getYAxis()[0] / Geometry.vectorLength(kamera.getYAxis()) * kamera.getZoom(),
+                        kamera.getYAxis()[1] / Geometry.vectorLength(kamera.getYAxis()) * kamera.getZoom(),
+                        kamera.getYAxis()[2] / Geometry.vectorLength(kamera.getYAxis()) * kamera.getZoom()});
 
-                    if (Geometry.scalar_product(regiVaszonNV, kamera.camera_dir) < 0 && !ForgatasIndexek.contains(i)) {
+                    if (Geometry.scalarProduct(regiVaszonNV, kamera.getCamDirection()) < 0 && !ForgatasIndexek.contains(i)) {
 
-                        kamera.camera_dir = Geometry.vector(Geometry.nullvector, kamera.camera_dir);
-                        kamera.axis_x = Geometry.vector(Geometry.nullvector, kamera.axis_x);
+                        kamera.setCamDirection(Geometry.vectorDiff(Geometry.nullvector, kamera.getCamDirection()));
+                        kamera.setXAxis(Geometry.vectorDiff(Geometry.nullvector, kamera.getXAxis()));
                     }
 
                     switch ((objindex - (int) Math.ceil((double) cellak_szama / 6)) % 6) {
@@ -714,50 +707,50 @@ public class Export {
                     double[] siknv;
 
                     kamera.adjust(origami1);
-                    kamera.setZoom(figure_frame / Math.max(kamera.circumscribedSquareSize(origami1), 1.) * kamera.zoom());
+                    kamera.setZoom(figure_frame / Math.max(kamera.circumscribedSquareSize(origami1), 1.) * kamera.getZoom());
 
-                    switch (origami1.history().get(i).foldID) {
+                    switch (origami1.getHistory().get(i).foldID) {
 
-                        case Origami.FOLD_REFLECTION:
-                            sikpont = origami1.history().get(i).ppoint;
-                            siknv = origami1.history().get(i).pnormal;
+                        case Origami.FoldingAction.FOLD_REFLECTION:
+                            sikpont = origami1.getHistory().get(i).ppoint;
+                            siknv = origami1.getHistory().get(i).pnormal;
                             kep = kamera.drawFaces(x, y, origami1) + kamera.drawEdges(x, y, origami1) + kamera.pfdLiner(x, y, sikpont, siknv);
                             break;
 
-                        case Origami.FOLD_ROTATION:
-                            sikpont = origami1.history().get(i).ppoint;
-                            siknv = origami1.history().get(i).pnormal;
+                        case Origami.FoldingAction.FOLD_ROTATION:
+                            sikpont = origami1.getHistory().get(i).ppoint;
+                            siknv = origami1.getHistory().get(i).pnormal;
                             kep = kamera.drawFaces(x, y, origami1) + kamera.drawEdges(x, y, origami1) + kamera.pfdLiner(x, y, sikpont, siknv);
                             break;
 
-                        case Origami.FOLD_REFLECTION_P:
-                            sikpont = origami1.history().get(i).ppoint;
-                            siknv = origami1.history().get(i).pnormal;
-                            kep = kamera.drawSelection(x, y, sikpont, siknv, origami1.history().get(i).polygonIndex, origami1) + kamera.drawEdges(x, y, origami1) + kamera.pfdLiner(x, y, sikpont, siknv);
+                        case Origami.FoldingAction.FOLD_REFLECTION_P:
+                            sikpont = origami1.getHistory().get(i).ppoint;
+                            siknv = origami1.getHistory().get(i).pnormal;
+                            kep = kamera.drawSelection(x, y, sikpont, siknv, origami1.getHistory().get(i).polygonIndex, origami1) + kamera.drawEdges(x, y, origami1) + kamera.pfdLiner(x, y, sikpont, siknv);
                             break;
 
-                        case Origami.FOLD_ROTATION_P:
-                            sikpont = origami1.history().get(i).ppoint;
-                            siknv = origami1.history().get(i).pnormal;
-                            kep = kamera.drawSelection(x, y, sikpont, siknv, origami1.history().get(i).polygonIndex, origami1) + kamera.drawEdges(x, y, origami1) + kamera.pfdLiner(x, y, sikpont, siknv);
+                        case Origami.FoldingAction.FOLD_ROTATION_P:
+                            sikpont = origami1.getHistory().get(i).ppoint;
+                            siknv = origami1.getHistory().get(i).pnormal;
+                            kep = kamera.drawSelection(x, y, sikpont, siknv, origami1.getHistory().get(i).polygonIndex, origami1) + kamera.drawEdges(x, y, origami1) + kamera.pfdLiner(x, y, sikpont, siknv);
                             break;
 
-                        case Origami.FOLD_CREASE:
-                            sikpont = origami1.history().get(i).ppoint;
-                            siknv = origami1.history().get(i).pnormal;
+                        case Origami.FoldingAction.FOLD_CREASE:
+                            sikpont = origami1.getHistory().get(i).ppoint;
+                            siknv = origami1.getHistory().get(i).pnormal;
                             kep = kamera.drawFaces(x, y, origami1) + kamera.drawEdges(x, y, origami1) + kamera.pfdLiner(x, y, sikpont, siknv);
                             break;
 
-                        case Origami.FOLD_MUTILATION:
-                            sikpont = origami1.history().get(i).ppoint;
-                            siknv = origami1.history().get(i).pnormal;
+                        case Origami.FoldingAction.FOLD_MUTILATION:
+                            sikpont = origami1.getHistory().get(i).ppoint;
+                            siknv = origami1.getHistory().get(i).pnormal;
                             kep = kamera.drawFaces(x, y, origami1) + kamera.drawEdges(x, y, origami1) + kamera.pfdLiner(x, y, sikpont, siknv);
                             break;
 
-                        case Origami.FOLD_MUTILATION_P:
-                            sikpont = origami1.history().get(i).ppoint;
-                            siknv = origami1.history().get(i).pnormal;
-                            kep = kamera.drawSelection(x, y, sikpont, siknv, (int) origami1.history().get(i).polygonIndex, origami1) + kamera.drawEdges(x, y, origami1) + kamera.pfdLiner(x, y, sikpont, siknv);
+                        case Origami.FoldingAction.FOLD_MUTILATION_P:
+                            sikpont = origami1.getHistory().get(i).ppoint;
+                            siknv = origami1.getHistory().get(i).pnormal;
+                            kep = kamera.drawSelection(x, y, sikpont, siknv, (int) origami1.getHistory().get(i).polygonIndex, origami1) + kamera.drawEdges(x, y, origami1) + kamera.pfdLiner(x, y, sikpont, siknv);
                             break;
 
                         default:
@@ -789,17 +782,17 @@ public class Export {
                     fajl = "";
                 }
                 origami1.execute(i, 1);
-                if (i < origami1.history().size()) {
-                    if (origami1.history().get(i).foldID == 1) {
+                if (i < origami1.getHistory().size()) {
+                    if (origami1.getHistory().get(i).foldID == 1) {
 
-                        double[] ppoint = origami1.history().get(i).ppoint;
-                        double[] pnormal = origami1.history().get(i).pnormal;
+                        double[] ppoint = origami1.getHistory().get(i).ppoint;
+                        double[] pnormal = origami1.getHistory().get(i).pnormal;
                         foldtypes.add(origami1.foldType(ppoint, pnormal));
-                    } else if (origami1.history().get(i).foldID == 3) {
+                    } else if (origami1.getHistory().get(i).foldID == 3) {
 
-                        double[] ppoint = origami1.history().get(i).ppoint;
-                        double[] pnormal = origami1.history().get(i).pnormal;
-                        int polygonIndex = origami1.history().get(i).polygonIndex;
+                        double[] ppoint = origami1.getHistory().get(i).ppoint;
+                        double[] pnormal = origami1.getHistory().get(i).pnormal;
+                        int polygonIndex = origami1.getHistory().get(i).polygonIndex;
                         foldtypes.add(origami1.foldType(ppoint, pnormal, polygonIndex));
                     } else {
                         foldtypes.add(null);
@@ -807,7 +800,7 @@ public class Export {
                 }
             }
 
-            int dif = Origami.difficultyLevel(origami1.difficulty());
+            int dif = OrigamiGen1.difficultyLevel(origami1.difficulty());
             String difname = null;
             switch (dif) {
                 case 0:
@@ -899,7 +892,7 @@ public class Export {
             int sorszam = 1;
 
             //Szövegek
-            for (int i = 0; i <= origami1.history().size(); i++) {
+            for (int i = 0; i <= origami1.getHistory().size(); i++) {
 
                 String utasitas = "";
                 String koo = "";
@@ -908,7 +901,7 @@ public class Export {
 
                 if (ForgatasIndexek.contains(i)) {
 
-                    if (i == origami1.history().size()) {
+                    if (i == origami1.getHistory().size()) {
 
                         utasitas = Instructor.getString("outro", sorszam);
                         sorszam++;
@@ -984,42 +977,42 @@ public class Export {
                     fajl = "";
                 }
 
-                if (!UresIndexek.contains(i) && i < origami1.history().size()) {
+                if (!UresIndexek.contains(i) && i < origami1.getHistory().size()) {
 
-                    double[] regiVaszonNV = kamera.camera_dir;
+                    double[] regiVaszonNV = kamera.getCamDirection();
 
-                    kamera.camera_dir = Geometry.vector_product(origami1.history().get(i).pnormal,
-                            new double[]{0, 1, 0});
+                    kamera.setCamDirection(Geometry.crossProduct(origami1.getHistory().get(i).pnormal,
+                            new double[]{0, 1, 0}));
 
-                    if (Geometry.scalar_product(kamera.camera_dir, kamera.camera_dir) < 0.00000001) {
-                        kamera.camera_dir = new double[]{0, 0, 1};
+                    if (Geometry.scalarProduct(kamera.getCamDirection(), kamera.getCamDirection()) < 0.00000001) {
+                        kamera.setCamDirection(new double[]{0, 0, 1});
                     }
 
-                    kamera.camera_dir = new double[]{kamera.camera_dir[0] / Geometry.vector_length(kamera.camera_dir),
-                        kamera.camera_dir[1] / Geometry.vector_length(kamera.camera_dir),
-                        kamera.camera_dir[2] / Geometry.vector_length(kamera.camera_dir)};
+                    kamera.setCamDirection(new double[]{kamera.getCamDirection()[0] / Geometry.vectorLength(kamera.getCamDirection()),
+                        kamera.getCamDirection()[1] / Geometry.vectorLength(kamera.getCamDirection()),
+                        kamera.getCamDirection()[2] / Geometry.vectorLength(kamera.getCamDirection())});
 
-                    kamera.axis_y = new double[]{0, 1, 0};
-                    kamera.axis_x = Geometry.vector_product(kamera.camera_dir, kamera.axis_y);
+                    kamera.setYAxis(new double[]{0, 1, 0});
+                    kamera.setXAxis(Geometry.crossProduct(kamera.getCamDirection(), kamera.getYAxis()));
 
-                    kamera.axis_x = new double[]{kamera.axis_x[0] / Geometry.vector_length(kamera.axis_x) * kamera.zoom(),
-                        kamera.axis_x[1] / Geometry.vector_length(kamera.axis_x) * kamera.zoom(),
-                        kamera.axis_x[2] / Geometry.vector_length(kamera.axis_x) * kamera.zoom()};
+                    kamera.setXAxis(new double[]{kamera.getXAxis()[0] / Geometry.vectorLength(kamera.getXAxis()) * kamera.getZoom(),
+                        kamera.getXAxis()[1] / Geometry.vectorLength(kamera.getXAxis()) * kamera.getZoom(),
+                        kamera.getXAxis()[2] / Geometry.vectorLength(kamera.getXAxis()) * kamera.getZoom()});
 
-                    kamera.axis_y = new double[]{kamera.axis_y[0] / Geometry.vector_length(kamera.axis_y) * kamera.zoom(),
-                        kamera.axis_y[1] / Geometry.vector_length(kamera.axis_y) * kamera.zoom(),
-                        kamera.axis_y[2] / Geometry.vector_length(kamera.axis_y) * kamera.zoom()};
+                    kamera.setYAxis(new double[]{kamera.getYAxis()[0] / Geometry.vectorLength(kamera.getYAxis()) * kamera.getZoom(),
+                        kamera.getYAxis()[1] / Geometry.vectorLength(kamera.getYAxis()) * kamera.getZoom(),
+                        kamera.getYAxis()[2] / Geometry.vectorLength(kamera.getYAxis()) * kamera.getZoom()});
 
-                    if (Geometry.scalar_product(regiVaszonNV, kamera.camera_dir) < 0 && !ForgatasIndexek.contains(i)) {
+                    if (Geometry.scalarProduct(regiVaszonNV, kamera.getCamDirection()) < 0 && !ForgatasIndexek.contains(i)) {
 
-                        kamera.camera_dir = Geometry.vector(Geometry.nullvector, kamera.camera_dir);
-                        kamera.axis_x = Geometry.vector(Geometry.nullvector, kamera.axis_x);
+                        kamera.setCamDirection(Geometry.vectorDiff(Geometry.nullvector, kamera.getCamDirection()));
+                        kamera.setXAxis(Geometry.vectorDiff(Geometry.nullvector, kamera.getXAxis()));
                     }
 
-                    switch (origami1.history().get(i).foldID) {
+                    switch (origami1.getHistory().get(i).foldID) {
 
-                        case Origami.FOLD_REFLECTION:
-                            siknv = origami1.history().get(i).pnormal;
+                        case Origami.FoldingAction.FOLD_REFLECTION:
+                            siknv = origami1.getHistory().get(i).pnormal;
                             switch (foldtypes.get(i)) {
 
                                 case 0:
@@ -1129,31 +1122,31 @@ public class Export {
                             sorszam++;
                             break;
 
-                        case Origami.FOLD_ROTATION:
-                            siknv = origami1.history().get(i).pnormal;
+                        case Origami.FoldingAction.FOLD_ROTATION:
+                            siknv = origami1.getHistory().get(i).pnormal;
                             int szog = 0;
                             int j = i - 1;
                             while (UresIndexek.contains(j)) {
 
-                                if (origami1.history().get(j).foldID == Origami.FOLD_ROTATION) {
+                                if (origami1.getHistory().get(j).foldID == Origami.FoldingAction.FOLD_ROTATION) {
 
-                                    szog += origami1.history().get(j).phi;
+                                    szog += origami1.getHistory().get(j).phi;
                                 }
                                 j--;
                             }
                             switch (kamera.pdfLinerDir(siknv)) {
 
                                 case Camera.PDF_NORTH:
-                                    utasitas = Instructor.getString("rotate_north", sorszam, szog + origami1.history().get(i).phi);
+                                    utasitas = Instructor.getString("rotate_north", sorszam, szog + origami1.getHistory().get(i).phi);
                                     break;
                                 case Camera.PDF_EAST:
-                                    utasitas = Instructor.getString("rotate_east", sorszam, szog + origami1.history().get(i).phi);
+                                    utasitas = Instructor.getString("rotate_east", sorszam, szog + origami1.getHistory().get(i).phi);
                                     break;
                                 case Camera.PDF_SOUTH:
-                                    utasitas = Instructor.getString("rotate_south", sorszam, szog + origami1.history().get(i).phi);
+                                    utasitas = Instructor.getString("rotate_south", sorszam, szog + origami1.getHistory().get(i).phi);
                                     break;
                                 case Camera.PDF_WEST:
-                                    utasitas = Instructor.getString("rotate_west", sorszam, szog + origami1.history().get(i).phi);
+                                    utasitas = Instructor.getString("rotate_west", sorszam, szog + origami1.getHistory().get(i).phi);
                                     break;
                                 default:
                                     break;
@@ -1161,7 +1154,7 @@ public class Export {
                             sorszam++;
                             break;
 
-                        case Origami.FOLD_REFLECTION_P:
+                        case Origami.FoldingAction.FOLD_REFLECTION_P:
                             switch (foldtypes.get(i)) {
 
                                 case 0:
@@ -1186,28 +1179,28 @@ public class Export {
                             sorszam++;
                             break;
 
-                        case Origami.FOLD_ROTATION_P:
+                        case Origami.FoldingAction.FOLD_ROTATION_P:
                             int szog1 = 0;
                             int j1 = i - 1;
                             while (UresIndexek.contains(j1)) {
 
-                                if (origami1.history().get(j1).foldID == Origami.FOLD_ROTATION_P) {
+                                if (origami1.getHistory().get(j1).foldID == Origami.FoldingAction.FOLD_ROTATION_P) {
 
-                                    szog1 += origami1.history().get(j1).phi;
+                                    szog1 += origami1.getHistory().get(j1).phi;
                                 }
                                 j1--;
                             }
-                            utasitas = Instructor.getString("rotate_gray", sorszam, szog1 + origami1.history().get(i).phi);
+                            utasitas = Instructor.getString("rotate_gray", sorszam, szog1 + origami1.getHistory().get(i).phi);
                             sorszam++;
                             break;
 
-                        case Origami.FOLD_CREASE:
+                        case Origami.FoldingAction.FOLD_CREASE:
                             utasitas = Instructor.getString("crease", sorszam, sorszam + 1);
                             sorszam++;
                             break;
 
-                        case Origami.FOLD_MUTILATION:
-                            siknv = origami1.history().get(i).pnormal;
+                        case Origami.FoldingAction.FOLD_MUTILATION:
+                            siknv = origami1.getHistory().get(i).pnormal;
                             switch (kamera.pdfLinerDir(siknv)) {
 
                                 case Camera.PDF_NORTH:
@@ -1232,7 +1225,7 @@ public class Export {
                             sorszam++;
                             break;
 
-                        case Origami.FOLD_MUTILATION_P:
+                        case Origami.FoldingAction.FOLD_MUTILATION_P:
                             utasitas = Instructor.getString("cut_gray", sorszam);
                             if (firstblood) {
                                 utasitas += Instructor.getString("cut_notice");
@@ -1249,7 +1242,7 @@ public class Export {
 
                     if (i == 0) {
 
-                        switch (origami1.papertype()) {
+                        switch (origami1.getPaperType()) {
 
                             case A4:
                                 utasitas = Instructor.getString("intro_a4", sorszam) + utasitas;
@@ -1264,9 +1257,9 @@ public class Export {
                                 utasitas = Instructor.getString("intro_dollar", sorszam) + utasitas;
                                 break;
                             case Custom:
-                                if (origami1.corners().size() == 3) {
+                                if (origami1.getCorners().size() == 3) {
                                     utasitas = Instructor.getString("intro_triangle", sorszam) + utasitas;
-                                } else if (origami1.corners().size() == 4) {
+                                } else if (origami1.getCorners().size() == 4) {
                                     utasitas = Instructor.getString("intro_quad", sorszam) + utasitas;
                                 } else {
                                     utasitas = Instructor.getString("intro_poly", sorszam) + utasitas;
@@ -1444,14 +1437,14 @@ public class Export {
             gimg.setBackground(java.awt.Color.WHITE);
             Origami origami1 = origami.copy();
             Camera cam = new Camera(width / 2, height / 2, 1);
-            cam.camera_dir = refcam.camera_dir.clone();
-            cam.axis_x = refcam.axis_x.clone();
-            cam.axis_y = refcam.axis_y.clone();
+            cam.setCamDirection(refcam.getCamDirection().clone());
+            cam.setXAxis(refcam.getXAxis().clone());
+            cam.setYAxis(refcam.getYAxis().clone());
             cam.setZoom(0.8 * Math.min(width, height) / origami1.circumscribedSquareSize());
-            int steps = origami1.history_pointer();
+            int steps = origami1.getHistoryPointer();
             origami1.undo(steps);
             boolean last = false;
-            while (origami1.history_pointer() < steps || (last = !last && origami1.history_pointer() == steps)) {
+            while (origami1.getHistoryPointer() < steps || (last = !last && origami1.getHistoryPointer() == steps)) {
 
                 gimg.clearRect(0, 0, width, height);
                 cam.adjust(origami1);
@@ -1577,9 +1570,9 @@ public class Export {
             gimg.setBackground(java.awt.Color.WHITE);
             Origami origami1 = origami.copy();
             Camera cam = new Camera(width / 2, height / 2, 1);
-            cam.camera_dir = refcam.camera_dir.clone();
-            cam.axis_x = refcam.axis_x.clone();
-            cam.axis_y = refcam.axis_y.clone();
+            cam.setCamDirection(refcam.getCamDirection().clone());
+            cam.setXAxis(refcam.getXAxis().clone());
+            cam.setYAxis(refcam.getYAxis().clone());
             cam.setZoom(0.8 * Math.min(width, height) / origami1.circumscribedSquareSize());
             cam.adjust(origami1);
 

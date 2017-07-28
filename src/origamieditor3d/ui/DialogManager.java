@@ -1,4 +1,4 @@
-package origamieditor3d;
+package origamieditor3d.ui;
 
 import java.awt.Desktop;
 
@@ -6,6 +6,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
+import origamieditor3d.resources.Constants;
 import origamieditor3d.resources.Dictionary;
 
 public class DialogManager {

@@ -10,12 +10,12 @@
 // GNU General Public License for more details.
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http:// www.gnu.org/licenses/>.
-package origamieditor3d.panel;
+package origamieditor3d.ui.panel;
 
 import java.awt.Color;
 import java.awt.Graphics;
 
-import origamieditor3d.origami.Camera;
+import origamieditor3d.graphics.Camera;
 import origamieditor3d.origami.Geometry;
 /**
  * @author Attila Bágyoni (ba-sz-at@users.sourceforge.net)
@@ -78,12 +78,12 @@ public class PaperPanel extends Panel {
         tracker_x = x;
         tracker_y = y;
         tracker_im = new double[]{
-            ((double) tracker_x - refkamera.xshift
-                    + new Camera(refkamera.xshift, refkamera.yshift, refkamera.zoom())
-                    .projection0(refkamera.camera_pos())[0]) / refkamera.zoom(),
-            ((double) tracker_y - refkamera.yshift
-                    + new Camera(refkamera.xshift, refkamera.yshift, refkamera.zoom())
-                    .projection0(refkamera.camera_pos())[1]) / refkamera.zoom(),
+            ((double) tracker_x - refkamera.xShift
+                    + new Camera(refkamera.xShift, refkamera.yShift, refkamera.getZoom())
+                    .projection0(refkamera.getCamPosition())[0]) / refkamera.getZoom(),
+            ((double) tracker_y - refkamera.yShift
+                    + new Camera(refkamera.xShift, refkamera.yShift, refkamera.getZoom())
+                    .projection0(refkamera.getCamPosition())[1]) / refkamera.getZoom(),
             0};
         trackerOn = true;
     }
@@ -99,28 +99,28 @@ public class PaperPanel extends Panel {
     @Override
     public void rulerOn(Camera refcam, int x1, int y1, int x2, int y2) {
 
-        double pontX = ((double) x2 - refcam.xshift) / refcam.zoom();
-        double pontY = ((double) y2 - refcam.yshift) / refcam.zoom();
-        double pont1X = ((double) x1 - refcam.xshift) / refcam.zoom();
-        double pont1Y = ((double) y1 - refcam.yshift) / refcam.zoom();
+        double pontX = ((double) x2 - refcam.xShift) / refcam.getZoom();
+        double pontY = ((double) y2 - refcam.yShift) / refcam.getZoom();
+        double pont1X = ((double) x1 - refcam.xShift) / refcam.getZoom();
+        double pont1Y = ((double) y1 - refcam.yShift) / refcam.getZoom();
 
         double[] vonalzoNV = new double[]{
-            refcam.axis_x()[0] * (y2 - y1) + refcam.axis_y()[0] * (x1 - x2),
-            refcam.axis_x()[1] * (y2 - y1) + refcam.axis_y()[1] * (x1 - x2),
-            refcam.axis_x()[2] * (y2 - y1) + refcam.axis_y()[2] * (x1 - x2)
+            refcam.getXScale()[0] * (y2 - y1) + refcam.getYScale()[0] * (x1 - x2),
+            refcam.getXScale()[1] * (y2 - y1) + refcam.getYScale()[1] * (x1 - x2),
+            refcam.getXScale()[2] * (y2 - y1) + refcam.getYScale()[2] * (x1 - x2)
         };
         double[] vonalzoPT = new double[]{
-            refcam.axis_x()[0] / refcam.zoom() * pontX + refcam.axis_y()[0] / refcam.zoom() * pontY + refcam.camera_pos()[0],
-            refcam.axis_x()[1] / refcam.zoom() * pontX + refcam.axis_y()[1] / refcam.zoom() * pontY + refcam.camera_pos()[1],
-            refcam.axis_x()[2] / refcam.zoom() * pontX + refcam.axis_y()[2] / refcam.zoom() * pontY + refcam.camera_pos()[2]
+            refcam.getXScale()[0] / refcam.getZoom() * pontX + refcam.getYScale()[0] / refcam.getZoom() * pontY + refcam.getCamPosition()[0],
+            refcam.getXScale()[1] / refcam.getZoom() * pontX + refcam.getYScale()[1] / refcam.getZoom() * pontY + refcam.getCamPosition()[1],
+            refcam.getXScale()[2] / refcam.getZoom() * pontX + refcam.getYScale()[2] / refcam.getZoom() * pontY + refcam.getCamPosition()[2]
         };
         double[] vonalzoPT1 = new double[]{
-            refcam.axis_x()[0] / refcam.zoom() * pont1X + refcam.axis_y()[0] / refcam.zoom() * pont1Y + refcam.camera_pos()[0],
-            refcam.axis_x()[1] / refcam.zoom() * pont1X + refcam.axis_y()[1] / refcam.zoom() * pont1Y + refcam.camera_pos()[1],
-            refcam.axis_x()[2] / refcam.zoom() * pont1X + refcam.axis_y()[2] / refcam.zoom() * pont1Y + refcam.camera_pos()[2]
+            refcam.getXScale()[0] / refcam.getZoom() * pont1X + refcam.getYScale()[0] / refcam.getZoom() * pont1Y + refcam.getCamPosition()[0],
+            refcam.getXScale()[1] / refcam.getZoom() * pont1X + refcam.getYScale()[1] / refcam.getZoom() * pont1Y + refcam.getCamPosition()[1],
+            refcam.getXScale()[2] / refcam.getZoom() * pont1X + refcam.getYScale()[2] / refcam.getZoom() * pont1Y + refcam.getCamPosition()[2]
         };
         if (rulerMode == RulerMode.Neusis) {
-            vonalzoNV = Geometry.vector(vonalzoPT, vonalzoPT1);
+            vonalzoNV = Geometry.vectorDiff(vonalzoPT, vonalzoPT1);
         }
         liner_point = vonalzoPT;
         liner_normal = vonalzoNV;
@@ -144,36 +144,36 @@ public class PaperPanel extends Panel {
 
                 double[] pt1 = PanelOrigami.find3dImageOf(
                         new double[]{
-                            ((double) liner_triangle[0][0] - PanelCamera.xshift + PanelCamera.projection0(PanelCamera.camera_pos())[0]) / PanelCamera.zoom(),
-                            ((double) liner_triangle[0][1] - PanelCamera.yshift + PanelCamera.projection0(PanelCamera.camera_pos())[1]) / PanelCamera.zoom()
+                            ((double) liner_triangle[0][0] - PanelCamera.xShift + PanelCamera.projection0(PanelCamera.getCamPosition())[0]) / PanelCamera.getZoom(),
+                            ((double) liner_triangle[0][1] - PanelCamera.yShift + PanelCamera.projection0(PanelCamera.getCamPosition())[1]) / PanelCamera.getZoom()
                         }),
                         pt2 = PanelOrigami.find3dImageOf(
                                 new double[]{
-                                    ((double) liner_triangle[1][0] - PanelCamera.xshift + PanelCamera.projection0(PanelCamera.camera_pos())[0]) / PanelCamera.zoom(),
-                                    ((double) liner_triangle[1][1] - PanelCamera.yshift + PanelCamera.projection0(PanelCamera.camera_pos())[1]) / PanelCamera.zoom()
+                                    ((double) liner_triangle[1][0] - PanelCamera.xShift + PanelCamera.projection0(PanelCamera.getCamPosition())[0]) / PanelCamera.getZoom(),
+                                    ((double) liner_triangle[1][1] - PanelCamera.yShift + PanelCamera.projection0(PanelCamera.getCamPosition())[1]) / PanelCamera.getZoom()
                                 }),
                         pt3 = PanelOrigami.find3dImageOf(
                                 new double[]{
-                                    ((double) liner_triangle[2][0] - PanelCamera.xshift + PanelCamera.projection0(PanelCamera.camera_pos())[0]) / PanelCamera.zoom(),
-                                    ((double) liner_triangle[2][1] - PanelCamera.yshift + PanelCamera.projection0(PanelCamera.camera_pos())[1]) / PanelCamera.zoom()
+                                    ((double) liner_triangle[2][0] - PanelCamera.xShift + PanelCamera.projection0(PanelCamera.getCamPosition())[0]) / PanelCamera.getZoom(),
+                                    ((double) liner_triangle[2][1] - PanelCamera.yShift + PanelCamera.projection0(PanelCamera.getCamPosition())[1]) / PanelCamera.getZoom()
                                 });
 
                 if (rulerMode == RulerMode.Planethrough) {
-                    if (Geometry.vector_length(Geometry.vector_product(
-                            Geometry.vector(pt2, pt1), Geometry.vector(pt3, pt1))) != 0d) {
+                    if (Geometry.vectorLength(Geometry.crossProduct(
+                            Geometry.vectorDiff(pt2, pt1), Geometry.vectorDiff(pt3, pt1))) != 0d) {
 
                         liner_point = pt1;
-                        liner_normal = Geometry.vector_product(Geometry.vector(pt2, pt1),
-                                Geometry.vector(pt3, pt1));
+                        liner_normal = Geometry.crossProduct(Geometry.vectorDiff(pt2, pt1),
+                                Geometry.vectorDiff(pt3, pt1));
                     } else {
                         rulerOff();
                     }
                 } else if (rulerMode == RulerMode.Angle_bisector) {
                     liner_point = pt2;
-                    liner_normal = Geometry.vector(
-                            Geometry.length_to_100(Geometry.vector(pt1, pt2)),
-                            Geometry.length_to_100(Geometry.vector(pt3, pt2)));
-                    if (Geometry.vector_length(liner_normal) == 0.) {
+                    liner_normal = Geometry.vectorDiff(
+                            Geometry.length_to_100(Geometry.vectorDiff(pt1, pt2)),
+                            Geometry.length_to_100(Geometry.vectorDiff(pt3, pt2)));
+                    if (Geometry.vectorLength(liner_normal) == 0.) {
                         rulerOff();
                     }
                 }
@@ -215,8 +215,8 @@ public class PaperPanel extends Panel {
         }
         g.setColor(Color.red);
         if (trackerOn) {
-            int x = (int) (PanelCamera.projection(tracker_im)[0]) + PanelCamera.xshift;
-            int y = (int) (PanelCamera.projection(tracker_im)[1]) + PanelCamera.yshift;
+            int x = (int) (PanelCamera.projection(tracker_im)[0]) + PanelCamera.xShift;
+            int y = (int) (PanelCamera.projection(tracker_im)[1]) + PanelCamera.yShift;
             g.drawLine(x - 5, y, x + 5, y);
             g.drawLine(x, y - 5, x, y + 5);
         }

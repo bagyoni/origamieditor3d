@@ -1,21 +1,14 @@
-// This file is part of Origami Editor 3D.
-// Copyright (C) 2013, 2014, 2015 Bágyoni Attila <ba-sz-at@users.sourceforge.net>
-// Origami Editor 3D is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-// You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <http:// www.gnu.org/licenses/>.
-package origamieditor3d.origami;
+package origamieditor3d.io;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+
+import origamieditor3d.origami.OrigamiGen1;
+import origamieditor3d.origami.OrigamiException;
+import origamieditor3d.origami.OrigamiGen2;
+import origamieditor3d.origami.Origami;
 
 /**
  *
@@ -56,22 +49,22 @@ public class OrigamiIO {
             }
             
             //paper type
-            str.write((int) origami.papertype().toChar());
+            str.write((int) origami.getPaperType().toChar());
             //corners
-            if (origami.papertype() == Origami.PaperType.Custom) {
+            if (origami.getPaperType() == Origami.PaperType.Custom) {
 
-                str.write(origami.corners().size());
-                for (int i = 0; i < origami.corners().size(); i++) {
+                str.write(origami.getCorners().size());
+                for (int i = 0; i < origami.getCorners().size(); i++) {
 
-                    str.write(Float.floatToIntBits((float) origami.corners().get(i)[0]) >>> 24);
-                    str.write(Float.floatToIntBits((float) origami.corners().get(i)[0]) >>> 16);
-                    str.write(Float.floatToIntBits((float) origami.corners().get(i)[0]) >>> 8);
-                    str.write(Float.floatToIntBits((float) origami.corners().get(i)[0]));
+                    str.write(Float.floatToIntBits((float) origami.getCorners().get(i)[0]) >>> 24);
+                    str.write(Float.floatToIntBits((float) origami.getCorners().get(i)[0]) >>> 16);
+                    str.write(Float.floatToIntBits((float) origami.getCorners().get(i)[0]) >>> 8);
+                    str.write(Float.floatToIntBits((float) origami.getCorners().get(i)[0]));
 
-                    str.write(Float.floatToIntBits((float) origami.corners().get(i)[1]) >>> 24);
-                    str.write(Float.floatToIntBits((float) origami.corners().get(i)[1]) >>> 16);
-                    str.write(Float.floatToIntBits((float) origami.corners().get(i)[1]) >>> 8);
-                    str.write(Float.floatToIntBits((float) origami.corners().get(i)[1]));
+                    str.write(Float.floatToIntBits((float) origami.getCorners().get(i)[1]) >>> 24);
+                    str.write(Float.floatToIntBits((float) origami.getCorners().get(i)[1]) >>> 16);
+                    str.write(Float.floatToIntBits((float) origami.getCorners().get(i)[1]) >>> 8);
+                    str.write(Float.floatToIntBits((float) origami.getCorners().get(i)[1]));
                 }
             } else {
                 str.write(0);
@@ -86,9 +79,9 @@ public class OrigamiIO {
             }
             
             //command blocks
-            for (int i = 0; i < origami.history_pointer(); i++) {
+            for (int i = 0; i < origami.getHistoryPointer(); i++) {
                 for (int ii=0; ii<16; ii++) {
-                    str.write(origami.history_stream().get(i)[ii]);
+                    str.write(origami.getHistoryStream().get(i)[ii]);
                 }
             }
 
@@ -99,7 +92,7 @@ public class OrigamiIO {
             str.write(0x46);
 
             str.close();
-            origamieditor3d.compression.LZW.compress(new File(filename + String.valueOf(rand)), new File(filename));
+            origamieditor3d.io.LZW.compress(new File(filename + String.valueOf(rand)), new File(filename));
             ori.delete();
 
         } catch (Exception ex) {
@@ -127,31 +120,31 @@ public class OrigamiIO {
             str.write(2);
             str.write(0x63);
             //paper type
-            str.write((int) origami.papertype().toChar());
+            str.write((int) origami.getPaperType().toChar());
             //corners
-            if (origami.papertype() == Origami.PaperType.Custom) {
+            if (origami.getPaperType() == Origami.PaperType.Custom) {
 
-                str.write(origami.corners().size());
-                for (int i = 0; i < origami.corners().size(); i++) {
+                str.write(origami.getCorners().size());
+                for (int i = 0; i < origami.getCorners().size(); i++) {
 
-                    str.write(Float.floatToIntBits((float) origami.corners().get(i)[0]) >>> 24);
-                    str.write(Float.floatToIntBits((float) origami.corners().get(i)[0]) >>> 16);
-                    str.write(Float.floatToIntBits((float) origami.corners().get(i)[0]) >>> 8);
-                    str.write(Float.floatToIntBits((float) origami.corners().get(i)[0]));
+                    str.write(Float.floatToIntBits((float) origami.getCorners().get(i)[0]) >>> 24);
+                    str.write(Float.floatToIntBits((float) origami.getCorners().get(i)[0]) >>> 16);
+                    str.write(Float.floatToIntBits((float) origami.getCorners().get(i)[0]) >>> 8);
+                    str.write(Float.floatToIntBits((float) origami.getCorners().get(i)[0]));
 
-                    str.write(Float.floatToIntBits((float) origami.corners().get(i)[1]) >>> 24);
-                    str.write(Float.floatToIntBits((float) origami.corners().get(i)[1]) >>> 16);
-                    str.write(Float.floatToIntBits((float) origami.corners().get(i)[1]) >>> 8);
-                    str.write(Float.floatToIntBits((float) origami.corners().get(i)[1]));
+                    str.write(Float.floatToIntBits((float) origami.getCorners().get(i)[1]) >>> 24);
+                    str.write(Float.floatToIntBits((float) origami.getCorners().get(i)[1]) >>> 16);
+                    str.write(Float.floatToIntBits((float) origami.getCorners().get(i)[1]) >>> 8);
+                    str.write(Float.floatToIntBits((float) origami.getCorners().get(i)[1]));
                 }
             } else {
                 str.write(0);
             }
 
             //command blocks
-            for (int i = 0; i < origami.history_pointer(); i++) {
+            for (int i = 0; i < origami.getHistoryPointer(); i++) {
                 for (int ii=0; ii<16; ii++) {
-                    str.write(origami.history_stream().get(i)[ii]);
+                    str.write(origami.getHistoryStream().get(i)[ii]);
                 }
             }
 
@@ -162,7 +155,7 @@ public class OrigamiIO {
             str.write(0x46);
 
             str.close();
-            origamieditor3d.compression.LZW.compress(new File(filename + "~"), new File(filename));
+            origamieditor3d.io.LZW.compress(new File(filename + "~"), new File(filename));
             ori.delete();
 
         } catch (Exception ex) {
@@ -175,9 +168,9 @@ public class OrigamiIO {
 
         try {
 
-            OrigamiGen2 origami;
+            Origami origami;
             ori.reset();
-            java.io.InputStream str = origamieditor3d.compression.LZW.extract(ori);
+            java.io.InputStream str = origamieditor3d.io.LZW.extract(ori);
 
             //reading header
             int fejlec1 = str.read();
@@ -313,7 +306,7 @@ public class OrigamiIO {
 
             Origami origami;
             ori.reset();
-            java.io.InputStream str = origamieditor3d.compression.LZW.extract(ori);
+            java.io.InputStream str = origamieditor3d.io.LZW.extract(ori);
 
             int fejlec1 = str.read();
             fejlec1 <<= 8;
@@ -343,7 +336,7 @@ public class OrigamiIO {
 
                     if (Origami.PaperType.forChar((char) papir) != Origami.PaperType.Custom) {
 
-                        origami = new Origami(Origami.PaperType.forChar((char) papir));
+                        origami = new OrigamiGen1(Origami.PaperType.forChar((char) papir));
                         str.read();
                     } else {
 
@@ -373,7 +366,7 @@ public class OrigamiIO {
                             sarkok.add(new double[]{(double) X, (double) Y});
                         }
 
-                        origami = new Origami(sarkok);
+                        origami = new OrigamiGen1(sarkok);
                     }
 
                     int[] block = new int[16];

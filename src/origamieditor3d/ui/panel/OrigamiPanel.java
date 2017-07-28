@@ -1,16 +1,4 @@
-// This file is part of Origami Editor 3D.
-// Copyright (C) 2013-2017 Bágyoni Attila <ba-sz-at@users.sourceforge.net>
-// Origami Editor 3D is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-// You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <http:// www.gnu.org/licenses/>.
-package origamieditor3d.panel;
+package origamieditor3d.ui.panel;
 
 import java.awt.Color;
 import java.awt.Graphics;
@@ -18,7 +6,7 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.util.Random;
 
-import origamieditor3d.origami.Camera;
+import origamieditor3d.graphics.Camera;
 import origamieditor3d.origami.Geometry;
 
 /**
@@ -114,12 +102,12 @@ public class OrigamiPanel extends Panel {
         try {
             tracker_im = PanelOrigami.find3dImageOf(
                     new double[]{
-                        ((double) tracker_x - refkamera.xshift
-                                + new Camera(refkamera.xshift, refkamera.yshift, refkamera.zoom())
-                                .projection0(refkamera.camera_pos())[0]) / refkamera.zoom(),
-                        ((double) tracker_y - refkamera.yshift
-                                + new Camera(refkamera.xshift, refkamera.yshift, refkamera.zoom())
-                                .projection0(refkamera.camera_pos())[1]) / refkamera.zoom()
+                        ((double) tracker_x - refkamera.xShift
+                                + new Camera(refkamera.xShift, refkamera.yShift, refkamera.getZoom())
+                                .projection0(refkamera.getCamPosition())[0]) / refkamera.getZoom(),
+                        ((double) tracker_y - refkamera.yShift
+                                + new Camera(refkamera.xShift, refkamera.yShift, refkamera.getZoom())
+                                .projection0(refkamera.getCamPosition())[1]) / refkamera.getZoom()
                     });
         } catch (Exception ex) {
         }
@@ -142,12 +130,12 @@ public class OrigamiPanel extends Panel {
             int y = xy[1];
             liner_triangle[liner_grab_index] = PanelOrigami.find3dImageOf(
                     new double[]{
-                        ((double) x - refkamera.xshift
-                                + new Camera(refkamera.xshift, refkamera.yshift, refkamera.zoom())
-                                .projection0(refkamera.camera_pos())[0]) / refkamera.zoom(),
-                        ((double) y - refkamera.yshift
-                                + new Camera(refkamera.xshift, refkamera.yshift, refkamera.zoom())
-                                .projection0(refkamera.camera_pos())[1]) / refkamera.zoom()
+                        ((double) x - refkamera.xShift
+                                + new Camera(refkamera.xShift, refkamera.yShift, refkamera.getZoom())
+                                .projection0(refkamera.getCamPosition())[0]) / refkamera.getZoom(),
+                        ((double) y - refkamera.yShift
+                                + new Camera(refkamera.xShift, refkamera.yShift, refkamera.getZoom())
+                                .projection0(refkamera.getCamPosition())[1]) / refkamera.getZoom()
                     });
         } catch (Exception ex) {
             liner_triangle[liner_grab_index] = null;
@@ -294,43 +282,43 @@ public class OrigamiPanel extends Panel {
 
             if (previewOn) {
 
-                double pontX = ((double) ruler_x2 - this.PanelCamera.xshift) / this.PanelCamera.zoom();
-                double pontY = ((double) ruler_y2 - this.PanelCamera.yshift) / this.PanelCamera.zoom();
-                double pont1X = ((double) ruler_x1 - this.PanelCamera.xshift) / this.PanelCamera.zoom();
-                double pont1Y = ((double) ruler_y1 - this.PanelCamera.yshift) / this.PanelCamera.zoom();
+                double pontX = ((double) ruler_x2 - this.PanelCamera.xShift) / this.PanelCamera.getZoom();
+                double pontY = ((double) ruler_y2 - this.PanelCamera.yShift) / this.PanelCamera.getZoom();
+                double pont1X = ((double) ruler_x1 - this.PanelCamera.xShift) / this.PanelCamera.getZoom();
+                double pont1Y = ((double) ruler_y1 - this.PanelCamera.yShift) / this.PanelCamera.getZoom();
 
                 double[] vonalzoNV = new double[]{
-                    this.PanelCamera.axis_x()[0] * (ruler_y2 - ruler_y1)
-                    + this.PanelCamera.axis_y()[0] * (ruler_x1 - ruler_x2),
-                    this.PanelCamera.axis_x()[1] * (ruler_y2 - ruler_y1)
-                    + this.PanelCamera.axis_y()[1] * (ruler_x1 - ruler_x2),
-                    this.PanelCamera.axis_x()[2] * (ruler_y2 - ruler_y1)
-                    + this.PanelCamera.axis_y()[2] * (ruler_x1 - ruler_x2)
+                    this.PanelCamera.getXScale()[0] * (ruler_y2 - ruler_y1)
+                    + this.PanelCamera.getYScale()[0] * (ruler_x1 - ruler_x2),
+                    this.PanelCamera.getXScale()[1] * (ruler_y2 - ruler_y1)
+                    + this.PanelCamera.getYScale()[1] * (ruler_x1 - ruler_x2),
+                    this.PanelCamera.getXScale()[2] * (ruler_y2 - ruler_y1)
+                    + this.PanelCamera.getYScale()[2] * (ruler_x1 - ruler_x2)
                 };
                 double[] vonalzoPT = new double[]{
-                    this.PanelCamera.axis_x()[0] / this.PanelCamera.zoom() * pontX
-                        + this.PanelCamera.axis_y()[0] / this.PanelCamera.zoom() * pontY
-                        + this.PanelCamera.camera_pos()[0],
-                    this.PanelCamera.axis_x()[1] / this.PanelCamera.zoom() * pontX
-                        + this.PanelCamera.axis_y()[1] / this.PanelCamera.zoom() * pontY
-                        + this.PanelCamera.camera_pos()[1],
-                    this.PanelCamera.axis_x()[2] / this.PanelCamera.zoom() * pontX
-                        + this.PanelCamera.axis_y()[2] / this.PanelCamera.zoom() * pontY
-                        + this.PanelCamera.camera_pos()[2]
+                    this.PanelCamera.getXScale()[0] / this.PanelCamera.getZoom() * pontX
+                        + this.PanelCamera.getYScale()[0] / this.PanelCamera.getZoom() * pontY
+                        + this.PanelCamera.getCamPosition()[0],
+                    this.PanelCamera.getXScale()[1] / this.PanelCamera.getZoom() * pontX
+                        + this.PanelCamera.getYScale()[1] / this.PanelCamera.getZoom() * pontY
+                        + this.PanelCamera.getCamPosition()[1],
+                    this.PanelCamera.getXScale()[2] / this.PanelCamera.getZoom() * pontX
+                        + this.PanelCamera.getYScale()[2] / this.PanelCamera.getZoom() * pontY
+                        + this.PanelCamera.getCamPosition()[2]
                 };
                 double[] vonalzoPT1 = new double[]{
-                    this.PanelCamera.axis_x()[0] / this.PanelCamera.zoom() * pont1X
-                        + this.PanelCamera.axis_y()[0] / this.PanelCamera.zoom() * pont1Y
-                        + this.PanelCamera.camera_pos()[0],
-                    this.PanelCamera.axis_x()[1] / this.PanelCamera.zoom() * pont1X
-                        + this.PanelCamera.axis_y()[1] / this.PanelCamera.zoom() * pont1Y
-                        + this.PanelCamera.camera_pos()[1],
-                    this.PanelCamera.axis_x()[2] / this.PanelCamera.zoom() * pont1X
-                        + this.PanelCamera.axis_y()[2] / this.PanelCamera.zoom() * pont1Y
-                        + this.PanelCamera.camera_pos()[2]
+                    this.PanelCamera.getXScale()[0] / this.PanelCamera.getZoom() * pont1X
+                        + this.PanelCamera.getYScale()[0] / this.PanelCamera.getZoom() * pont1Y
+                        + this.PanelCamera.getCamPosition()[0],
+                    this.PanelCamera.getXScale()[1] / this.PanelCamera.getZoom() * pont1X
+                        + this.PanelCamera.getYScale()[1] / this.PanelCamera.getZoom() * pont1Y
+                        + this.PanelCamera.getCamPosition()[1],
+                    this.PanelCamera.getXScale()[2] / this.PanelCamera.getZoom() * pont1X
+                        + this.PanelCamera.getYScale()[2] / this.PanelCamera.getZoom() * pont1Y
+                        + this.PanelCamera.getCamPosition()[2]
                 };
                 if (rulerMode == RulerMode.Neusis) {
-                    vonalzoNV = Geometry.vector(vonalzoPT, vonalzoPT1);
+                    vonalzoNV = Geometry.vectorDiff(vonalzoPT, vonalzoPT1);
                 }
 
                 PanelCamera.drawPreview(g, Color.green, PanelOrigami, vonalzoPT, vonalzoNV);
@@ -350,8 +338,8 @@ public class OrigamiPanel extends Panel {
             }
         }
         if (trackerOn) {
-            int x = (int) (PanelCamera.projection(tracker_im)[0]) + PanelCamera.xshift;
-            int y = (int) (PanelCamera.projection(tracker_im)[1]) + PanelCamera.yshift;
+            int x = (int) (PanelCamera.projection(tracker_im)[0]) + PanelCamera.xShift;
+            int y = (int) (PanelCamera.projection(tracker_im)[1]) + PanelCamera.yShift;
             g.drawLine(x - 5, y, x + 5, y);
             g.drawLine(x, y - 5, x, y + 5);
         }
@@ -360,20 +348,20 @@ public class OrigamiPanel extends Panel {
         ((java.awt.Graphics2D)g).setStroke(new java.awt.BasicStroke(2));
 
         if (liner_triangle[0] != null) {
-            int x = (int) (PanelCamera.projection(liner_triangle[0])[0]) + PanelCamera.xshift;
-            int y = (int) (PanelCamera.projection(liner_triangle[0])[1]) + PanelCamera.yshift;
+            int x = (int) (PanelCamera.projection(liner_triangle[0])[0]) + PanelCamera.xShift;
+            int y = (int) (PanelCamera.projection(liner_triangle[0])[1]) + PanelCamera.yShift;
             g.drawLine(x - 3, y + 3, x + 3, y - 3);
             g.drawLine(x - 3, y - 3, x + 3, y + 3);
         }
         if (liner_triangle[1] != null) {
-            int x = (int) (PanelCamera.projection(liner_triangle[1])[0]) + PanelCamera.xshift;
-            int y = (int) (PanelCamera.projection(liner_triangle[1])[1]) + PanelCamera.yshift;
+            int x = (int) (PanelCamera.projection(liner_triangle[1])[0]) + PanelCamera.xShift;
+            int y = (int) (PanelCamera.projection(liner_triangle[1])[1]) + PanelCamera.yShift;
             g.drawLine(x - 3, y + 3, x + 3, y - 3);
             g.drawLine(x - 3, y - 3, x + 3, y + 3);
         }
         if (liner_triangle[2] != null) {
-            int x = (int) (PanelCamera.projection(liner_triangle[2])[0]) + PanelCamera.xshift;
-            int y = (int) (PanelCamera.projection(liner_triangle[2])[1]) + PanelCamera.yshift;
+            int x = (int) (PanelCamera.projection(liner_triangle[2])[0]) + PanelCamera.xShift;
+            int y = (int) (PanelCamera.projection(liner_triangle[2])[1]) + PanelCamera.yShift;
             g.drawLine(x - 3, y + 3, x + 3, y - 3);
             g.drawLine(x - 3, y - 3, x + 3, y + 3);
         }
@@ -447,15 +435,15 @@ public class OrigamiPanel extends Panel {
         if (linerOn && rulerMode == RulerMode.Normal) {
             
             double[] rulerNV = new double[] {
-                PanelCamera.axis_x()[0] * (ruler_y2 - ruler_y1)
-                        + PanelCamera.axis_y()[0] * (ruler_x1 - ruler_x2),
-                PanelCamera.axis_x()[1] * (ruler_y2 - ruler_y1)
-                        + PanelCamera.axis_y()[1] * (ruler_x1 - ruler_x2),
-                PanelCamera.axis_x()[2] * (ruler_y2 - ruler_y1)
-                        + PanelCamera.axis_y()[2] * (ruler_x1 - ruler_x2)};
+                PanelCamera.getXScale()[0] * (ruler_y2 - ruler_y1)
+                        + PanelCamera.getYScale()[0] * (ruler_x1 - ruler_x2),
+                PanelCamera.getXScale()[1] * (ruler_y2 - ruler_y1)
+                        + PanelCamera.getYScale()[1] * (ruler_x1 - ruler_x2),
+                PanelCamera.getXScale()[2] * (ruler_y2 - ruler_y1)
+                        + PanelCamera.getYScale()[2] * (ruler_x1 - ruler_x2)};
             
-            if (Geometry.scalar_product(PanelCamera.camera_pos(), rulerNV)
-                    - Geometry.scalar_product(getRulerPoint(), rulerNV) > 0) {
+            if (Geometry.scalarProduct(PanelCamera.getCamPosition(), rulerNV)
+                    - Geometry.scalarProduct(getRulerPoint(), rulerNV) > 0) {
                 rulerNV = new double[] { -rulerNV[0], -rulerNV[1], -rulerNV[2] };
             }
             return rulerNV;
@@ -463,9 +451,9 @@ public class OrigamiPanel extends Panel {
         if (linerOn && rulerMode == RulerMode.Neusis) {
             
             double[] rulerPT = getRulerPoint();
-            double[] rulerNV = Geometry.vector(rulerPT, getRulerPoint1());
-            if (Geometry.scalar_product(PanelCamera.camera_pos(), rulerNV)
-                    - Geometry.scalar_product(rulerPT, rulerNV) > 0) {
+            double[] rulerNV = Geometry.vectorDiff(rulerPT, getRulerPoint1());
+            if (Geometry.scalarProduct(PanelCamera.getCamPosition(), rulerNV)
+                    - Geometry.scalarProduct(rulerPT, rulerNV) > 0) {
                 rulerNV = new double[] { -rulerNV[0], -rulerNV[1], -rulerNV[2] };
             }
             return rulerNV;
@@ -477,19 +465,19 @@ public class OrigamiPanel extends Panel {
         
         if (linerOn) {
             
-            double pontX = ((double) ruler_x2 - PanelCamera.xshift) / PanelCamera.zoom();
-            double pontY = ((double) ruler_y2 - PanelCamera.yshift) / PanelCamera.zoom();
+            double pontX = ((double) ruler_x2 - PanelCamera.xShift) / PanelCamera.getZoom();
+            double pontY = ((double) ruler_y2 - PanelCamera.yShift) / PanelCamera.getZoom();
             
             double[] rulerPT = new double[] {
-                    PanelCamera.axis_x()[0] / PanelCamera.zoom() * pontX
-                            + PanelCamera.axis_y()[0] / PanelCamera.zoom() * pontY
-                            + PanelCamera.camera_pos()[0],
-                    PanelCamera.axis_x()[1] / PanelCamera.zoom() * pontX
-                            + PanelCamera.axis_y()[1] / PanelCamera.zoom() * pontY
-                            + PanelCamera.camera_pos()[1],
-                    PanelCamera.axis_x()[2] / PanelCamera.zoom() * pontX
-                            + PanelCamera.axis_y()[2] / PanelCamera.zoom() * pontY
-                            + PanelCamera.camera_pos()[2] };
+                    PanelCamera.getXScale()[0] / PanelCamera.getZoom() * pontX
+                            + PanelCamera.getYScale()[0] / PanelCamera.getZoom() * pontY
+                            + PanelCamera.getCamPosition()[0],
+                    PanelCamera.getXScale()[1] / PanelCamera.getZoom() * pontX
+                            + PanelCamera.getYScale()[1] / PanelCamera.getZoom() * pontY
+                            + PanelCamera.getCamPosition()[1],
+                    PanelCamera.getXScale()[2] / PanelCamera.getZoom() * pontX
+                            + PanelCamera.getYScale()[2] / PanelCamera.getZoom() * pontY
+                            + PanelCamera.getCamPosition()[2] };
             
             return rulerPT;
         }
@@ -500,19 +488,19 @@ public class OrigamiPanel extends Panel {
         
         if (linerOn) {
             
-            double pont1X = ((double) ruler_x1 - PanelCamera.xshift) / PanelCamera.zoom();
-            double pont1Y = ((double) ruler_y1 - PanelCamera.yshift) / PanelCamera.zoom();
+            double pont1X = ((double) ruler_x1 - PanelCamera.xShift) / PanelCamera.getZoom();
+            double pont1Y = ((double) ruler_y1 - PanelCamera.yShift) / PanelCamera.getZoom();
             
             double[] rulerPT1 = new double[] {
-                    PanelCamera.axis_x()[0] / PanelCamera.zoom() * pont1X
-                            + PanelCamera.axis_y()[0] / PanelCamera.zoom() * pont1Y
-                            + PanelCamera.camera_pos()[0],
-                    PanelCamera.axis_x()[1] / PanelCamera.zoom() * pont1X
-                            + PanelCamera.axis_y()[1] / PanelCamera.zoom() * pont1Y
-                            + PanelCamera.camera_pos()[1],
-                    PanelCamera.axis_x()[2] / PanelCamera.zoom() * pont1X
-                            + PanelCamera.axis_y()[2] / PanelCamera.zoom() * pont1Y
-                            + PanelCamera.camera_pos()[2] };
+                    PanelCamera.getXScale()[0] / PanelCamera.getZoom() * pont1X
+                            + PanelCamera.getYScale()[0] / PanelCamera.getZoom() * pont1Y
+                            + PanelCamera.getCamPosition()[0],
+                    PanelCamera.getXScale()[1] / PanelCamera.getZoom() * pont1X
+                            + PanelCamera.getYScale()[1] / PanelCamera.getZoom() * pont1Y
+                            + PanelCamera.getCamPosition()[1],
+                    PanelCamera.getXScale()[2] / PanelCamera.getZoom() * pont1X
+                            + PanelCamera.getYScale()[2] / PanelCamera.getZoom() * pont1Y
+                            + PanelCamera.getCamPosition()[2] };
             
             return rulerPT1;
         }

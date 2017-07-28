@@ -1,16 +1,4 @@
-// This file is part of Origami Editor 3D.
-// Copyright (C) 2013, 2014, 2015 Bágyoni Attila <ba-sz-at@users.sourceforge.net>
-// Origami Editor 3D is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-// You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <http:// www.gnu.org/licenses/>.
-package origamieditor3d.origami;
+package origamieditor3d.script;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -18,6 +6,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
+import origamieditor3d.graphics.Camera;
+import origamieditor3d.io.Export;
+import origamieditor3d.io.OrigamiIO;
+import origamieditor3d.origami.Geometry;
+import origamieditor3d.origami.OrigamiGen1;
+import origamieditor3d.origami.OrigamiException;
+import origamieditor3d.origami.OrigamiGen2;
+import origamieditor3d.origami.Origami;
 import origamieditor3d.resources.Dictionary;
 import origamieditor3d.resources.Instructor;
 
@@ -78,7 +74,7 @@ public class OrigamiScriptTerminal {
     private double[] tracker;
     private Integer phi;
     private ArrayList<double[]> corners;
-    private Origami.PaperType papertype;
+    private OrigamiGen1.PaperType papertype;
     private String title;
     //
     // eltárolt szerkesztési mezők
@@ -111,7 +107,7 @@ public class OrigamiScriptTerminal {
         version = maxVersion;
         history.clear();
 
-        TerminalOrigami.undo(TerminalOrigami.history().size());
+        TerminalOrigami.undo(TerminalOrigami.getHistory().size());
         TerminalCamera = new Camera(0, 0, 1);
     }
 
@@ -589,12 +585,12 @@ public class OrigamiScriptTerminal {
                 throw OrigamiException.H007;
             }
 
-            if (Geometry.vector_length(Geometry.vector_product(
-                    Geometry.vector(pt2, pt1), Geometry.vector(pt3, pt1))) != 0d) {
+            if (Geometry.vectorLength(Geometry.crossProduct(
+                    Geometry.vectorDiff(pt2, pt1), Geometry.vectorDiff(pt3, pt1))) != 0d) {
 
                 ppoint = pt1;
-                pnormal = Geometry.vector_product(Geometry.vector(pt2, pt1),
-                        Geometry.vector(pt3, pt1));
+                pnormal = Geometry.crossProduct(Geometry.vectorDiff(pt2, pt1),
+                        Geometry.vectorDiff(pt3, pt1));
             } else {
                 throw OrigamiException.H008;
             }
@@ -655,11 +651,11 @@ public class OrigamiScriptTerminal {
                 throw OrigamiException.H007;
             }
             ppoint = pt2;
-            pnormal = Geometry.vector(
-                    Geometry.length_to_100(Geometry.vector(pt1, pt2)),
-                    Geometry.length_to_100(Geometry.vector(pt3, pt2)));
+            pnormal = Geometry.vectorDiff(
+                    Geometry.length_to_100(Geometry.vectorDiff(pt1, pt2)),
+                    Geometry.length_to_100(Geometry.vectorDiff(pt3, pt2)));
 
-            if (Geometry.vector_length(pnormal) == 0.) {
+            if (Geometry.vectorLength(pnormal) == 0.) {
                 throw OrigamiException.H012;
             }
 
@@ -965,7 +961,7 @@ public class OrigamiScriptTerminal {
 
     private void UNDO1() throws Exception {
 
-        if (TerminalOrigami.history().size() > 0) {
+        if (TerminalOrigami.getHistory().size() > 0) {
             TerminalOrigami.undo();
         } else {
             undo(1);
@@ -1116,9 +1112,9 @@ public class OrigamiScriptTerminal {
                 throw OrigamiException.H007;
             }
 
-            TerminalCamera.camera_dir = dir;
-            TerminalCamera.axis_x = xaxis;
-            TerminalCamera.axis_y = yaxis;
+            TerminalCamera.setCamDirection(dir);
+            TerminalCamera.setXAxis(xaxis);
+            TerminalCamera.setYAxis(yaxis);
 
         } else {
             throw OrigamiException.H007;
@@ -1329,23 +1325,23 @@ public class OrigamiScriptTerminal {
         if (access == Access.DEV) {
 
             System.out.println("TerminalOrigami.vertices_size == "
-                    + Integer.toString(TerminalOrigami.vertices_size()));
+                    + Integer.toString(TerminalOrigami.getVerticesSize()));
             System.out.println("TerminalOrigami.polygons_size == "
-                    + Integer.toString(TerminalOrigami.polygons_size()));
-            for (int i = 0; i < TerminalOrigami.vertices_size(); i++) {
+                    + Integer.toString(TerminalOrigami.getPolygonsSize()));
+            for (int i = 0; i < TerminalOrigami.getVerticesSize(); i++) {
 
                 System.out.print("planar vertex " + i + ": ");
-                for (double comp : TerminalOrigami.vertices2d().get(i)) {
+                for (double comp : TerminalOrigami.getVertices2d().get(i)) {
 
                     System.out.print(comp);
                     System.out.print(" ");
                 }
                 System.out.println();
             }
-            for (int i = 0; i < TerminalOrigami.polygons_size(); i++) {
+            for (int i = 0; i < TerminalOrigami.getPolygonsSize(); i++) {
 
                 System.out.print("polygon " + i + ": ");
-                for (int vert : TerminalOrigami.polygons().get(i)) {
+                for (int vert : TerminalOrigami.getPolygons().get(i)) {
 
                     System.out.print(vert);
                     System.out.print(" ");
@@ -1353,7 +1349,7 @@ public class OrigamiScriptTerminal {
                 System.out.println();
             }
             System.out.println("TerminalOrigami.corners:");
-            for (double[] pont : TerminalOrigami.corners()) {
+            for (double[] pont : TerminalOrigami.getCorners()) {
 
                 System.out.println(Double.toString(pont[0]) + " "
                         + Double.toString(pont[1]));

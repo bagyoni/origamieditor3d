@@ -10,11 +10,11 @@
 // GNU General Public License for more details.
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http:// www.gnu.org/licenses/>.
-package origamieditor3d.panel;
+package origamieditor3d.ui.panel;
 
 import javax.swing.JPanel;
 
-import origamieditor3d.origami.Camera;
+import origamieditor3d.graphics.Camera;
 import origamieditor3d.origami.Origami;
 
 /**

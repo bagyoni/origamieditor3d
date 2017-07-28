@@ -1,4 +1,4 @@
-package origamieditor3d;
+package origamieditor3d.script;
 
 public class OrigamiScripter {
     
