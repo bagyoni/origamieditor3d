@@ -5,6 +5,8 @@ import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Stack;
 
 import origamieditor3d.graphics.Camera;
 import origamieditor3d.io.Export;
@@ -59,9 +61,9 @@ public class OrigamiScriptTerminal {
     private Integer version = 1;
     //
     // eltárolt terminál mezők
-    private ArrayList<String> history;
+    private List<String> history;
 
-    public ArrayList<String> history() {
+    public List<String> history() {
 
         return history;
     }
@@ -1375,7 +1377,7 @@ public class OrigamiScriptTerminal {
 
                     OrigamiScriptTerminal sandbox = new OrigamiScriptTerminal(
                             OrigamiScriptTerminal.Access.USER, filename);
-                    sandbox.execute(bytes);
+                    sandbox.executeWithTimeout(bytes);
                 }
             } else {
                 throw OrigamiException.H010;
@@ -1403,7 +1405,7 @@ public class OrigamiScriptTerminal {
                         bajtok += sor + (char) 10;
                     }
 
-                    execute(bajtok, Access.USER);
+                    executeWithTimeout(bajtok, Access.USER);
                 }
             } else {
                 throw OrigamiException.H010;
@@ -1654,54 +1656,62 @@ public class OrigamiScriptTerminal {
 
     private boolean prompt;
 
-    @SuppressWarnings("deprecation")
     public void execute(String code) throws Exception {
-
-        history.add(code);
+    	
+    	history.add(code);
         code = obfuscate(code);
         final String[] szavak = code.split(" ");
+        
+    	try {
+            for (int i = 0; i < szavak.length; i++) {
+                if (!(szavak[i].contains("[") || szavak[i].contains("]"))) {
+                    if (Commands.containsKey(szavak[i])) {
+                        Commands.get(szavak[i]).execute();
+                    }
 
-        final Exception[] unreportedException = {null};
+                    if (Params.containsKey(szavak[i])) {
+
+                        ArrayList<String> argumentumok = new ArrayList<>();
+                        for (int ii = i + 1; ii < szavak.length; ii++) {
+                            if (Commands.containsKey(szavak[ii])
+                                    || Params.containsKey(szavak[ii])) {
+                                break;
+                            }
+                            if (!szavak[ii].equals("")) {
+                                argumentumok.add(szavak[ii].replace("[", "")
+                                        .replace("]", "").replace("|", " "));
+                            }
+                        }
+
+                        String[] tombarg = new String[argumentumok.size()];
+                        for (int iii = 0; iii < argumentumok.size(); iii++) {
+                            tombarg[iii] = argumentumok.get(iii);
+                        }
+
+                        Params.get(szavak[i]).execute(tombarg);
+                    }
+                }
+            }
+        } catch (Exception e) {
+
+            history.subList(history.size() - 1, history.size()).clear();
+            throw e;
+        }
+    }
+    
+    @SuppressWarnings("deprecation")
+    public void executeWithTimeout(final String code) throws Exception {
+
+        final Stack<Exception> unreportedExceptions = new Stack<>();
         Thread exec = new Thread(new Runnable() {
             @Override
             public void run() {
-
-                try {
-                    for (int i = 0; i < szavak.length; i++) {
-                        if (!(szavak[i].contains("[") || szavak[i].contains("]"))) {
-                            if (Commands.containsKey(szavak[i])) {
-                                Commands.get(szavak[i]).execute();
-                            }
-
-                            if (Params.containsKey(szavak[i])) {
-
-                                ArrayList<String> argumentumok = new ArrayList<>();
-                                for (int ii = i + 1; ii < szavak.length; ii++) {
-                                    if (Commands.containsKey(szavak[ii])
-                                            || Params.containsKey(szavak[ii])) {
-                                        break;
-                                    }
-                                    if (!szavak[ii].equals("")) {
-                                        argumentumok.add(szavak[ii].replace("[", "")
-                                                .replace("]", "").replace("|", " "));
-                                    }
-                                }
-
-                                String[] tombarg = new String[argumentumok.size()];
-                                for (int iii = 0; iii < argumentumok.size(); iii++) {
-                                    tombarg[iii] = argumentumok.get(iii);
-                                }
-
-                                Params.get(szavak[i]).execute(tombarg);
-                            }
-                        }
-                    }
-                } catch (Exception exc) {
-
-                    history.subList(history.size() - 1, history.size()).clear();
-                    unreportedException[0] = exc;
-                }
-
+            	try {
+            		execute(code);
+            	}
+            	catch (Exception e) {
+            		unreportedExceptions.push(e);
+            	}
             }
         });
 
@@ -1727,8 +1737,8 @@ public class OrigamiScriptTerminal {
             }
         }
 
-        if (unreportedException[0] != null) {
-            throw unreportedException[0];
+        if (!unreportedExceptions.isEmpty()) {
+            throw unreportedExceptions.pop();
         }
     }
 
@@ -1744,14 +1754,26 @@ public class OrigamiScriptTerminal {
         }
         this.access = tmp;
     }
+    
+    public void executeWithTimeout(String code, Access access) throws Exception {
 
-    @SuppressWarnings("unchecked")
-    private void execute() throws Exception {
+        Access tmp = this.access;
+        this.access = access;
+        try {
+            executeWithTimeout(code);
+        } catch (Exception ex) {
+            this.access = tmp;
+            throw ex;
+        }
+        this.access = tmp;
+    }
 
-        ArrayList<String> tmp = (ArrayList<String>) history.clone();
+    private void executeAll() throws Exception {
+
+        List<String> tmp = new ArrayList<>(history);
         totalReset();
         for (String p : tmp) {
-            execute(p);
+            executeWithTimeout(p);
         }
     }
 
@@ -1762,7 +1784,7 @@ public class OrigamiScriptTerminal {
             history.subList(history.size() - steps, history.size()).clear();
             Access tmp = this.access;
             this.access = Access.DEV;
-            execute();
+            executeAll();
             this.access = tmp;
         }
     }
