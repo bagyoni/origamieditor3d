@@ -2,6 +2,8 @@ package origamieditor3d.ui;
 
 import java.awt.Color;
 import java.awt.Desktop;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import origamieditor3d.graphics.Camera;
 import origamieditor3d.io.OrigamiIO;
@@ -3110,10 +3112,9 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
 	//
 	// PROPERTIES
 	//
-	@SuppressWarnings("deprecation")
 	private void ui_file_propertiesActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_ui_file_propertiesActionPerformed
 
-		final javax.swing.JDialog properties = new javax.swing.JDialog(this, Dictionary.getString("properties"));
+		final javax.swing.JDialog properties = new javax.swing.JDialog(this, Dictionary.getString("ui.file.properties"));
 		properties.getContentPane().setLayout(new java.awt.GridBagLayout());
 		java.awt.GridBagConstraints c = new java.awt.GridBagConstraints();
 		c.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -3162,7 +3163,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
 		properties.pack();
 		properties.setLocationRelativeTo(this);
 
-		final Thread difth = new Thread(new Runnable() {
+		final Runnable calcDifficulty = new Runnable() {
 
 			@Override
 			public void run() {
@@ -3195,13 +3196,15 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
 				diflabel.setText(Dictionary.getString("level", dif, difname));
 				properties.pack();
 			}
-		});
+		};
 
+		final ExecutorService exec = Executors.newSingleThreadExecutor();
+		
 		properties.addWindowListener(new java.awt.event.WindowAdapter() {
 			@Override
 			public void windowClosed(java.awt.event.WindowEvent evt) {
 
-				difth.stop();
+				exec.shutdownNow();
 				super.windowClosed(evt);
 			}
 		});
@@ -3211,7 +3214,7 @@ public class OrigamiEditorUI extends javax.swing.JFrame {
 		javax.swing.SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
-				difth.start();
+				exec.execute(calcDifficulty);
 			}
 		});
 	}// GEN-LAST:event_ui_file_propertiesActionPerformed

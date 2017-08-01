@@ -273,13 +273,6 @@ public class OrigamiPanel extends Panel {
 			g2.drawRect(alignment_point[0] - 3, alignment_point[1] - 3, 6, 6);
 			g2.setStroke(new java.awt.BasicStroke(1));
 		}
-		/*
-		 * if (beacons != null) { g.setColor(Color.red); for (int i = 0; i <
-		 * beacons.length; i++) { int x = (int) (PanelCamera.projection(beacons[i])[0])
-		 * + PanelCamera.xshift; int y = (int) (PanelCamera.projection(beacons[i])[1]) +
-		 * PanelCamera.yshift; g.fillOval(x - alignment_radius, y - alignment_radius,
-		 * alignment_radius * 2, alignment_radius * 2); } }
-		 */
 
 		g.setColor(Color.red);
 		if (linerOn) {
