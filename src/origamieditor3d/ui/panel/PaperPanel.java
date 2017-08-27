@@ -1,7 +1,12 @@
 package origamieditor3d.ui.panel;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Point;
+import java.awt.Toolkit;
+import java.awt.event.MouseEvent;
 
 import origamieditor3d.graphics.Camera;
 import origamieditor3d.origami.Geometry;
@@ -230,7 +235,7 @@ public class PaperPanel extends Panel {
 		}
 
 		g.setColor(Color.magenta);
-		((java.awt.Graphics2D) g).setStroke(new java.awt.BasicStroke(2));
+		((Graphics2D) g).setStroke(new BasicStroke(2));
 
 		if (liner_triangle[0] != null) {
 			g.drawLine(liner_triangle[0][0] - 3, liner_triangle[0][1] - 3, liner_triangle[0][0] + 3,
@@ -253,11 +258,11 @@ public class PaperPanel extends Panel {
 	}
 
 	@Override
-	public java.awt.Point getToolTipLocation(java.awt.event.MouseEvent e) {
+	public Point getToolTipLocation(MouseEvent e) {
 
-		java.awt.Point pt = e.getPoint();
-		pt.y += java.awt.Toolkit.getDefaultToolkit().getBestCursorSize(10, 10).height / 2;
-		pt.x += java.awt.Toolkit.getDefaultToolkit().getBestCursorSize(10, 10).width / 2;
+		Point pt = e.getPoint();
+		pt.y += Toolkit.getDefaultToolkit().getBestCursorSize(10, 10).height / 2;
+		pt.x += Toolkit.getDefaultToolkit().getBestCursorSize(10, 10).width / 2;
 		return pt;
 	}
 }

@@ -1,19 +1,23 @@
 package origamieditor3d.resources;
 
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Scanner;
+
 /**
  *
  * @author Attila Bágyoni (ba-sz-at@users.sourceforge.net)
  */
 public class BaseModels {
 
-    public java.io.InputStream getFile(String name) {
+    public InputStream getFile(String name) {
         return getClass().getResourceAsStream("/res/models/"+name);
     }
 
-    public java.util.ArrayList<String> names() {
+    public ArrayList<String> names() {
 
-        java.util.ArrayList<String> namelist = new java.util.ArrayList<>();
-        java.util.Scanner sc = new java.util.Scanner(getClass().getResourceAsStream("/res/models/bases.list"));
+        ArrayList<String> namelist = new ArrayList<>();
+        Scanner sc = new Scanner(getClass().getResourceAsStream("/res/models/bases.list"));
         while(sc.hasNextLine()) {
             namelist.add(sc.nextLine());
         }

@@ -10,6 +10,11 @@ import origamieditor3d.origami.Geometry;
 import origamieditor3d.origami.OrigamiGen1;
 import origamieditor3d.origami.OrigamiException;
 import origamieditor3d.origami.Origami;
+import java.awt.image.DataBufferInt;
+import java.awt.image.BufferedImage;
+import java.awt.Graphics2D;
+import java.awt.GradientPaint;
+import java.awt.image.DataBufferByte;
 
 /**
  *
@@ -45,7 +50,7 @@ public class Camera {
 	private int yShift = 230;
 	private double zoom = 1.0;
 	private double[][] spaceBuffer;
-	private java.awt.image.BufferedImage texture;
+	private BufferedImage texture;
 	private byte orientation = 0;
 
 	public double[] projection0(double[] point) {
@@ -92,9 +97,9 @@ public class Camera {
 		yAxis = Geometry.normalizeVector(Geometry.rotation(yAxis, Geometry.nullvector, xAxis, sinY, cosY));
 	}
 
-	public java.util.List<int[]> alignmentPoints(Origami origami, int... denoms) {
+	public List<int[]> alignmentPoints(Origami origami, int... denoms) {
 
-		java.util.List<int[]> nsectors = new ArrayList<>();
+		List<int[]> nsectors = new ArrayList<>();
 
 		for (int i = 0; i < origami.getPolygonsSize(); i++) {
 			if (origami.isNonDegenerate(i)) {
@@ -136,9 +141,9 @@ public class Camera {
 		return nsectors;
 	}
 
-	public java.util.List<int[]> alignmentPoints2d(Origami origami) {
+	public List<int[]> alignmentPoints2d(Origami origami) {
 
-		java.util.List<int[]> vissza = new ArrayList<>();
+		List<int[]> vissza = new ArrayList<>();
 		for (int i = 0; i < origami.getVerticesSize(); i++) {
 
 			vissza.add(new int[] { (int) projection(origami.getVertices2d().get(i))[0],
@@ -403,10 +408,10 @@ public class Camera {
 				catch (Exception exc) {
 					c2 = new Color((rgb2 >>> 16) % 0x100, (rgb2 >>> 8) % 0x100, rgb2 % 0x100, 188);
 				}
-				java.awt.GradientPaint gp = new java.awt.GradientPaint((float) projection(close)[0] + xShift,
+				GradientPaint gp = new GradientPaint((float) projection(close)[0] + xShift,
 						(float) projection(close)[1] + yShift, c1, (float) projection(far)[0] + xShift,
 						(float) projection(far)[1] + yShift, c2);
-				((java.awt.Graphics2D) canvas).setPaint((gp));
+				((Graphics2D) canvas).setPaint((gp));
 
 				canvas.fillPolygon(path);
 			}
@@ -843,7 +848,7 @@ public class Camera {
 		orientation = (byte) ((orientation + 1) % 3);
 	}
 
-	public void setTexture(java.awt.image.BufferedImage texture) throws Exception {
+	public void setTexture(BufferedImage texture) throws Exception {
 
 		if (texture.getColorModel().hasAlpha()) {
 			throw OrigamiException.H013;
@@ -853,9 +858,9 @@ public class Camera {
 
 	public void updateBuffer(Origami origami) {
 
-		java.awt.image.BufferedImage map = new java.awt.image.BufferedImage(texture.getWidth(), texture.getHeight(),
+		BufferedImage map = new BufferedImage(texture.getWidth(), texture.getHeight(),
 				java.awt.image.BufferedImage.TYPE_INT_RGB);
-		java.awt.Graphics2D canvas = map.createGraphics();
+		Graphics2D canvas = map.createGraphics();
 		canvas.setBackground(Color.WHITE);
 		canvas.clearRect(0, 0, texture.getWidth(), texture.getHeight());
 		int[][] skeleton = new int[origami.getPolygonsSize()][];
@@ -883,7 +888,7 @@ public class Camera {
 			}
 		}
 
-		int[] raw = ((java.awt.image.DataBufferInt) map.getRaster().getDataBuffer()).getData();
+		int[] raw = ((DataBufferInt) map.getRaster().getDataBuffer()).getData();
 
 		int len = texture.getHeight() * texture.getWidth();
 		int width = texture.getWidth();
@@ -927,11 +932,11 @@ public class Camera {
 
 	public void drawTexture(Graphics canvas, int w, int h) {
 
-		byte[] raw = ((java.awt.image.DataBufferByte) texture.getRaster().getDataBuffer()).getData();
+		byte[] raw = ((DataBufferByte) texture.getRaster().getDataBuffer()).getData();
 		Double[][] depth_buffer = new Double[w][h];
-		java.awt.image.BufferedImage ret = new java.awt.image.BufferedImage(w, h,
+		BufferedImage ret = new BufferedImage(w, h,
 				java.awt.image.BufferedImage.TYPE_INT_RGB);
-		java.awt.Graphics2D bleach = ret.createGraphics();
+		Graphics2D bleach = ret.createGraphics();
 		bleach.setBackground(Color.WHITE);
 		bleach.clearRect(0, 0, w, h);
 

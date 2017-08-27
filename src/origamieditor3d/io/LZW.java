@@ -1,17 +1,25 @@
 package origamieditor3d.io;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+
 /**
  *
  * @author Attila Bágyoni (ba-sz-at@users.sourceforge.net)
  */
 public class LZW {
 
-    static public void compress(java.io.File input, java.io.File output) throws Exception {
+    static public void compress(File input, File output) throws Exception {
 
-        java.io.FileInputStream fis = new java.io.FileInputStream(input);
-        java.io.FileOutputStream fos = new java.io.FileOutputStream(output);
-        java.util.HashMap<String, Integer> szotar = new java.util.HashMap<>();
-        java.util.ArrayList<Integer> normalatlan = new java.util.ArrayList<>();
+        FileInputStream fis = new FileInputStream(input);
+        FileOutputStream fos = new FileOutputStream(output);
+        HashMap<String, Integer> szotar = new HashMap<>();
+        ArrayList<Integer> normalatlan = new ArrayList<>();
         for (int i = 0; i < 256; i++) {
             szotar.put((char) i + "", i);
         }
@@ -58,12 +66,12 @@ public class LZW {
         fos.close();
     }
     
-    static public java.io.ByteArrayInputStream extract(java.io.ByteArrayInputStream input) throws Exception {
+    static public ByteArrayInputStream extract(ByteArrayInputStream input) throws Exception {
 
-        java.io.InputStream fis = input;
-        java.util.ArrayList<Byte> fosb = new java.util.ArrayList<>();
-        java.util.HashMap<Integer, String> szotar = new java.util.HashMap<>();
-        java.util.ArrayList<Integer> normalatlan = new java.util.ArrayList<>();
+        InputStream fis = input;
+        ArrayList<Byte> fosb = new ArrayList<>();
+        HashMap<Integer, String> szotar = new HashMap<>();
+        ArrayList<Integer> normalatlan = new ArrayList<>();
         for (int i = 0; i < 256; i++) {
             szotar.put(i, (char) i + "");
         }
@@ -110,7 +118,7 @@ public class LZW {
         for (int i=0; i<fosb.size(); i++) {
             fos[i] = fosb.get(i);
         }
-        return new java.io.ByteArrayInputStream(fos);
+        return new ByteArrayInputStream(fos);
     }
 
     static public String BinToString(int bin, int digits) {

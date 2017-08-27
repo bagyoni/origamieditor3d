@@ -3,8 +3,6 @@ package origamieditor3d.origami;
 import java.util.ArrayList;
 import java.util.List;
 
-import origamieditor3d.io.OrigamiIO;
-
 /**
  * @author Attila Bágyoni (ba-sz-at@users.sourceforge.net)
  * @since 2013-01-14
@@ -1586,7 +1584,6 @@ public class OrigamiGen1 implements Origami {
 	 * @return An array containing the 3-dimensional coordinates of a point the
 	 *         compressed plane goes through. Can be arbitrarily far from
 	 *         {@code ppoint}.
-	 * @see OrigamiIO#write_gen2(OrigamiGen1, String)
 	 */
 	protected static double[] planarPointRound(double[] ppoint, double[] pnormal) {
 
@@ -1628,7 +1625,6 @@ public class OrigamiGen1 implements Origami {
 	 *            normal vector as {@code double}s.
 	 * @return An array containing the 3-dimensional coordinates of the compressed
 	 *         plane's normal vector.
-	 * @see OrigamiIO#write_gen2(OrigamiGen1, String)
 	 */
 	protected static double[] normalvectorRound(double[] ppoint, double[] pnormal) {
 

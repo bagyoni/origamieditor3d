@@ -1,9 +1,14 @@
 package origamieditor3d.ui.panel;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.RenderingHints;
+import java.awt.Toolkit;
+import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
 import java.util.Random;
 
 import origamieditor3d.graphics.Camera;
@@ -209,7 +214,7 @@ public class OrigamiPanel extends Panel {
 		return displaymode;
 	}
 
-	public void setTexture(java.awt.image.BufferedImage tex) throws Exception {
+	public void setTexture(BufferedImage tex) throws Exception {
 		PanelCamera.setTexture(tex);
 	}
 
@@ -267,11 +272,11 @@ public class OrigamiPanel extends Panel {
 		}
 		if (alignment_point != null) {
 
-			java.awt.Graphics2D g2 = (java.awt.Graphics2D) g;
+			Graphics2D g2 = (Graphics2D) g;
 			g2.setColor(Color.DARK_GRAY);
-			g2.setStroke(new java.awt.BasicStroke(2));
+			g2.setStroke(new BasicStroke(2));
 			g2.drawRect(alignment_point[0] - 3, alignment_point[1] - 3, 6, 6);
-			g2.setStroke(new java.awt.BasicStroke(1));
+			g2.setStroke(new BasicStroke(1));
 		}
 
 		g.setColor(Color.red);
@@ -340,7 +345,7 @@ public class OrigamiPanel extends Panel {
 		}
 
 		g.setColor(Color.magenta);
-		((java.awt.Graphics2D) g).setStroke(new java.awt.BasicStroke(2));
+		((Graphics2D) g).setStroke(new BasicStroke(2));
 
 		if (liner_triangle[0] != null) {
 			int x = (int) (PanelCamera.projection(liner_triangle[0])[0]) + PanelCamera.getXShift();
@@ -360,7 +365,7 @@ public class OrigamiPanel extends Panel {
 			g.drawLine(x - 3, y + 3, x + 3, y - 3);
 			g.drawLine(x - 3, y - 3, x + 3, y + 3);
 		}
-		((java.awt.Graphics2D) g).setStroke(new java.awt.BasicStroke(1));
+		((Graphics2D) g).setStroke(new BasicStroke(1));
 
 		if (protractor_angle != null) {
 			drawProtractor(g, protractor_angle);
@@ -411,11 +416,11 @@ public class OrigamiPanel extends Panel {
 	}
 
 	@Override
-	public java.awt.Point getToolTipLocation(java.awt.event.MouseEvent e) {
+	public Point getToolTipLocation(MouseEvent e) {
 
-		java.awt.Point pt = e.getPoint();
-		pt.y += java.awt.Toolkit.getDefaultToolkit().getBestCursorSize(10, 10).height / 2;
-		pt.x += java.awt.Toolkit.getDefaultToolkit().getBestCursorSize(10, 10).width / 2;
+		Point pt = e.getPoint();
+		pt.y += Toolkit.getDefaultToolkit().getBestCursorSize(10, 10).height / 2;
+		pt.x += Toolkit.getDefaultToolkit().getBestCursorSize(10, 10).width / 2;
 		return pt;
 	}
 

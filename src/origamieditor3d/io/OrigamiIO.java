@@ -1,14 +1,18 @@
 package origamieditor3d.io;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Random;
 
-import origamieditor3d.origami.OrigamiGen1;
-import origamieditor3d.origami.OrigamiException;
-import origamieditor3d.origami.OrigamiGen2;
 import origamieditor3d.origami.Origami;
+import origamieditor3d.origami.Origami.PaperType;
+import origamieditor3d.origami.OrigamiException;
+import origamieditor3d.origami.OrigamiGen1;
+import origamieditor3d.origami.OrigamiGen2;
 
 /**
  *
@@ -25,7 +29,7 @@ public class OrigamiIO {
         }
         try {
 
-            final int rand = new java.util.Random().nextInt(100000) + 100000;
+            final int rand = new Random().nextInt(100000) + 100000;
             File ori = new File(filename + String.valueOf(rand));
             if (ori.exists()) {
                 ori.delete();
@@ -92,7 +96,7 @@ public class OrigamiIO {
             str.write(0x46);
 
             str.close();
-            origamieditor3d.io.LZW.compress(new File(filename + String.valueOf(rand)), new File(filename));
+            LZW.compress(new File(filename + String.valueOf(rand)), new File(filename));
             ori.delete();
 
         } catch (Exception ex) {
@@ -155,7 +159,7 @@ public class OrigamiIO {
             str.write(0x46);
 
             str.close();
-            origamieditor3d.io.LZW.compress(new File(filename + "~"), new File(filename));
+            LZW.compress(new File(filename + "~"), new File(filename));
             ori.delete();
 
         } catch (Exception ex) {
@@ -164,13 +168,13 @@ public class OrigamiIO {
         }
     }
 
-    static public Origami read_gen2(java.io.ByteArrayInputStream ori, int[] rgb) throws Exception {
+    static public Origami read_gen2(ByteArrayInputStream ori, int[] rgb) throws Exception {
 
         try {
 
             Origami origami;
             ori.reset();
-            java.io.InputStream str = origamieditor3d.io.LZW.extract(ori);
+            InputStream str = LZW.extract(ori);
 
             //reading header
             int fejlec1 = str.read();
@@ -199,9 +203,9 @@ public class OrigamiIO {
 
                     //paper type
                     int papir = str.read();
-                    if (Origami.PaperType.forChar((char) papir) != Origami.PaperType.Custom) {
+                    if (PaperType.forChar((char) papir) != Origami.PaperType.Custom) {
 
-                        origami = new OrigamiGen2(Origami.PaperType.forChar((char) papir));
+                        origami = new OrigamiGen2(PaperType.forChar((char) papir));
                         str.read();
                     } else {
 
@@ -300,13 +304,13 @@ public class OrigamiIO {
         }
     }
 
-    static public Origami read_gen1(java.io.ByteArrayInputStream ori) throws Exception {
+    static public Origami read_gen1(ByteArrayInputStream ori) throws Exception {
 
         try {
 
             Origami origami;
             ori.reset();
-            java.io.InputStream str = origamieditor3d.io.LZW.extract(ori);
+            InputStream str = LZW.extract(ori);
 
             int fejlec1 = str.read();
             fejlec1 <<= 8;
@@ -334,9 +338,9 @@ public class OrigamiIO {
 
                     int papir = str.read();
 
-                    if (Origami.PaperType.forChar((char) papir) != Origami.PaperType.Custom) {
+                    if (PaperType.forChar((char) papir) != Origami.PaperType.Custom) {
 
-                        origami = new OrigamiGen1(Origami.PaperType.forChar((char) papir));
+                        origami = new OrigamiGen1(PaperType.forChar((char) papir));
                         str.read();
                     } else {
 

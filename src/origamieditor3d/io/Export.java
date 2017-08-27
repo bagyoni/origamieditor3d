@@ -1,17 +1,28 @@
 package origamieditor3d.io;
 
 import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+import java.util.zip.ZipOutputStream;
+
+import javax.imageio.ImageIO;
 
 import origamieditor3d.graphics.Camera;
 import origamieditor3d.origami.Geometry;
-import origamieditor3d.origami.OrigamiGen1;
-import origamieditor3d.origami.OrigamiException;
 import origamieditor3d.origami.Origami;
+import origamieditor3d.origami.OrigamiException;
+import origamieditor3d.origami.OrigamiGen1;
 import origamieditor3d.resources.Constants;
 import origamieditor3d.resources.Instructor;
 
@@ -27,7 +38,7 @@ public class Export {
     final static public int page_height = 842;
     final static public int figure_frame = 200;
 
-    static public void exportCTM(Origami origami, String filename, java.awt.image.BufferedImage texture) throws Exception {
+    static public void exportCTM(Origami origami, String filename, BufferedImage texture) throws Exception {
 
         try {
 
@@ -247,7 +258,7 @@ public class Export {
                     u++;
                 }
 
-                javax.imageio.ImageIO.write(texture, "png", teximg);
+                ImageIO.write(texture, "png", teximg);
 
                 bajtlista.add((byte) teximg.getName().length());
                 bajtlista.add((byte) 0);
@@ -529,7 +540,7 @@ public class Export {
             stream += (char) 10;
             stream += "14 TL";
             stream += (char) 10;
-            stream += Instructor.getString("disclaimer", Constants.Version);
+            stream += Instructor.getString("disclaimer", Constants.VERSION);
             stream += (char) 10;
             stream += "ET";
             stream += (char) 10;
@@ -831,8 +842,8 @@ public class Export {
             stream += "/F1 12 Tf";
             stream += (char) 10;
             stream += Integer.toString((int) (page_width - 2 * figure_frame) / 4) + " "
-                    + Integer.toString(722 - Instructor.getString("disclaimer", Constants.Version).length() * 14
-                            + Instructor.getString("disclaimer", Constants.Version).replace(") '", ") ").length() * 14)
+                    + Integer.toString(722 - Instructor.getString("disclaimer", Constants.VERSION).length() * 14
+                            + Instructor.getString("disclaimer", Constants.VERSION).replace(") '", ") ").length() * 14)
                     + " Td";
             stream += (char) 10;
             stream += "12 TL";
@@ -864,8 +875,8 @@ public class Export {
             stream += "/F1 12 Tf";
             stream += (char) 10;
             stream += Integer.toString((int) (page_width - 2 * figure_frame) / 4) + " "
-                    + Integer.toString(736 - Instructor.getString("disclaimer", Constants.Version).length() * 14
-                            + Instructor.getString("disclaimer", Constants.Version).replace(") '", ") ").length() * 14)
+                    + Integer.toString(736 - Instructor.getString("disclaimer", Constants.VERSION).length() * 14
+                            + Instructor.getString("disclaimer", Constants.VERSION).replace(") '", ") ").length() * 14)
                     + " Td";
             stream += (char) 10;
             stream += Instructor.getString("steps", cellak_szama - 2) + "Tj";
@@ -1432,8 +1443,8 @@ public class Export {
             fos.write(0x00);
             fos.write(0x00);
 
-            java.awt.image.BufferedImage img = new java.awt.image.BufferedImage(width, height, java.awt.image.BufferedImage.TYPE_INT_RGB);
-            java.awt.Graphics2D gimg = img.createGraphics();
+            BufferedImage img = new BufferedImage(width, height, java.awt.image.BufferedImage.TYPE_INT_RGB);
+            Graphics2D gimg = img.createGraphics();
             gimg.setBackground(java.awt.Color.WHITE);
             Origami origami1 = origami.copy();
             Camera cam = new Camera(width / 2, height / 2, 1);
@@ -1565,8 +1576,8 @@ public class Export {
             fos.write(0x00);
             fos.write(0x00);
 
-            java.awt.image.BufferedImage img = new java.awt.image.BufferedImage(width, height, java.awt.image.BufferedImage.TYPE_INT_RGB);
-            java.awt.Graphics2D gimg = img.createGraphics();
+            BufferedImage img = new BufferedImage(width, height, java.awt.image.BufferedImage.TYPE_INT_RGB);
+            Graphics2D gimg = img.createGraphics();
             gimg.setBackground(java.awt.Color.WHITE);
             Origami origami1 = origami.copy();
             Camera cam = new Camera(width / 2, height / 2, 1);
@@ -1652,13 +1663,13 @@ public class Export {
             if (png.exists()) {
                 png.delete();
             }
-            java.awt.image.BufferedImage img = new java.awt.image.BufferedImage((int) origami.paperWidth(), (int) origami.paperHeight(), java.awt.image.BufferedImage.TYPE_INT_RGB);
-            java.awt.Graphics2D g = img.createGraphics();
+            BufferedImage img = new BufferedImage((int) origami.paperWidth(), (int) origami.paperHeight(), java.awt.image.BufferedImage.TYPE_INT_RGB);
+            Graphics2D g = img.createGraphics();
             g.setBackground(java.awt.Color.WHITE);
             g.clearRect(0, 0, (int) origami.paperWidth(), (int) origami.paperHeight());
             new Camera((int) origami.paperWidth() / 2, (int) origami.paperHeight() / 2, 1).drawCreasePattern(g, Color.BLACK, origami);
 
-            if (!javax.imageio.ImageIO.write(img, "png", png)) {
+            if (!ImageIO.write(img, "png", png)) {
                 throw OrigamiException.H005;
             }
         } catch (Exception ex) {
@@ -1687,8 +1698,8 @@ public class Export {
                 ordinal++;
             }
 
-            java.io.InputStream is = new Export().getClass().getResourceAsStream("/res/OrigamiDisplay.jar");
-            java.io.OutputStream os = new java.io.FileOutputStream(tempJar);
+            InputStream is = new Export().getClass().getResourceAsStream("/res/OrigamiDisplay.jar");
+            OutputStream os = new FileOutputStream(tempJar);
 
             int nextbyte;
             while ((nextbyte = is.read()) != -1) {
@@ -1700,12 +1711,12 @@ public class Export {
 
             OrigamiIO.write_gen2(origami, tempOri.getPath(), rgb);
 
-            java.util.zip.ZipFile jar = new java.util.zip.ZipFile(tempJar);
-            java.io.FileOutputStream fos = new java.io.FileOutputStream(finalJar);
-            java.util.zip.ZipOutputStream zos = new java.util.zip.ZipOutputStream(fos);
-            java.util.zip.ZipEntry next;
+            ZipFile jar = new ZipFile(tempJar);
+            FileOutputStream fos = new FileOutputStream(finalJar);
+            ZipOutputStream zos = new ZipOutputStream(fos);
+            ZipEntry next;
 
-            java.util.Enumeration<? extends java.util.zip.ZipEntry> entries = jar.entries();
+            Enumeration<? extends ZipEntry> entries = jar.entries();
             while (entries.hasMoreElements()) {
                 if (!(next = entries.nextElement()).isDirectory()) {
 
@@ -1720,9 +1731,9 @@ public class Export {
                 }
             }
 
-            next = new java.util.zip.ZipEntry("o");
+            next = new ZipEntry("o");
             zos.putNextEntry(next);
-            is = new java.io.FileInputStream(tempOri);
+            is = new FileInputStream(tempOri);
             while ((nextbyte = is.read()) != -1) {
                 zos.write(nextbyte);
             }

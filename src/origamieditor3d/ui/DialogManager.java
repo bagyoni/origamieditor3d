@@ -8,6 +8,12 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 import origamieditor3d.resources.Constants;
 import origamieditor3d.resources.Dictionary;
+import java.net.URL;
+import javax.imageio.ImageIO;
+import java.util.Scanner;
+import java.net.URI;
+import javax.swing.JTextArea;
+import java.io.File;
 
 public class DialogManager {
 
@@ -36,7 +42,7 @@ public class DialogManager {
     
     private boolean canIOverwriteFile() {
         
-        if (javax.swing.JOptionPane.showConfirmDialog(null, Dictionary.getString("overwrite"),
+        if (JOptionPane.showConfirmDialog(null, Dictionary.getString("overwrite"),
                 Dictionary.getString("question"), javax.swing.JOptionPane.YES_NO_OPTION)
                 == javax.swing.JOptionPane.YES_OPTION) {
             return true;
@@ -46,7 +52,7 @@ public class DialogManager {
     
     public String getSaveFilePath(String fileExtension) {
         
-        file_dialog.setSelectedFile(new java.io.File(""));
+        file_dialog.setSelectedFile(new File(""));
         file_dialog.resetChoosableFileFilters();
         file_dialog.setAcceptAllFileFilterUsed(false);
         file_dialog.addChoosableFileFilter(new FileNameExtensionFilter(Dictionary.getString(fileExtension), fileExtension));
@@ -59,7 +65,7 @@ public class DialogManager {
                     fpath += "." + fileExtension;
                 }
                 
-                if (new java.io.File(fpath).exists()) {
+                if (new File(fpath).exists()) {
                     
                     if (canIOverwriteFile()) {
                         return fpath;
@@ -74,7 +80,7 @@ public class DialogManager {
     
     public String getOpenFilePath(String... fileExtensions) {
         
-        file_dialog.setSelectedFile(new java.io.File(""));
+        file_dialog.setSelectedFile(new File(""));
         file_dialog.resetChoosableFileFilters();
         file_dialog.setAcceptAllFileFilterUsed(false);
         for (String ext : fileExtensions) {
@@ -90,10 +96,10 @@ public class DialogManager {
     
     public String getOpenImagePath() {
         
-        file_dialog.setSelectedFile(new java.io.File(""));
+        file_dialog.setSelectedFile(new File(""));
         file_dialog.resetChoosableFileFilters();
         file_dialog.setAcceptAllFileFilterUsed(false);
-        file_dialog.addChoosableFileFilter(new FileNameExtensionFilter(Dictionary.getString("img"), javax.imageio.ImageIO.getReaderFormatNames()));
+        file_dialog.addChoosableFileFilter(new FileNameExtensionFilter(Dictionary.getString("img"), ImageIO.getReaderFormatNames()));
         
         if (file_dialog.showOpenDialog(associated_ui) == javax.swing.JFileChooser.APPROVE_OPTION) {
             if (file_dialog.getFileFilter() == file_dialog.getChoosableFileFilters()[0]) {
@@ -109,14 +115,14 @@ public class DialogManager {
         
         try {
             
-            java.util.Scanner inf = new java.util.Scanner(
-                    new java.net.URL(Constants.InfoLink).openStream());
+            Scanner inf = new Scanner(
+                    new URL(Constants.INFO_LINK).openStream());
             String line;
             while (!(line = inf.nextLine().replace(" ", "")).startsWith("latest_version="))
                 ;
             String ver = line.substring(line.indexOf("\"") + 1, line.lastIndexOf("\""));
             
-            if (!Constants.Version.equals(ver)) {
+            if (!Constants.VERSION.equals(ver)) {
                 
                 Object[] options = { Dictionary.getString("yes"), Dictionary.getString("no") };
                 if (JOptionPane.showOptionDialog(associated_ui, Dictionary.getString("update"),
@@ -133,13 +139,13 @@ public class DialogManager {
                             ? Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)
                             : false) {
                         
-                        Desktop.getDesktop().browse(new java.net.URI(dl_url));
+                        Desktop.getDesktop().browse(new URI(dl_url));
                         System.exit(0);
                     }
                     else {
                         
-                        javax.swing.JTextArea copyable =
-                                new javax.swing.JTextArea(Dictionary.getString("browser-fail", dl_url));
+                        JTextArea copyable =
+                                new JTextArea(Dictionary.getString("browser-fail", dl_url));
                         copyable.setEditable(false);
                         JOptionPane.showMessageDialog(
                                 associated_ui, copyable, Dictionary.getString("error"), JOptionPane.ERROR_MESSAGE);
